@@ -2763,15 +2763,14 @@ void Form1::WSCSaveScaleTxtBox_KeyDown(System::Object^  sender, System::Windows:
 	array<String^>^ entrylabels = gcnew array<String^>(6) { "WCSScaleInit", "WCSScaleInitLB", "WCSScaleInitUB", "WCSRotationInit", "WCSRotationInitLB", "WCSRotationInitUB" };
 	array<TypeCode>^ types = gcnew array<TypeCode>(6) { TypeCode::Double, TypeCode::Double, TypeCode::Double, TypeCode::Double, TypeCode::Double, TypeCode::Double };
 	array<String^>^ units = gcnew array<String^>(6) { "arcsec per pixel", "arcsec per pixel", "arcsec per pixel", "Degrees", "Degrees", "Degrees" };
-	array<double, 2>^ data = gcnew array<double, 2>(6, 1);
-	data[0, 0] = Convert::ToDouble(WCSScaleInit->Text);
-	data[1, 0] = Convert::ToDouble(WCSScaleInitLB->Text);
-	data[2, 0] = Convert::ToDouble(WCSScaleInitUB->Text);
-	data[3, 0] = Convert::ToDouble(WCSRotationInit->Text);
-	data[4, 0] = Convert::ToDouble(WCSRotationInitLB->Text);
-	data[5, 0] = Convert::ToDouble(WCSRotationInitUB->Text);
-
-	FITSBinTable::WriteExtension(wcsparamsfile, extname, true, entrylabels, types, units, nullptr, nullptr, nullptr, data);
+	array<Object^>^ objarray = gcnew array<Object^>(6);
+	objarray[0] = gcnew array<double>(1) { Convert::ToDouble(WCSScaleInit->Text) };
+	objarray[1] = gcnew array<double>(1) { Convert::ToDouble(WCSScaleInitLB->Text) };
+	objarray[2] = gcnew array<double>(1) { Convert::ToDouble(WCSScaleInitUB->Text) };
+	objarray[3] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInit->Text) };
+	objarray[4] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInitLB->Text) };
+	objarray[5] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInitUB->Text) };
+	FITSBinTable::WriteExtension(wcsparamsfile, extname, true, entrylabels, units, nullptr, nullptr, nullptr, objarray);
 
 	AutoWCSScaleMenuBtn->HideDropDown();
 	AutoWCSScaleMenuBtn->ShowDropDown();
@@ -2801,13 +2800,6 @@ void Form1::WCSParamMenuBtn_MouseDown(System::Object^  sender, System::Windows::
 		WCSRotationInit->Text = bt->GetTTYPEEntry("WCSRotationInit")[0].ToString();
 		WCSRotationInitLB->Text = bt->GetTTYPEEntry("WCSRotationInitLB")[0].ToString();
 		WCSRotationInitUB->Text = bt->GetTTYPEEntry("WCSRotationInitUB")[0].ToString();
-
-		/*WCSScaleInit->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSScaleInit")[0].ToString();
-		WCSScaleInitLB->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSScaleInitLB")[0].ToString();
-		WCSScaleInitUB->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSScaleInitUB")[0].ToString();
-		WCSRotationInit->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSRotationInit")[0].ToString();
-		WCSRotationInitLB->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSRotationInitLB")[0].ToString();
-		WCSRotationInitUB->Text = FITSBinTable::GetExtensionEntry(wcsparamsfile, ((Windows::Forms::ToolStripItem^)sender)->Text, "WCSRotationInitUB")[0].ToString();*/
 	}
 	catch (...)
 	{

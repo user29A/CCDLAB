@@ -1551,8 +1551,8 @@ private: System::ComponentModel::IContainer^  components;
 		{
 			this->components = (gcnew System::ComponentModel::Container());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(Form1::typeid));
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->ImageWindowCntxt = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
 			this->ImageWndwCntxtView = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->ShowCursorBox = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -4244,7 +4244,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->SubImageCntxt->Name = L"SubImageCntxtMenu";
 			this->SubImageCntxt->RenderMode = System::Windows::Forms::ToolStripRenderMode::Professional;
 			this->SubImageCntxt->ShowImageMargin = false;
-			this->SubImageCntxt->Size = System::Drawing::Size(189, 268);
+			this->SubImageCntxt->Size = System::Drawing::Size(189, 246);
 			// 
 			// SubImgRadialPlotMenuBtn
 			// 
@@ -8002,15 +8002,16 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			// FMLoad
 			// 
+			this->FMLoad->DoubleClickEnabled = true;
 			this->FMLoad->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
 				this->FMLoadSubFrame,
 					this->ConvertFromTextMenu, this->FMViewExtensionTable
 			});
 			this->FMLoad->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMLoad.Image")));
 			this->FMLoad->Name = L"FMLoad";
-			this->FMLoad->Size = System::Drawing::Size(152, 22);
+			this->FMLoad->Size = System::Drawing::Size(180, 22);
 			this->FMLoad->Text = L"&Open File(s)";
-			this->FMLoad->Click += gcnew System::EventHandler(this, &Form1::FMLoad_Click);
+			this->FMLoad->DoubleClick += gcnew System::EventHandler(this, &Form1::FMLoad_Click);
 			// 
 			// FMLoadSubFrame
 			// 
@@ -8038,7 +8039,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMAdd->Enabled = false;
 			this->FMAdd->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMAdd.Image")));
 			this->FMAdd->Name = L"FMAdd";
-			this->FMAdd->Size = System::Drawing::Size(152, 22);
+			this->FMAdd->Size = System::Drawing::Size(180, 22);
 			this->FMAdd->Text = L"&Add File(s)";
 			this->FMAdd->Click += gcnew System::EventHandler(this, &Form1::FMAdd_Click);
 			// 
@@ -8047,7 +8048,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMReload->Enabled = false;
 			this->FMReload->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMReload.Image")));
 			this->FMReload->Name = L"FMReload";
-			this->FMReload->Size = System::Drawing::Size(152, 22);
+			this->FMReload->Size = System::Drawing::Size(180, 22);
 			this->FMReload->Text = L"&Reload File(s)";
 			this->FMReload->Click += gcnew System::EventHandler(this, &Form1::FMReload_Click);
 			// 
@@ -8055,20 +8056,20 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->FMRecentFiles->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMRecentFiles.Image")));
 			this->FMRecentFiles->Name = L"FMRecentFiles";
-			this->FMRecentFiles->Size = System::Drawing::Size(152, 22);
+			this->FMRecentFiles->Size = System::Drawing::Size(180, 22);
 			this->FMRecentFiles->Text = L"Recent Files";
 			this->FMRecentFiles->Visible = false;
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(149, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(177, 6);
 			// 
 			// FMFind
 			// 
 			this->FMFind->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMFind.Image")));
 			this->FMFind->Name = L"FMFind";
-			this->FMFind->Size = System::Drawing::Size(152, 22);
+			this->FMFind->Size = System::Drawing::Size(180, 22);
 			this->FMFind->Text = L"&Find File(s)";
 			this->FMFind->Click += gcnew System::EventHandler(this, &Form1::FMFind_Click);
 			// 
@@ -8077,7 +8078,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMViewFound->Enabled = false;
 			this->FMViewFound->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMViewFound.Image")));
 			this->FMViewFound->Name = L"FMViewFound";
-			this->FMViewFound->Size = System::Drawing::Size(152, 22);
+			this->FMViewFound->Size = System::Drawing::Size(180, 22);
 			this->FMViewFound->Text = L"&View List";
 			this->FMViewFound->Click += gcnew System::EventHandler(this, &Form1::FMViewFound_Click);
 			// 
@@ -8085,21 +8086,21 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->FMOpenFound->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMOpenFound.Image")));
 			this->FMOpenFound->Name = L"FMOpenFound";
-			this->FMOpenFound->Size = System::Drawing::Size(152, 22);
+			this->FMOpenFound->Size = System::Drawing::Size(180, 22);
 			this->FMOpenFound->Text = L"Open &List";
 			this->FMOpenFound->Click += gcnew System::EventHandler(this, &Form1::TBOpenFound_Click);
 			// 
 			// toolStripSeparator3
 			// 
 			this->toolStripSeparator3->Name = L"toolStripSeparator3";
-			this->toolStripSeparator3->Size = System::Drawing::Size(149, 6);
+			this->toolStripSeparator3->Size = System::Drawing::Size(177, 6);
 			// 
 			// FMSave
 			// 
 			this->FMSave->Enabled = false;
 			this->FMSave->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMSave.Image")));
 			this->FMSave->Name = L"FMSave";
-			this->FMSave->Size = System::Drawing::Size(152, 22);
+			this->FMSave->Size = System::Drawing::Size(180, 22);
 			this->FMSave->Text = L"&Save File";
 			this->FMSave->Click += gcnew System::EventHandler(this, &Form1::FMSave_Click);
 			// 
@@ -8108,20 +8109,20 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMSaveBatch->Enabled = false;
 			this->FMSaveBatch->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMSaveBatch.Image")));
 			this->FMSaveBatch->Name = L"FMSaveBatch";
-			this->FMSaveBatch->Size = System::Drawing::Size(152, 22);
+			this->FMSaveBatch->Size = System::Drawing::Size(180, 22);
 			this->FMSaveBatch->Text = L"Save File &Batch";
 			this->FMSaveBatch->Click += gcnew System::EventHandler(this, &Form1::TBSaveBatch_Click);
 			// 
 			// toolStripSeparator4
 			// 
 			this->toolStripSeparator4->Name = L"toolStripSeparator4";
-			this->toolStripSeparator4->Size = System::Drawing::Size(149, 6);
+			this->toolStripSeparator4->Size = System::Drawing::Size(177, 6);
 			// 
 			// FMQuit
 			// 
 			this->FMQuit->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMQuit.Image")));
 			this->FMQuit->Name = L"FMQuit";
-			this->FMQuit->Size = System::Drawing::Size(152, 22);
+			this->FMQuit->Size = System::Drawing::Size(180, 22);
 			this->FMQuit->Text = L"&QUIT";
 			this->FMQuit->Click += gcnew System::EventHandler(this, &Form1::FMQuit_Click);
 			// 
@@ -10621,17 +10622,17 @@ private: System::ComponentModel::IContainer^  components;
 			this->Chart1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
 				| System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
-			chartArea1->AxisX->MajorGrid->Enabled = false;
-			chartArea1->AxisY->MajorGrid->Enabled = false;
-			chartArea1->BorderDashStyle = System::Windows::Forms::DataVisualization::Charting::ChartDashStyle::Solid;
-			chartArea1->Name = L"ChartArea1";
-			this->Chart1->ChartAreas->Add(chartArea1);
+			chartArea2->AxisX->MajorGrid->Enabled = false;
+			chartArea2->AxisY->MajorGrid->Enabled = false;
+			chartArea2->BorderDashStyle = System::Windows::Forms::DataVisualization::Charting::ChartDashStyle::Solid;
+			chartArea2->Name = L"ChartArea1";
+			this->Chart1->ChartAreas->Add(chartArea2);
 			this->Chart1->Location = System::Drawing::Point(35, 41);
 			this->Chart1->Name = L"Chart1";
-			series1->ChartArea = L"ChartArea1";
-			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series1->Name = L"Series1";
-			this->Chart1->Series->Add(series1);
+			series2->ChartArea = L"ChartArea1";
+			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series2->Name = L"Series1";
+			this->Chart1->Series->Add(series2);
 			this->Chart1->Size = System::Drawing::Size(812, 812);
 			this->Chart1->TabIndex = 56;
 			this->Chart1->Text = L"chart1";

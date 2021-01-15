@@ -516,7 +516,6 @@ void Form1::FMViewExtensionTable_Click(System::Object^  sender, System::EventArg
 		return;
 
 	SetReg("CCDLAB", "OpenFilesPath", ofd->FileName->Substring(0, ofd->FileName->LastIndexOf("\\")));
-
 	JPFITS::FitsExtensionTableViewer^ view = gcnew FitsExtensionTableViewer(ofd->FileName);
 }
 
@@ -568,7 +567,8 @@ void Form1::FMReload_Click(System::Object ^  sender, System::EventArgs ^  e)
 			AUTOLOADIMAGESFILES[i] = IMAGESET[i]->FullFileName;
 
 		IMAGESET = gcnew FITSImageSet();
-		FMLoad->PerformClick();
+		FMLoad_Click(sender, e);
+		//FMLoad->PerformClick();
 	}
 }
 
@@ -2462,7 +2462,8 @@ void Form1::FindFiles()
 				AUTOLOADIMAGESFILES[i] = selectfiles[i];
 
 			IMAGESET = gcnew FITSImageSet();
-			FMLoad->PerformClick();
+			FMLoad_Click(gcnew Object, gcnew EventArgs());
+			//FMLoad->PerformClick();
 			break;
 		}
 	case (System::Windows::Forms::DialogResult::Ignore)://for ADDING to existing IMAGESET
@@ -2523,7 +2524,8 @@ void Form1::ViewFoundList()
 					AUTOLOADIMAGESFILES[i] = selectfiles[i];
 
 				IMAGESET = gcnew FITSImageSet();
-				FMLoad->PerformClick();
+				FMLoad_Click(gcnew Object, gcnew EventArgs());
+				//FMLoad->PerformClick();
 				break;
 			}
 		case (System::Windows::Forms::DialogResult::Ignore)://for ADDING to existing IMAGESET
@@ -2575,7 +2577,8 @@ void Form1::SingleOutBtn_Click(System::Object^ sender, System::EventArgs^ e)
 	IMAGESET->Add(tmp);
 	AUTOLOADIMAGES = true;
 	AUTOLOADIMAGESFILES = gcnew array<String^>(1) { "SingleOut" };
-	FMLoad->PerformClick();
+	FMLoad_Click(sender, e);
+	//FMLoad->PerformClick();
 }
 
 void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
@@ -2735,7 +2738,8 @@ void Form1::FMAdd_Click(System::Object^ sender, System::EventArgs^ e)
 
 	AUTOLOADIMAGES = true;
 	AUTOLOADIMAGESFILES = afd->FileNames;
-	FMLoad->PerformClick();
+	FMLoad_Click(sender, e);
+	//FMLoad->PerformClick();
 }
 
 void Form1::RecentFilesUpD()
@@ -2902,7 +2906,8 @@ void Form1::RecentFilesLoadSingle_Click(System::Object^ sender, System::Windows:
 				return;
 		IMAGESET = gcnew FITSImageSet();
 		AUTOLOADIMAGES = true;
-		FMLoad->PerformClick();
+		FMLoad_Click(sender, e);
+		//FMLoad->PerformClick();
 	}
 
 	if (e->Button == ::MouseButtons::Right)//add images
@@ -2914,7 +2919,8 @@ void Form1::RecentFilesLoadSingle_Click(System::Object^ sender, System::Windows:
 			if (MessageBox::Show("Are you sure you would like to ADD all " + numlines + " images from " + File::GetLastWriteTime(recentfilelist).ToString(), "Warning...", ::MessageBoxButtons::OKCancel) == ::DialogResult::Cancel)
 				return;
 		AUTOLOADIMAGES = true;
-		FMLoad->PerformClick();
+		FMLoad_Click(sender, e);
+		//FMLoad->PerformClick();
 	}
 }
 

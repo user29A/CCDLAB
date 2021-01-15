@@ -2705,7 +2705,8 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 						return;*/
 					AUTOLOADIMAGES = true;
 					IMAGESET = gcnew FITSImageSet();
-					FMLoad->PerformClick();
+					FMLoad_Click(sender, e);
+					//FMLoad->PerformClick();
 				}
 			}
 		}
@@ -2735,7 +2736,8 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 		{
 			FUVDIREXISTS = false;
 			IMAGESET = gcnew FITSImageSet();
-			FMLoad->PerformClick();
+			FMLoad_Click(sender, e);
+			//FMLoad->PerformClick();
 			DONUVDRIFTNOW = true;
 			ConsolidateNUVApplyToFUV_Click(sender, e);
 			return;
@@ -2745,12 +2747,14 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 			FUVDIREXISTS = false;
 			NUVDIREXISTS = false;
 			AUTOVISDRIFTAPPLY = false;
-			FMLoad->PerformClick();
+			FMLoad_Click(sender, e);
+			//FMLoad->PerformClick();
 			return;
 		}
 
 		IMAGESET = gcnew FITSImageSet();
-		FMLoad->PerformClick();
+		FMLoad_Click(sender, e);
+		//FMLoad->PerformClick();
 
 		if (UVITPOSTMERGE)
 		{
@@ -7842,153 +7846,160 @@ void Form1::RotationUVCentroidWrkr_DoWork(System::Object^  sender, System::Compo
 	#pragma omp parallel for
 	for (int wrkri = 0; wrkri < IntsFiles->Length; wrkri++)
 	{
-		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-			break;
-
-		count[omp_get_thread_num()]++;
-		#pragma omp critical
+		try
 		{
-			int sum = 0;
-			for (int si = 0; si < count->Length; si++)
-				sum += count[si];
-			RotationUVCentroidWrkr->ReportProgress(sum);
-		}
-		//RotationUVCentroidWrkr->ReportProgress(wrkri);
+			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+				break;
 
-		String^ IntsFile = IntsFiles[wrkri];
-		String^ FracFile = IntsFile->Replace("Ints", "Frac");
-		JPFITS::FITSImage^ IntsFits = gcnew JPFITS::FITSImage(IntsFile, nullptr, true, true, false, true);
-		JPFITS::FITSImage^ FracFits = gcnew JPFITS::FITSImage(FracFile, nullptr, true, true, false, true);
-		int NPts = FracFits->Height;
-		double x, y, xprime, yprime;
-		int fracx, intsx, fracy, intsy;
-		::Random^ r = gcnew Random();
-
-		if (LinearRotationChck->Checked)
-		{
-			double xshift, yshift, rotation, xcenter, ycenter;
-			xshift = ::Convert::ToDouble(UserXShiftTxt->Text);
-			yshift = ::Convert::ToDouble(UserYShiftTxt->Text);
-			xcenter = ::Convert::ToDouble(UserRotationXCenterTxt->Text);
-			ycenter = ::Convert::ToDouble(UserRotationYCenterTxt->Text);
-			rotation = -1 * ::Convert::ToDouble(UserRotationTxt->Text) * Math::PI / 180;//degrees to radians
-
-			bool horzflip = FlipHorizontalMenuItem->Checked;
-			bool vertflip = FlipVerticalMenuItem->Checked;
-
-			for (int j = 0; j < NPts; j++)
+			count[omp_get_thread_num()]++;
+			#pragma omp critical
 			{
-				x = (IntsFits[0, j] + FracFits[0, j] + 16) + r->NextDouble();//must add 16 to fractionals
-				y = (IntsFits[1, j] + FracFits[1, j] + 16) + r->NextDouble();//and put the centroid somewhere within the 1/32 bin
+				int sum = 0;
+				for (int si = 0; si < count->Length; si++)
+					sum += count[si];
+				RotationUVCentroidWrkr->ReportProgress(sum);
+			}
+			//RotationUVCentroidWrkr->ReportProgress(wrkri);
+
+			String^ IntsFile = IntsFiles[wrkri];
+			String^ FracFile = IntsFile->Replace("Ints", "Frac");
+			JPFITS::FITSImage^ IntsFits = gcnew JPFITS::FITSImage(IntsFile, nullptr, true, true, false, true);
+			JPFITS::FITSImage^ FracFits = gcnew JPFITS::FITSImage(FracFile, nullptr, true, true, false, true);
+			int NPts = FracFits->Height;
+			double x, y, xprime, yprime;
+			int fracx, intsx, fracy, intsy;
+			::Random^ r = gcnew Random();
+
+			if (LinearRotationChck->Checked)
+			{
+				double xshift, yshift, rotation, xcenter, ycenter;
+				xshift = ::Convert::ToDouble(UserXShiftTxt->Text);
+				yshift = ::Convert::ToDouble(UserYShiftTxt->Text);
+				xcenter = ::Convert::ToDouble(UserRotationXCenterTxt->Text);
+				ycenter = ::Convert::ToDouble(UserRotationYCenterTxt->Text);
+				rotation = -1 * ::Convert::ToDouble(UserRotationTxt->Text) * Math::PI / 180;//degrees to radians
+
+				bool horzflip = FlipHorizontalMenuItem->Checked;
+				bool vertflip = FlipVerticalMenuItem->Checked;
+
+				for (int j = 0; j < NPts; j++)
+				{
+					x = (IntsFits[0, j] + FracFits[0, j] + 16) + r->NextDouble();//must add 16 to fractionals
+					y = (IntsFits[1, j] + FracFits[1, j] + 16) + r->NextDouble();//and put the centroid somewhere within the 1/32 bin
+
+					if (horzflip)
+						x = 511 * 32 - x;
+					if (vertflip)
+						y = 511 * 32 - y;
+
+					xprime = (x - xcenter * 32) * Math::Cos(rotation) - (y - ycenter * 32) * Math::Sin(rotation) + xcenter * 32 + xshift * 32;
+					yprime = (x - xcenter * 32) * Math::Sin(rotation) + (y - ycenter * 32) * Math::Cos(rotation) + ycenter * 32 + yshift * 32;
+
+					//now need to split out integer and decimal parts back into their own lists...
+					intsx = Math::DivRem(int((xprime)), 32, fracx) * 32;
+					fracx -= 16;//reset frac to be from -16
+					intsy = Math::DivRem(int((yprime)), 32, fracy) * 32;
+					fracy -= 16;//reset frac to be from -16
+					IntsFits[0, j] = intsx;
+					IntsFits[1, j] = intsy;
+					FracFits[0, j] = fracx;
+					FracFits[1, j] = fracy;
+				}
 
 				if (horzflip)
-					x = 511*32 - x;
+				{
+					IntsFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+					FracFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+				}
 				if (vertflip)
-					y = 511*32 - y;
+				{
+					IntsFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+					FracFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+				}
+				if (xshift != 0)
+				{
+					IntsFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+					FracFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+				}
+				if (yshift != 0)
+				{
+					IntsFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+					FracFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+				}
+				if (rotation != 0)
+				{
+					IntsFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
+					FracFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
+				}
 
-				xprime = (x - xcenter * 32) * Math::Cos(rotation) - (y - ycenter * 32) * Math::Sin(rotation) + xcenter * 32 + xshift * 32;
-				yprime = (x - xcenter * 32) * Math::Sin(rotation) + (y - ycenter * 32) * Math::Cos(rotation) + ycenter * 32 + yshift * 32;
+				if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
+				{
+					WCS_DEROT->CopyTo(IntsFits);
+					WCS_DEROT->CopyTo(FracFits);
 
-				//now need to split out integer and decimal parts back into their own lists...
-				intsx = Math::DivRem(int((xprime)), 32, fracx) * 32;
-				fracx -= 16;//reset frac to be from -16
-				intsy = Math::DivRem(int((yprime)), 32, fracy) * 32;
-				fracy -= 16;//reset frac to be from -16
-				IntsFits[0, j] = intsx;
-				IntsFits[1, j] = intsy;
-				FracFits[0, j] = fracx;
-				FracFits[1, j] = fracy;
-			}
+					//rotate and shift the exposure array image so that it matches the WCS derotated aspect
+					String^ dedrift = "_deDrift";
+					while (IntsFile->Contains(dedrift + "_deDrift"))
+						dedrift += "_deDrift";
+					String^ exparrayimagefile = IntsFile->Remove(IntsFile->IndexOf("XYInts")) + "ExpArrayImg";
+					exparrayimagefile += dedrift + ".fits";
+					FITSImage^ expfitsimg = gcnew FITSImage(exparrayimagefile, nullptr, true, true, false, true);
+					array<double, 2>^ exparr = expfitsimg->Image;
+					exparr = JPMath::RotateShiftArray(exparr, -rotation, Double::MaxValue, Double::MaxValue, "bilinear", 0, 0, true);
+					expfitsimg->SetImage(exparr, false, true);
+					expfitsimg->WriteImage(::TypeCode::Double, true);
+				}
 
-			if (horzflip)
-			{
-				IntsFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
-				FracFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
-			}
-			if (vertflip)
-			{
-				IntsFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
-				FracFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
-			}
-			if (xshift != 0)
-			{
-				IntsFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
-				FracFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
-			}
-			if (yshift != 0)
-			{
-				IntsFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
-				FracFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
-			}
-			if (rotation != 0)
-			{
-				IntsFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
-				FracFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
-			}
-
-			if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
-			{
-				WCS_DEROT->CopyTo(IntsFits);
-				WCS_DEROT->CopyTo(FracFits);
-
-				//rotate and shift the exposure array image so that it matches the WCS derotated aspect
-				String^ dedrift = "_deDrift";
-				while (IntsFile->Contains(dedrift + "_deDrift"))
-					dedrift += "_deDrift";
-				String^ exparrayimagefile = IntsFile->Remove(IntsFile->IndexOf("XYInts")) + "ExpArrayImg";
-				exparrayimagefile += dedrift + ".fits";
-				FITSImage^ expfitsimg = gcnew FITSImage(exparrayimagefile, nullptr, true, true, false, true);
-				array<double, 2>^ exparr = expfitsimg->Image;
-				exparr = JPMath::RotateShiftArray(exparr, -rotation, Double::MaxValue, Double::MaxValue, "bilinear", 0, 0, true);
-				expfitsimg->SetImage(exparr, false, true);
-				expfitsimg->WriteImage(::TypeCode::Double, true);
+				IntsFile = IntsFile->Insert(IntsFile->LastIndexOf("."), "_FSRL");
+				IntsFits->WriteImage(IntsFile, ::TypeCode::Int16, true);
+				FracFile = FracFile->Insert(FracFile->LastIndexOf("."), "_FSRL");
+				FracFits->WriteImage(FracFile, ::TypeCode::Int16, true);
 			}
 
-			IntsFile = IntsFile->Insert(IntsFile->LastIndexOf("."), "_FSRL");
-			IntsFits->WriteImage(IntsFile, ::TypeCode::Int16, true);
-			FracFile = FracFile->Insert(FracFile->LastIndexOf("."), "_FSRL");
-			FracFits->WriteImage(FracFile, ::TypeCode::Int16, true);
+			if (GeneralTransformChck->Checked)
+			{
+				double xshift, yshift, xcenter, ycenter, TCA, TCB, TCC, TCD;
+				xshift = ::Convert::ToDouble(TransformShiftXTxt->Text);
+				yshift = ::Convert::ToDouble(TransformShiftYTxt->Text);
+				xcenter = ::Convert::ToDouble(TransformCenterXTxt->Text);
+				ycenter = ::Convert::ToDouble(TransformCenterYTxt->Text);
+				TCA = ::Convert::ToDouble(TransformCoefATxt->Text);
+				TCB = ::Convert::ToDouble(TransformCoefBTxt->Text);
+				TCC = ::Convert::ToDouble(TransformCoefCTxt->Text);
+				TCD = ::Convert::ToDouble(TransformCoefDTxt->Text);
+
+				for (int j = 0; j < NPts; j++)
+				{
+					x = (IntsFits[0, j] + FracFits[0, j] + 16) + r->NextDouble();//must add 16 to fractionals
+					y = (IntsFits[1, j] + FracFits[1, j] + 16) + r->NextDouble();//and put the centroid somewhere within the 1/32 bin
+
+					xprime = (x - xcenter * 32) * TCA + (y - ycenter * 32) * TCB + xcenter * 32 + xshift * 32;
+					yprime = (x - xcenter * 32) * TCC + (y - ycenter * 32) * TCD + ycenter * 32 + yshift * 32;
+
+					//now need to split out integer and decimal parts back into their own lists...
+					intsx = Math::DivRem(int((xprime)), 32, fracx) * 32;
+					fracx -= 16;//reset frac to be from -16
+					intsy = Math::DivRem(int((yprime)), 32, fracy) * 32;
+					fracy -= 16;//reset frac to be from -16
+					IntsFits[0, j] = intsx;
+					IntsFits[1, j] = intsy;
+					FracFits[0, j] = fracx;
+					FracFits[1, j] = fracy;
+				}
+
+				//now give the shifted/rotated list a new name and save
+				IntsFile = IntsFile->Insert(IntsFile->LastIndexOf("."), "_FSRG");
+				IntsFits->WriteImage(IntsFile, ::TypeCode::Int16, true);
+				FracFile = FracFile->Insert(FracFile->LastIndexOf("."), "_FSRG");
+				FracFits->WriteImage(FracFile, ::TypeCode::Int16, true);
+			}
+
+			UVCONVERTLISTTOIMAGEBATCHFILES[wrkri] = IntsFile;
 		}
-
-		if (GeneralTransformChck->Checked)
+		catch (Exception^ e)
 		{
-			double xshift, yshift, xcenter, ycenter, TCA, TCB, TCC, TCD;
-			xshift = ::Convert::ToDouble(TransformShiftXTxt->Text);
-			yshift = ::Convert::ToDouble(TransformShiftYTxt->Text);
-			xcenter = ::Convert::ToDouble(TransformCenterXTxt->Text);
-			ycenter = ::Convert::ToDouble(TransformCenterYTxt->Text);
-			TCA = ::Convert::ToDouble(TransformCoefATxt->Text);
-			TCB = ::Convert::ToDouble(TransformCoefBTxt->Text);
-			TCC = ::Convert::ToDouble(TransformCoefCTxt->Text);
-			TCD = ::Convert::ToDouble(TransformCoefDTxt->Text);
-
-			for (int j = 0; j < NPts; j++)
-			{
-				x = (IntsFits[0, j] + FracFits[0, j] + 16) + r->NextDouble();//must add 16 to fractionals
-				y = (IntsFits[1, j] + FracFits[1, j] + 16) + r->NextDouble();//and put the centroid somewhere within the 1/32 bin
-
-				xprime = (x - xcenter * 32) * TCA + (y - ycenter * 32) * TCB + xcenter * 32 + xshift * 32;
-				yprime = (x - xcenter * 32) * TCC + (y - ycenter * 32) * TCD + ycenter * 32 + yshift * 32;
-
-				//now need to split out integer and decimal parts back into their own lists...
-				intsx = Math::DivRem(int((xprime)), 32, fracx) * 32;
-				fracx -= 16;//reset frac to be from -16
-				intsy = Math::DivRem(int((yprime)), 32, fracy) * 32;
-				fracy -= 16;//reset frac to be from -16
-				IntsFits[0, j] = intsx;
-				IntsFits[1, j] = intsy;
-				FracFits[0, j] = fracx;
-				FracFits[1, j] = fracy;
-			}
-
-			//now give the shifted/rotated list a new name and save
-			IntsFile = IntsFile->Insert(IntsFile->LastIndexOf("."), "_FSRG");
-			IntsFits->WriteImage(IntsFile, ::TypeCode::Int16, true);
-			FracFile = FracFile->Insert(FracFile->LastIndexOf("."), "_FSRG");
-			FracFits->WriteImage(FracFile, ::TypeCode::Int16, true);
+			MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
 		}
-
-		UVCONVERTLISTTOIMAGEBATCHFILES[wrkri] = IntsFile;
 	}
 }
 
@@ -8756,7 +8767,8 @@ void Form1::UVLoadAllMerged_Click(System::Object^ sender, System::EventArgs^ e)
 	Array::Copy(mergeimgfiles, AUTOLOADIMAGESFILES, mergeimgfiles->Length);
 	AUTOLOADIMAGES = true;
 	IMAGESET = gcnew FITSImageSet();
-	FMLoad->PerformClick();
+	FMLoad_Click(sender, e);
+	//FMLoad->PerformClick();
 }
 
 void Form1::CombineUVCentroidListsMenuItem_Click(System::Object^  sender, System::EventArgs^  e)
@@ -11134,23 +11146,33 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ xydecsname = xyintsname->Replace("XYInts_List", "XYFrac_List");
 			array<double, 2>^ xyints = FITSImage::ReadImageArrayOnly(xyintsname, nullptr, true);
 			array<double, 2>^ xydecs = FITSImage::ReadImageArrayOnly(xydecsname, nullptr, true);
+			array<__int16>^ xcents = gcnew array<__int16>(xyints->GetLength(1));
+			array<__int16>^ ycents = gcnew array<__int16>(xyints->GetLength(1));
 			#pragma omp parallel for
 			for (int j = 0; j < xyints->GetLength(1); j++)
 			{
-				xyints[0, j] = (xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
-				xyints[1, j] = (xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
+				//xyints[0, j] = (xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
+				//xyints[1, j] = (xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
+
+				xcents[j] = __int16(xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
+				ycents[j] = __int16(xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
 			}
 
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing centroid table");
-			array<String^>^ labels = gcnew array<String^>(2) { "XCENTROD", "YCENTROD" };
-			array<TypeCode>^ tcodes = gcnew array<TypeCode>(2) { TypeCode::Int16, TypeCode::Int16 };
-			array<String^>^ units = gcnew array<String^>(2) { "pix*32", "pix*32" };
+			//array<String^>^ labels = gcnew array<String^>(2) { "XCENTROD", "YCENTROD" };
+			//array<TypeCode>^ tcodes = gcnew array<TypeCode>(2) { TypeCode::Int16, TypeCode::Int16 };
+			//array<String^>^ units = gcnew array<String^>(2) { "pix*32", "pix*32" };
 			String^ binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE.fits";
-			FITSBinTable::WriteExtension(binname, "CENTROIDS", true, labels, tcodes, units, nullptr, nullptr, nullptr, xyints);
+			//FITSBinTable::WriteExtension(binname, "CENTROIDS", true, labels, tcodes, units, nullptr, nullptr, nullptr, xyints);
+			//FITSBinTable::WriteExtension(binname, "CENTROIDS", true, labels, units, nullptr, nullptr, nullptr, gcnew array<Object^>(2) { xcents, ycents });
 			zipfiles[i * N + 2] = binname;
 			e->Result = zipfiles;
+			JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable();
+			bt->AddTTYPEEntry("XCENTROD", true, xcents, "pix*32");
+			bt->AddTTYPEEntry("YCENTROD", true, ycents, "pix*32");
+			bt->Write(binname, "CENTROIDS", true);
 
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
@@ -11158,7 +11180,8 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ bjdname = xyintsname->Remove(xyintsname->IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
 			array<double>^ bjds = FITSImage::ReadImageVectorOnly(bjdname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_BJD_TABLE.fits";
-			FITSBinTable::WriteExtension(binname, "BJD", true, "BARYCJD", TypeCode::Double, "JD@SSBC", nullptr, nullptr, nullptr, bjds);
+			//FITSBinTable::WriteExtension(binname, "BJD", true, "BARYCJD", TypeCode::Double, "JD@SSBC", nullptr, nullptr, nullptr, bjds);
+			FITSBinTable::WriteExtension(binname, "BJD", true, "BARYCJD", "JD@SSBC", nullptr, nullptr, nullptr, bjds);
 			zipfiles[i * N + 3] = binname;
 			e->Result = zipfiles;
 
@@ -11168,7 +11191,8 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ flatname = bjdname->Replace("BJDList", "FlatList");
 			array<double>^ flats = FITSImage::ReadImageVectorOnly(flatname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_FLAT_TABLE.fits";
-			FITSBinTable::WriteExtension(binname, "FLAT", true, "FLATWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, flats);
+			//FITSBinTable::WriteExtension(binname, "FLAT", true, "FLATWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, flats);
+			FITSBinTable::WriteExtension(binname, "FLAT", true, "FLATWT", "unity = 1", nullptr, nullptr, nullptr, flats);
 			zipfiles[i * N + 4] = binname;
 			e->Result = zipfiles;
 
@@ -11178,7 +11202,8 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ expname = bjdname->Replace("BJDList", "ExpArrayList");
 			array<double>^ exps = FITSImage::ReadImageVectorOnly(expname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE.fits";
-			FITSBinTable::WriteExtension(binname, "EXPOSURE", true, "EXPMAPWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, exps);
+			//FITSBinTable::WriteExtension(binname, "EXPOSURE", true, "EXPMAPWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, exps);
+			FITSBinTable::WriteExtension(binname, "EXPOSURE", true, "EXPMAPWT", "unity = 1", nullptr, nullptr, nullptr, exps);
 			zipfiles[i * N + 5] = binname;
 			e->Result = zipfiles;
 		}
