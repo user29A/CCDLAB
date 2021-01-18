@@ -11151,9 +11151,6 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			#pragma omp parallel for
 			for (int j = 0; j < xyints->GetLength(1); j++)
 			{
-				//xyints[0, j] = (xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
-				//xyints[1, j] = (xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
-
 				xcents[j] = __int16(xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
 				ycents[j] = __int16(xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
 			}
@@ -11161,17 +11158,12 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing centroid table");
-			//array<String^>^ labels = gcnew array<String^>(2) { "XCENTROD", "YCENTROD" };
-			//array<TypeCode>^ tcodes = gcnew array<TypeCode>(2) { TypeCode::Int16, TypeCode::Int16 };
-			//array<String^>^ units = gcnew array<String^>(2) { "pix*32", "pix*32" };
 			String^ binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE.fits";
-			//FITSBinTable::WriteExtension(binname, "CENTROIDS", true, labels, tcodes, units, nullptr, nullptr, nullptr, xyints);
-			//FITSBinTable::WriteExtension(binname, "CENTROIDS", true, labels, units, nullptr, nullptr, nullptr, gcnew array<Object^>(2) { xcents, ycents });
 			zipfiles[i * N + 2] = binname;
 			e->Result = zipfiles;
 			JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable();
-			bt->AddTTYPEEntry("XCENTROD", true, xcents, "pix*32");
-			bt->AddTTYPEEntry("YCENTROD", true, ycents, "pix*32");
+			bt->SetTTYPEEntries(gcnew array<String^>(2) { "XCENTROID", "YCENTROID" }, gcnew array<String^>(2) { "pix*32", "pix*32" }, gcnew array<Object^>(2) { xcents, ycents });
+			bt->AddExtraHeaderKey("COMMENT", "Centroids are at ", "1/32 pixel precision.");
 			bt->Write(binname, "CENTROIDS", true);
 
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
@@ -11180,10 +11172,12 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ bjdname = xyintsname->Remove(xyintsname->IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
 			array<double>^ bjds = FITSImage::ReadImageVectorOnly(bjdname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_BJD_TABLE.fits";
-			//FITSBinTable::WriteExtension(binname, "BJD", true, "BARYCJD", TypeCode::Double, "JD@SSBC", nullptr, nullptr, nullptr, bjds);
-			FITSBinTable::WriteExtension(binname, "BJD", true, "BARYCJD", "JD@SSBC", nullptr, nullptr, nullptr, bjds);
 			zipfiles[i * N + 3] = binname;
 			e->Result = zipfiles;
+			bt = gcnew JPFITS::FITSBinTable();
+			bt->AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
+			bt->AddExtraHeaderKey("COMMENT", "BaryCenterJD ", "means solar system barycenter.");
+			bt->Write(binname, "BJD", true);
 
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
@@ -11191,10 +11185,11 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ flatname = bjdname->Replace("BJDList", "FlatList");
 			array<double>^ flats = FITSImage::ReadImageVectorOnly(flatname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_FLAT_TABLE.fits";
-			//FITSBinTable::WriteExtension(binname, "FLAT", true, "FLATWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, flats);
-			FITSBinTable::WriteExtension(binname, "FLAT", true, "FLATWT", "unity = 1", nullptr, nullptr, nullptr, flats);
 			zipfiles[i * N + 4] = binname;
 			e->Result = zipfiles;
+			bt = gcnew JPFITS::FITSBinTable();
+			bt->AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
+			bt->Write(binname, "FLAT", true);
 
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
@@ -11202,10 +11197,11 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ expname = bjdname->Replace("BJDList", "ExpArrayList");
 			array<double>^ exps = FITSImage::ReadImageVectorOnly(expname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE.fits";
-			//FITSBinTable::WriteExtension(binname, "EXPOSURE", true, "EXPMAPWT", TypeCode::Double, "unity = 1", nullptr, nullptr, nullptr, exps);
-			FITSBinTable::WriteExtension(binname, "EXPOSURE", true, "EXPMAPWT", "unity = 1", nullptr, nullptr, nullptr, exps);
 			zipfiles[i * N + 5] = binname;
 			e->Result = zipfiles;
+			bt = gcnew JPFITS::FITSBinTable();
+			bt->AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
+			bt->Write(binname, "EXPOSURE", true);
 		}
 		catch (Exception^ e)
 		{

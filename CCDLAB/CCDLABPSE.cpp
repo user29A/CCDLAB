@@ -2770,7 +2770,10 @@ void Form1::WSCSaveScaleTxtBox_KeyDown(System::Object^  sender, System::Windows:
 	objarray[3] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInit->Text) };
 	objarray[4] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInitLB->Text) };
 	objarray[5] = gcnew array<double>(1) { Convert::ToDouble(WCSRotationInitUB->Text) };
-	FITSBinTable::WriteExtension(wcsparamsfile, extname, true, entrylabels, units, nullptr, nullptr, nullptr, objarray);
+	//FITSBinTable::WriteExtension(wcsparamsfile, extname, true, entrylabels, units, nullptr, nullptr, nullptr, objarray);
+	FITSBinTable^ bt = gcnew FITSBinTable();
+	bt->SetTTYPEEntries(entrylabels, units, objarray);
+	bt->Write(wcsparamsfile, extname, true);
 
 	AutoWCSScaleMenuBtn->HideDropDown();
 	AutoWCSScaleMenuBtn->ShowDropDown();
