@@ -2150,7 +2150,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 	array<int>^ count = gcnew array<int>(n);
 	int prog = 0;
 
-	#pragma omp parallel for if (do_parallel)
+	//#pragma omp parallel for if (do_parallel)
 	for (int wrkri = 0; wrkri < IntsFileList->Length; wrkri++)
 	{
 		if (UVCONVERTLISTTOIMAGEBATCH)
