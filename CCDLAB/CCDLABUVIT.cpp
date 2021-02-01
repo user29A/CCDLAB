@@ -1182,6 +1182,7 @@ void Form1::UVITMenu_Click(System::Object^ sender, System::EventArgs^ e)
 	UVFinalizeMoveOrCopyZipChck->Text = (String^)(GetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck"));
 	UVFinalizeMoveOrCopyZipChck->Checked = true;
 	UVFinalizeIncludeTablesChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "UVFinalizeIncludeTablesChck"));
+	UVFinalizeIncludeExpMapChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "UVFinalizeIncludeExpMapChck"));
 
 	L1CentroidPaddingChck->Checked = ::Convert::ToBoolean(GetReg("CCDLAB", "L1CentroidPaddingChck"));
 	PCCentroidPaddingDrop->SelectedIndex = ::Convert::ToInt32(GetReg("CCDLAB", "PCCentroidPaddingDrop"));
@@ -1454,6 +1455,14 @@ void Form1::UVFinalizeMoveOrCopyZipChck_Click(System::Object^  sender, System::E
 		UVFinalizeMoveOrCopyZipChck->Text = UVFinalizeMoveOrCopyZipChck->Text->Replace("Copy", "Move");
 
 	SetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck", UVFinalizeMoveOrCopyZipChck->Text);
+
+	UVITMenu->ShowDropDown();
+	UVFinalizeScienceBtn->ShowDropDown();
+}
+
+void Form1::UVFinalizeIncludeExpMapChck_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	SetReg("CCDLAB", "UVFinalizeIncludeExpMapChck", UVFinalizeIncludeExpMapChck->Checked);
 
 	UVITMenu->ShowDropDown();
 	UVFinalizeScienceBtn->ShowDropDown();
@@ -2150,7 +2159,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 	array<int>^ count = gcnew array<int>(n);
 	int prog = 0;
 
-	//#pragma omp parallel for if (do_parallel)
+	#pragma omp parallel for if (do_parallel)
 	for (int wrkri = 0; wrkri < IntsFileList->Length; wrkri++)
 	{
 		if (UVCONVERTLISTTOIMAGEBATCH)
@@ -5213,11 +5222,11 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 				return;
 		}
 
-		if (HalfWidthXUpD->Value >= 15 || HalfWidthYUpD->Value >= 15)
+		/*if (HalfWidthXUpD->Value >= 15 || HalfWidthYUpD->Value >= 15)
 		{
 			HalfWidthXUpD->Value = 9;
 			HalfWidthYUpD->Value = 9;
-		}
+		}*/
 
 		AUTOLOADIMAGESFILES = gcnew array<String^>(IMAGESET->Count);
 		UVDRIFTBATCHFILES = gcnew array<String^>(IMAGESET->Count);//must fill these here first with XYInts
@@ -11084,10 +11093,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		objdir = fbd->SelectedPath;
 	}
 
-	int N = 2;
-	if (UVFinalizeIncludeTablesChck->Checked)
-		N = 6;
-	array<String^>^ zipfiles = gcnew array<String^>(N * imagefiles->Length);
+	ArrayList^ zipfiles = gcnew ArrayList();
 	//want to get the IMAGE images and their associated exposure maps
 	for (int i = 0; i < imagefiles->Length; i++)
 	{
@@ -11103,26 +11109,30 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			dedrift += "_deDrift";
 		String^ exparrayimagefile = imagefiles[i]->Remove(imagefiles[i]->IndexOf("MASTER")) + "MASTER___ExpArrayImg";
 		exparrayimagefile += dedrift + ".fits";
-		FITSImage^ expfitsimg = gcnew FITSImage(exparrayimagefile, nullptr, true, true, false, true);
-		expfitsimg->CopyHeader(image);
-
-		//need to "debin" the exposure map to be same size as IMAGE
-		array<double, 2>^ debinexp = gcnew array<double, 2>(4800, 4800);
-		#pragma omp parallel for
-		for (int x = 0; x < 4800; x++)
-			for (int y = 0; y < 4800; y++)
-				debinexp[x, y] = expfitsimg->Image[x / 4, y / 4];
-
-		expfitsimg->SetImage(debinexp, false, true);
 
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 			return;
-		UVFinalizeBGWrkr->ReportProgress(0, "Writing exposure array");
-		expfitsimg->FileName = expfitsimg->FileName->Remove(expfitsimg->FileName->IndexOf("MASTER")) + "MASTER_NORM_EXPARRAY.fits";
-		expfitsimg->FilePath = objdir;
-		expfitsimg->WriteImage(TypeCode::Double, true);
-		zipfiles[i * N] = expfitsimg->FullFileName;
-		e->Result = zipfiles;
+		if (UVFinalizeIncludeExpMapChck->Checked)
+		{
+			FITSImage^ expfitsimg = gcnew FITSImage(exparrayimagefile, nullptr, true, true, false, true);
+			expfitsimg->CopyHeader(image);
+
+			//need to "debin" the exposure map to be same size as IMAGE
+			array<double, 2>^ debinexp = gcnew array<double, 2>(4800, 4800);
+			#pragma omp parallel for
+			for (int x = 0; x < 4800; x++)
+				for (int y = 0; y < 4800; y++)
+					debinexp[x, y] = expfitsimg->Image[x / 4, y / 4];
+
+			expfitsimg->SetImage(debinexp, false, true);
+
+			UVFinalizeBGWrkr->ReportProgress(0, "Writing exposure array");
+			expfitsimg->FileName = expfitsimg->FileName->Remove(expfitsimg->FileName->IndexOf("MASTER")) + "MASTER_NORM_EXPARRAY.fits";
+			expfitsimg->FilePath = objdir;
+			expfitsimg->WriteImage(TypeCode::Double, true);
+			zipfiles->Add(expfitsimg->FullFileName);
+			e->Result = zipfiles;
+		}
 
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 			return;
@@ -11131,7 +11141,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		image->FileName = image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_NORMEXP_IMAGE.fits";
 		image->FilePath = objdir;
 		File::Copy(origfilename, image->FullFileName, true);
-		zipfiles[i * N + 1] = image->FullFileName;
+		zipfiles->Add(image->FullFileName);
 		e->Result = zipfiles;
 
 		if (!UVFinalizeIncludeTablesChck->Checked)
@@ -11159,7 +11169,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 				return;
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing centroid table");
 			String^ binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE.fits";
-			zipfiles[i * N + 2] = binname;
+			zipfiles->Add(binname);
 			e->Result = zipfiles;
 			JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable();
 			bt->SetTTYPEEntries(gcnew array<String^>(2) { "XCENTROID", "YCENTROID" }, gcnew array<String^>(2) { "pix*32", "pix*32" }, gcnew array<Object^>(2) { xcents, ycents });
@@ -11172,7 +11182,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ bjdname = xyintsname->Remove(xyintsname->IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
 			array<double>^ bjds = FITSImage::ReadImageVectorOnly(bjdname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_BJD_TABLE.fits";
-			zipfiles[i * N + 3] = binname;
+			zipfiles->Add(binname);
 			e->Result = zipfiles;
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
@@ -11185,7 +11195,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ flatname = bjdname->Replace("BJDList", "FlatList");
 			array<double>^ flats = FITSImage::ReadImageVectorOnly(flatname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_FLAT_TABLE.fits";
-			zipfiles[i * N + 4] = binname;
+			zipfiles->Add(binname);
 			e->Result = zipfiles;
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
@@ -11197,7 +11207,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			String^ expname = bjdname->Replace("BJDList", "ExpArrayList");
 			array<double>^ exps = FITSImage::ReadImageVectorOnly(expname, nullptr, true);
 			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE.fits";
-			zipfiles[i * N + 5] = binname;
+			zipfiles->Add(binname);
 			e->Result = zipfiles;
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
@@ -11213,10 +11223,12 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 
 	String^ ziplist = CCDLABPATH + "tozip.txt";
 	StreamWriter^ sw = gcnew StreamWriter(ziplist);
-	for (int i = 0; i < zipfiles->Length; i++)
-		sw->WriteLine(zipfiles[i]);
+	for (int i = 0; i < zipfiles->Count; i++)
+		sw->WriteLine((String^)zipfiles[i]);
 	sw->Close();
-	String^ fname = FITSImageSet::GetCommonDirectory(zipfiles) + "\\" + DirectoryInfo(FITSImageSet::GetCommonDirectory(zipfiles)).Name;
+
+	//String^ fname = FITSImageSet::GetCommonDirectory(zipfiles) + "\\" + DirectoryInfo(FITSImageSet::GetCommonDirectory(zipfiles)).Name;
+	String^ fname = objdir + "\\" + DirectoryInfo(objdir).Name;
 
 	::Diagnostics::Process^ p = gcnew ::Diagnostics::Process();
 	p->StartInfo->FileName = "c:\\Program Files\\7-Zip\\7zG.exe";
@@ -11225,9 +11237,9 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 	p->WaitForExit();
 	if (p->ExitCode != 0)
 	{
-		for (int j = 0; j < zipfiles->Length; j++)
-			if(zipfiles[j] != "" && File::Exists(zipfiles[j]))
-				File::Delete(zipfiles[j]);
+		for (int j = 0; j < zipfiles->Count; j++)
+			if((String^)zipfiles[j] != "" && File::Exists((String^)zipfiles[j]))
+				File::Delete((String^)zipfiles[j]);
 		File::Delete(fname);
 		WAITBAR->CancelBtn->PerformClick();
 		return;
@@ -11235,8 +11247,8 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 
 	//chck move or copy
 	if (UVFinalizeMoveOrCopyZipChck->Text->Contains("Move"))
-		for (int i = 0; i < zipfiles->Length; i++)
-			File::Delete(zipfiles[i]);
+		for (int i = 0; i < zipfiles->Count; i++)
+			File::Delete((String^)zipfiles[i]);
 
 	//chck delete intermdt
 	if (UVFinalizeDeleteIntrmdtChck->Checked)

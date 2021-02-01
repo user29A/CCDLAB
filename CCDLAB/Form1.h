@@ -1295,6 +1295,7 @@ private: System::ComponentModel::BackgroundWorker^  UVFinalizeBGWrkr;
 private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeDeleteIntrmdtChck;
 private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeMoveOrCopyZipChck;
 private: System::Windows::Forms::ToolStripMenuItem^  UVAutoPSFPostMergeChck;
+	private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeIncludeExpMapChck;
 
 
 
@@ -2365,6 +2366,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->TEST_TEXT_BOX = (gcnew System::Windows::Forms::TextBox());
 			this->DriftFromPCPSTrackBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
 			this->UVFinalizeBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
+			this->UVFinalizeIncludeExpMapChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->ImageWindowCntxt->SuspendLayout();
 			this->ImageFingerPointContext->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->HalfWidthXUpD))->BeginInit();
@@ -8009,7 +8011,7 @@ private: System::ComponentModel::IContainer^  components;
 			});
 			this->FMLoad->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMLoad.Image")));
 			this->FMLoad->Name = L"FMLoad";
-			this->FMLoad->Size = System::Drawing::Size(180, 22);
+			this->FMLoad->Size = System::Drawing::Size(152, 22);
 			this->FMLoad->Text = L"&Open File(s)";
 			this->FMLoad->DoubleClick += gcnew System::EventHandler(this, &Form1::FMLoad_Click);
 			// 
@@ -8039,7 +8041,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMAdd->Enabled = false;
 			this->FMAdd->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMAdd.Image")));
 			this->FMAdd->Name = L"FMAdd";
-			this->FMAdd->Size = System::Drawing::Size(180, 22);
+			this->FMAdd->Size = System::Drawing::Size(152, 22);
 			this->FMAdd->Text = L"&Add File(s)";
 			this->FMAdd->Click += gcnew System::EventHandler(this, &Form1::FMAdd_Click);
 			// 
@@ -8048,7 +8050,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMReload->Enabled = false;
 			this->FMReload->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMReload.Image")));
 			this->FMReload->Name = L"FMReload";
-			this->FMReload->Size = System::Drawing::Size(180, 22);
+			this->FMReload->Size = System::Drawing::Size(152, 22);
 			this->FMReload->Text = L"&Reload File(s)";
 			this->FMReload->Click += gcnew System::EventHandler(this, &Form1::FMReload_Click);
 			// 
@@ -8056,20 +8058,20 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->FMRecentFiles->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMRecentFiles.Image")));
 			this->FMRecentFiles->Name = L"FMRecentFiles";
-			this->FMRecentFiles->Size = System::Drawing::Size(180, 22);
+			this->FMRecentFiles->Size = System::Drawing::Size(152, 22);
 			this->FMRecentFiles->Text = L"Recent Files";
 			this->FMRecentFiles->Visible = false;
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(177, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(149, 6);
 			// 
 			// FMFind
 			// 
 			this->FMFind->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMFind.Image")));
 			this->FMFind->Name = L"FMFind";
-			this->FMFind->Size = System::Drawing::Size(180, 22);
+			this->FMFind->Size = System::Drawing::Size(152, 22);
 			this->FMFind->Text = L"&Find File(s)";
 			this->FMFind->Click += gcnew System::EventHandler(this, &Form1::FMFind_Click);
 			// 
@@ -8078,7 +8080,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMViewFound->Enabled = false;
 			this->FMViewFound->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMViewFound.Image")));
 			this->FMViewFound->Name = L"FMViewFound";
-			this->FMViewFound->Size = System::Drawing::Size(180, 22);
+			this->FMViewFound->Size = System::Drawing::Size(152, 22);
 			this->FMViewFound->Text = L"&View List";
 			this->FMViewFound->Click += gcnew System::EventHandler(this, &Form1::FMViewFound_Click);
 			// 
@@ -8086,21 +8088,21 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->FMOpenFound->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMOpenFound.Image")));
 			this->FMOpenFound->Name = L"FMOpenFound";
-			this->FMOpenFound->Size = System::Drawing::Size(180, 22);
+			this->FMOpenFound->Size = System::Drawing::Size(152, 22);
 			this->FMOpenFound->Text = L"Open &List";
 			this->FMOpenFound->Click += gcnew System::EventHandler(this, &Form1::TBOpenFound_Click);
 			// 
 			// toolStripSeparator3
 			// 
 			this->toolStripSeparator3->Name = L"toolStripSeparator3";
-			this->toolStripSeparator3->Size = System::Drawing::Size(177, 6);
+			this->toolStripSeparator3->Size = System::Drawing::Size(149, 6);
 			// 
 			// FMSave
 			// 
 			this->FMSave->Enabled = false;
 			this->FMSave->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMSave.Image")));
 			this->FMSave->Name = L"FMSave";
-			this->FMSave->Size = System::Drawing::Size(180, 22);
+			this->FMSave->Size = System::Drawing::Size(152, 22);
 			this->FMSave->Text = L"&Save File";
 			this->FMSave->Click += gcnew System::EventHandler(this, &Form1::FMSave_Click);
 			// 
@@ -8109,20 +8111,20 @@ private: System::ComponentModel::IContainer^  components;
 			this->FMSaveBatch->Enabled = false;
 			this->FMSaveBatch->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMSaveBatch.Image")));
 			this->FMSaveBatch->Name = L"FMSaveBatch";
-			this->FMSaveBatch->Size = System::Drawing::Size(180, 22);
+			this->FMSaveBatch->Size = System::Drawing::Size(152, 22);
 			this->FMSaveBatch->Text = L"Save File &Batch";
 			this->FMSaveBatch->Click += gcnew System::EventHandler(this, &Form1::TBSaveBatch_Click);
 			// 
 			// toolStripSeparator4
 			// 
 			this->toolStripSeparator4->Name = L"toolStripSeparator4";
-			this->toolStripSeparator4->Size = System::Drawing::Size(177, 6);
+			this->toolStripSeparator4->Size = System::Drawing::Size(149, 6);
 			// 
 			// FMQuit
 			// 
 			this->FMQuit->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"FMQuit.Image")));
 			this->FMQuit->Name = L"FMQuit";
-			this->FMQuit->Size = System::Drawing::Size(180, 22);
+			this->FMQuit->Size = System::Drawing::Size(152, 22);
 			this->FMQuit->Text = L"&QUIT";
 			this->FMQuit->Click += gcnew System::EventHandler(this, &Form1::FMQuit_Click);
 			// 
@@ -10355,9 +10357,9 @@ private: System::ComponentModel::IContainer^  components;
 			// UVFinalizeScienceBtn
 			// 
 			this->UVFinalizeScienceBtn->DoubleClickEnabled = true;
-			this->UVFinalizeScienceBtn->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
-				this->UVFinalizeIncludeTablesChck,
-					this->UVFinalizeDeleteIntrmdtChck, this->UVFinalizeMoveOrCopyZipChck
+			this->UVFinalizeScienceBtn->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(4) {
+				this->UVFinalizeIncludeExpMapChck,
+					this->UVFinalizeIncludeTablesChck, this->UVFinalizeDeleteIntrmdtChck, this->UVFinalizeMoveOrCopyZipChck
 			});
 			this->UVFinalizeScienceBtn->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"UVFinalizeScienceBtn.Image")));
 			this->UVFinalizeScienceBtn->Name = L"UVFinalizeScienceBtn";
@@ -10369,15 +10371,15 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->UVFinalizeIncludeTablesChck->CheckOnClick = true;
 			this->UVFinalizeIncludeTablesChck->Name = L"UVFinalizeIncludeTablesChck";
-			this->UVFinalizeIncludeTablesChck->Size = System::Drawing::Size(242, 22);
-			this->UVFinalizeIncludeTablesChck->Text = L"Include Centroid FITS bin-tables";
+			this->UVFinalizeIncludeTablesChck->Size = System::Drawing::Size(238, 22);
+			this->UVFinalizeIncludeTablesChck->Text = L"Include Centroid FITS BinTables";
 			this->UVFinalizeIncludeTablesChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeIncludeTablesChck_Click);
 			// 
 			// UVFinalizeDeleteIntrmdtChck
 			// 
 			this->UVFinalizeDeleteIntrmdtChck->CheckOnClick = true;
 			this->UVFinalizeDeleteIntrmdtChck->Name = L"UVFinalizeDeleteIntrmdtChck";
-			this->UVFinalizeDeleteIntrmdtChck->Size = System::Drawing::Size(242, 22);
+			this->UVFinalizeDeleteIntrmdtChck->Size = System::Drawing::Size(238, 22);
 			this->UVFinalizeDeleteIntrmdtChck->Text = L"Delete Intermediate Directories";
 			this->UVFinalizeDeleteIntrmdtChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeDeleteIntrmdtChck_Click);
 			// 
@@ -10385,7 +10387,7 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->UVFinalizeMoveOrCopyZipChck->CheckOnClick = true;
 			this->UVFinalizeMoveOrCopyZipChck->Name = L"UVFinalizeMoveOrCopyZipChck";
-			this->UVFinalizeMoveOrCopyZipChck->Size = System::Drawing::Size(242, 22);
+			this->UVFinalizeMoveOrCopyZipChck->Size = System::Drawing::Size(238, 22);
 			this->UVFinalizeMoveOrCopyZipChck->Text = L"Move Products to ZIP Archive";
 			this->UVFinalizeMoveOrCopyZipChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeMoveOrCopyZipChck_Click);
 			// 
@@ -10786,6 +10788,14 @@ private: System::ComponentModel::IContainer^  components;
 			this->UVFinalizeBGWrkr->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &Form1::UVFinalizeBGWrkr_DoWork);
 			this->UVFinalizeBGWrkr->ProgressChanged += gcnew System::ComponentModel::ProgressChangedEventHandler(this, &Form1::UVFinalizeBGWrkr_ProgressChanged);
 			this->UVFinalizeBGWrkr->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &Form1::UVFinalizeBGWrkr_RunWorkerCompleted);
+			// 
+			// UVFinalizeIncludeExpMapChck
+			// 
+			this->UVFinalizeIncludeExpMapChck->CheckOnClick = true;
+			this->UVFinalizeIncludeExpMapChck->Name = L"UVFinalizeIncludeExpMapChck";
+			this->UVFinalizeIncludeExpMapChck->Size = System::Drawing::Size(238, 22);
+			this->UVFinalizeIncludeExpMapChck->Text = L"Include Exposure Maps";
+			this->UVFinalizeIncludeExpMapChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeIncludeExpMapChck_Click);
 			// 
 			// Form1
 			// 
@@ -11825,9 +11835,10 @@ private: System::Void UVFinalizeDeleteIntrmdtChck_Click(System::Object^  sender,
 private: System::Void UVFinalizeMoveOrCopyZipChck_Click(System::Object^  sender, System::EventArgs^  e);
 private: System::Void UVAutoPSFPostMergeChck_Click(System::Object^  sender, System::EventArgs^  e);
 private: System::Void Form1_Shown(System::Object^  sender, System::EventArgs^  e);
+private: System::Void UVFinalizeIncludeExpMapChck_Click(System::Object^  sender, System::EventArgs^  e);
 
-	
-	
-	
+
+
+
 };
 }
