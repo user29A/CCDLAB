@@ -45,12 +45,37 @@ void Form1::SubImageWindow_Paint(System::Object^  sender, System::Windows::Forms
 				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush,(float)((float(FNDCOORDS[i,0])-float(XSUBRANGE[0])+0.5)*subxsc-3.0),(float)((float(FNDCOORDS[i,1])-float(YSUBRANGE[0])+0.5)*subysc-3.0),7.0,7.0);
 	}
 
-	if (ShowPSEChck->Checked && PSERECTS != nullptr)
+	if (ShowPSEChck->Checked && PSESRECTS != nullptr)
 	{
-		IMAGEWINDOWPEN->Color = Color::Cyan;
-		for (int i = 0; i < PSE->N_Sources; i++)
-			if (PSE->Centroids_X[i] + 1 >= XSUBRANGE[0] && PSE->Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE->Length-1] && PSE->Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSE->Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE->Length-1])
-				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush,(float)((float(PSE->Centroids_X[i])-float(XSUBRANGE[0])+0.5)*subxsc-3.0),(float)((float(PSE->Centroids_Y[i])-float(YSUBRANGE[0])+0.5)*subysc-3.0),7.0,7.0);
+		IMAGEWINDOWPEN->Width = 2;
+		int rem = 0;
+
+		if (!PSESPLOTALL)
+		{
+			Math::DivRem(PSESINDEX, PSERECTCOLOURS->Length, rem);
+			IMAGEWINDOWPEN->Color = PSERECTCOLOURS[rem];
+			for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+				if (PSES[PSESINDEX]->Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[PSESINDEX]->Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE->Length - 1] && PSES[PSESINDEX]->Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[PSESINDEX]->Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE->Length - 1])
+					e->Graphics->DrawRectangle(IMAGEWINDOWPEN, (float)((float(PSES[PSESINDEX]->Centroids_X[i]) - float(XSUBRANGE[0]) + 0.5)*subxsc - 3.0), (float)((float(PSES[PSESINDEX]->Centroids_Y[i]) - float(YSUBRANGE[0]) + 0.5)*subysc - 3.0), 7.0, 7.0);
+		}
+		else
+		{
+			for (int k = 0; k < PSES->Length; k++)
+			{
+				Math::DivRem(k, PSERECTCOLOURS->Length, rem);
+				IMAGEWINDOWPEN->Color = PSERECTCOLOURS[rem];
+				for (int i = 0; i < PSES[k]->N_Sources; i++)
+					if (PSES[k]->Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[k]->Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE->Length - 1] && PSES[k]->Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[k]->Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE->Length - 1])
+						e->Graphics->DrawRectangle(IMAGEWINDOWPEN, (float)((float(PSES[k]->Centroids_X[i]) - float(XSUBRANGE[0]) + 0.5)*subxsc - 3.0), (float)((float(PSES[k]->Centroids_Y[i]) - float(YSUBRANGE[0]) + 0.5)*subysc - 3.0), 7.0, 7.0);
+			}
+		}
+
+		IMAGEWINDOWPEN->Width = 1;
+
+		/*IMAGEWINDOWPEN->Color = Color::Cyan;
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+			if (PSES[PSESINDEX]->Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[PSESINDEX]->Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE->Length - 1] && PSES[PSESINDEX]->Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[PSESINDEX]->Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE->Length - 1])
+				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush, (float)((float(PSES[PSESINDEX]->Centroids_X[i]) - float(XSUBRANGE[0]) + 0.5)*subxsc - 3.0), (float)((float(PSES[PSESINDEX]->Centroids_Y[i]) - float(YSUBRANGE[0]) + 0.5)*subysc - 3.0), 7.0, 7.0);*/
 	}
 
 	if (MARKCOORDS != nullptr && MARKCOORDRECTS != nullptr)
@@ -121,11 +146,28 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			e->Graphics->DrawRectangles(IMAGEWINDOWPEN,MANREGCOORDRECTS);
 		}
 
-		if (ShowPSEChck->Checked && PSERECTS != nullptr)
+		if (ShowPSEChck->Checked && PSESRECTS != nullptr)
 		{
 			IMAGEWINDOWPEN->Width = 2;
-			IMAGEWINDOWPEN->Color = Color::OrangeRed;
-			e->Graphics->DrawRectangles(IMAGEWINDOWPEN,PSERECTS);
+			int rem = 0;
+
+			if (!PSESPLOTALL)
+			{
+				Math::DivRem(PSESINDEX, PSERECTCOLOURS->Length, rem);
+				IMAGEWINDOWPEN->Color = PSERECTCOLOURS[rem];
+				e->Graphics->DrawRectangles(IMAGEWINDOWPEN, PSESRECTS[PSESINDEX]);
+			}
+			else
+			{
+				for (int i = 0; i < PSES->Length; i++)
+				{
+					Math::DivRem(i, PSERECTCOLOURS->Length, rem);
+					IMAGEWINDOWPEN->Color = PSERECTCOLOURS[rem];
+					e->Graphics->DrawRectangles(IMAGEWINDOWPEN, PSESRECTS[i]);
+				}
+				//PSESPLOTALL = false;
+			}
+
 			IMAGEWINDOWPEN->Width = 1;
 		}
 
@@ -149,9 +191,9 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 				IMAGEWINDOWPEN->Width = 2;
 			}
 			if (COG_CURSOR || PSEEllipticalROI->Checked)
-				e->Graphics->DrawEllipse(IMAGEWINDOWPEN,float(XSUBRANGE[0])*xsc,float(YSUBRANGE[0])*ysc,float(SUBIMAGE_HWX*2+1)*xsc,float(SUBIMAGE_HWY*2+1)*ysc);
+				e->Graphics->DrawEllipse(IMAGEWINDOWPEN, float(XSUBRANGE[0])*xsc, float(YSUBRANGE[0])*ysc, float(SUBIMAGE_HWX * 2 + 1)*xsc, float(SUBIMAGE_HWY * 2 + 1)*ysc);
 			else
-				e->Graphics->DrawRectangle(IMAGEWINDOWPEN,float(XSUBRANGE[0])*xsc,float(YSUBRANGE[0])*ysc,float(SUBIMAGE_HWX*2+1)*xsc,float(SUBIMAGE_HWY*2+1)*ysc);
+				e->Graphics->DrawRectangle(IMAGEWINDOWPEN, float(XSUBRANGE[0])*xsc, float(YSUBRANGE[0])*ysc, float(SUBIMAGE_HWX * 2 + 1)*xsc, float(SUBIMAGE_HWY * 2 + 1)*ysc);
 					
 			IMAGEWINDOWPEN->Width = 1;//reset for other operations...only set = 2 for cursor box draw
 		}
@@ -159,8 +201,8 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 		if (ShowCrosshair->Checked)
 		{
 			IMAGEWINDOWPEN->Color = Color::Red;
-			e->Graphics->DrawLine(IMAGEWINDOWPEN,(float(SubImageSlideX->Value-1.f) + 0.5f)*xsc,0.f,(float(SubImageSlideX->Value-1.f) + 0.5f)*xsc,float(ImageWindow->Size.Height));//vertical
-			e->Graphics->DrawLine(IMAGEWINDOWPEN,0.f,(float(SubImageSlideY->Value-1.f) + 0.5f)*ysc,float(ImageWindow->Size.Width),(float(SubImageSlideY->Value-1.f) + 0.5f)*ysc);
+			e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(SubImageSlideX->Value - 1.f) + 0.5f)*xsc, 0.f, (float(SubImageSlideX->Value - 1.f) + 0.5f)*xsc, float(ImageWindow->Size.Height));//vertical
+			e->Graphics->DrawLine(IMAGEWINDOWPEN, 0.f, (float(SubImageSlideY->Value - 1.f) + 0.5f)*ysc, float(ImageWindow->Size.Width), (float(SubImageSlideY->Value - 1.f) + 0.5f)*ysc);
 		}
 
 		if (ImageWndwPlotRadialVector->Checked && !IWLCK || PLOTRADIALLINE)
@@ -183,7 +225,6 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			Drawing::Pen^ pn = gcnew Drawing::Pen(lgb);
 			pn->Width = 2;
 			e->Graphics->DrawLine(pn, (float(xb) + 0.5f) * xsc, (float(yb) + 0.5f) * ysc, (float(xt) + 0.5f) * xsc, (float(yt) + 0.5f) * ysc);
-			//e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xb) + 0.5f)*xsc, (float(yb) + 0.5f)*ysc, (float(xt) + 0.5f)*xsc, (float(yt) + 0.5f)*ysc);
 			IMAGEWINDOWPEN->Width = 2;
 			e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xr) + 0.5f) * xsc, (float(yr) + 0.5f) * ysc, (float(xl) + 0.5f) * xsc, (float(yl) + 0.5f) * ysc);
 			IMAGEWINDOWPEN->Width = 1;
@@ -250,8 +291,6 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 
 			IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(25, 255, 0, 0));
 			e->Graphics->FillPolygon(IMAGEWINDOWBRUSH, ROI_PATH_POINTS);
-
-			//e->Graphics->DrawRectangles(IMAGEWINDOWPEN, ROI_PATH_RECTS);
 		}
 	}
 	catch(...)
@@ -263,9 +302,9 @@ void Form1::MAKEPSERECTS()
 {
 	float xsc = (float(ImageWindow->Size.Width) / (float)IMAGESET[FILELISTINDEX]->Width);
 	float ysc = (float(ImageWindow->Size.Height) / (float)IMAGESET[FILELISTINDEX]->Height);
-	PSERECTS = gcnew array<Rectangle, 1>(PSE->N_Sources);
-	for (int i = 0; i < PSE->N_Sources; i++)
-		PSERECTS[i] = Rectangle(int((float(PSE->Centroids_X[i]) + 0.5) * xsc - 3), int((float(PSE->Centroids_Y[i]) + 0.5) * ysc - 3), 7, 7);
+	PSESRECTS[PSESINDEX] = gcnew array<Rectangle, 1>(PSES[PSESINDEX]->N_Sources);
+	for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+		PSESRECTS[PSESINDEX][i] = Rectangle(int((float(PSES[PSESINDEX]->Centroids_X[i]) + 0.5) * xsc - 3), int((float(PSES[PSESINDEX]->Centroids_Y[i]) + 0.5) * ysc - 3), 7, 7);
 }
 
 void Form1::MAKEMARKCOORDRECTS()
@@ -282,12 +321,8 @@ void Form1::MAKEROIPATHPOINTS()
 	float xsc = (float(ImageWindow->Size.Width) / (float)IMAGESET[FILELISTINDEX]->Width);
 	float ysc = (float(ImageWindow->Size.Height) / (float)IMAGESET[FILELISTINDEX]->Height);
 	ROI_PATH_POINTS = gcnew array<Point>(ROI_PATH_COORDS->GetLength(1));
-	//ROI_PATH_RECTS = gcnew array<Rectangle>(ROI_PATH_COORDS->GetLength(1));
 	for (int i = 0; i < ROI_PATH_POINTS->Length; i++)
-	{
 		ROI_PATH_POINTS[i] = Point(int((float(ROI_PATH_COORDS[0, i]) + 0.5)*xsc), int((float(ROI_PATH_COORDS[1, i]) + 0.5)*ysc));
-		//ROI_PATH_RECTS[i] = Rectangle(int((float(ROI_PATH_COORDS[0, i]) + 0.5)*xsc - 1), int((float(ROI_PATH_COORDS[1, i]) + 0.5)*ysc - 1), 3, 3);
-	}
 }
 
 void Form1::SpAxesUpD()
@@ -759,7 +794,7 @@ void Form1::ImageWindow_MouseUp(System::Object^  sender, System::Windows::Forms:
 					 }
 
 					 array<double, 2>^ subim = gcnew array<double, 2>(SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWX * 2 + 1);
-					 PSE = gcnew JPFITS::SourceExtractor();
+					 PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
 
 					 double pad = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("PADOFSET")) * Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("IMAGPREC"));
 
@@ -767,9 +802,9 @@ void Form1::ImageWindow_MouseUp(System::Object^  sender, System::Windows::Forms:
 					 {
 						 int xind, yind;
 						 subim = IMAGESET[0]->GetSubImage(MANREGCOORDS[i, 0], MANREGCOORDS[i, 1], SUBIMAGE_HWX, SUBIMAGE_HWX);
-						 PSE->Extract_Sources(subim, 0, JPMath::Max(subim, xind, yind, false) - 1, JPMath::Max(subim, xind, yind, false) + 1, 0, ::Double::MaxValue, false, 2, 2, false, "", nullptr, false);
-						 UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] = PSE->Centroids_X[0] + double(MANREGCOORDS[i, 0] - SUBIMAGE_HWX) - pad;
-						 UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] = PSE->Centroids_Y[0] + double(MANREGCOORDS[i, 1] - SUBIMAGE_HWY) - pad;
+						 PSES[PSESINDEX]->Extract_Sources(subim, 0, JPMath::Max(subim, xind, yind, false) - 1, JPMath::Max(subim, xind, yind, false) + 1, 0, ::Double::MaxValue, false, 2, 2, false, "", nullptr, false);
+						 UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] = PSES[PSESINDEX]->Centroids_X[0] + double(MANREGCOORDS[i, 0] - SUBIMAGE_HWX) - pad;
+						 UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] = PSES[PSESINDEX]->Centroids_Y[0] + double(MANREGCOORDS[i, 1] - SUBIMAGE_HWY) - pad;
 						 UVREGISTRATION_ROTATION_CENTROIDS[i, 0] = UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] + pad;//copy these for rotating
 						 UVREGISTRATION_ROTATION_CENTROIDS[i, 1] = UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] + pad;
 					 }
@@ -1922,19 +1957,19 @@ void Form1::SubImMarkCoordClearContained_Click(System::Object^  sender, System::
 
 void Form1::SubImMarkCoordContainedPSE_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	if (PSE == nullptr)
+	if (PSES == nullptr)
 		return;
 
-	if (PSE->N_Sources == 0)
+	if (PSES[PSESINDEX]->N_Sources == 0)
 		return;
 
 	ArrayList^ contained = gcnew ArrayList();
 
-	for (int i = 0; i < PSE->N_Sources; i++)
-		if (PSE->Centroids_X[i] > XSUBRANGE[0] && PSE->Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSE->Centroids_Y[i] > YSUBRANGE[0] && PSE->Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
+	for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+		if (PSES[PSESINDEX]->Centroids_X[i] > XSUBRANGE[0] && PSES[PSESINDEX]->Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSES[PSESINDEX]->Centroids_Y[i] > YSUBRANGE[0] && PSES[PSESINDEX]->Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
 		{
-			contained->Add(PSE->Centroids_X[i]);
-			contained->Add(PSE->Centroids_Y[i]);
+			contained->Add(PSES[PSESINDEX]->Centroids_X[i]);
+			contained->Add(PSES[PSESINDEX]->Centroids_Y[i]);
 		}
 
 	if (contained->Count == 0)

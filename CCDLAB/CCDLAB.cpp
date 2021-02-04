@@ -111,6 +111,8 @@ void Form1::InitializeVars(array<String^>^ startargs)
 	FNDCOORDS = gcnew array<int,2>(1,2);
 	FNDCOORDRECTS = gcnew array<Rectangle,1>(1);
 
+	PSERECTCOLOURS = gcnew array<Color>(14) { Color::OrangeRed, Color::Cyan, Color::LawnGreen, Color::BlueViolet, Color::Yellow, Color::DeepPink, Color::Aqua, Color::Crimson, Color::DarkGoldenrod, Color::Red, Color::Chartreuse, Color::Gold, Color::Blue, Color::HotPink };
+
 	RADIALLINEBOXPOINTS = gcnew array<Drawing::Point>(4);
 	RADIALPLOT_SETPHI = false;
 
@@ -6240,7 +6242,7 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 		ShowFoundCoordsChck->Checked = false;
 		ImageWindow->Refresh();
 
-		PSE = gcnew JPFITS::SourceExtractor();
+		PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
 		array<double>^ x = gcnew array<double>(WCS_RA->Length);//centroid (pixels)
 		array<double>^ y = gcnew array<double>(WCS_RA->Length);//centroid (pixels)
 		for (int i = 0; i < WCS_RA->Length; i++)
@@ -6248,9 +6250,9 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 			x[i] = (double)MANREGCOORDS[i, 0];
 			y[i] = (double)MANREGCOORDS[i, 1];
 		}
-		PSE->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, x, y, 2, false, "");
-		x = PSE->Centroids_X;
-		y = PSE->Centroids_Y;
+		PSES[PSESINDEX]->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, x, y, 2, false, "");
+		x = PSES[PSESINDEX]->Centroids_X;
+		y = PSES[PSESINDEX]->Centroids_Y;
 
 		WCS = gcnew JPFITS::WorldCoordinateSolution();
 		WCS->Solve_WCS("TAN", x, y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]);

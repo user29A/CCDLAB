@@ -1296,6 +1296,16 @@ private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeDeleteIntrmdtChck
 private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeMoveOrCopyZipChck;
 private: System::Windows::Forms::ToolStripMenuItem^  UVAutoPSFPostMergeChck;
 	private: System::Windows::Forms::ToolStripMenuItem^  UVFinalizeIncludeExpMapChck;
+	private: System::Windows::Forms::ComboBox^  PSEDrop;
+	private: System::Windows::Forms::ContextMenuStrip^  PSEDropContextMenu;
+	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextAdd;
+		private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextRemove;
+		private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextClearAll;
+	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextPlotAll;
+
+
+
+
 
 
 
@@ -1794,6 +1804,12 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEFitResultCntxtCopySelected = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->PSEFitResultCntxtCopyAll = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->FindSourcesPnl = (gcnew System::Windows::Forms::GroupBox());
+			this->PSESigmaCountBtn = (gcnew System::Windows::Forms::Button());
+			this->PSEDrop = (gcnew System::Windows::Forms::ComboBox());
+			this->PSEDropContextMenu = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
+			this->PSEDropContextAdd = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->PSEDropContextRemove = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->PSEDropContextClearAll = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->PSEDrawROI = (gcnew System::Windows::Forms::CheckBox());
 			this->DrawROIContextMenu = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
 			this->SaveROIContext = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -1808,7 +1824,6 @@ private: System::ComponentModel::IContainer^  components;
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->PSEEllipticalROI = (gcnew System::Windows::Forms::CheckBox());
 			this->PSESeachROIOnlyChck = (gcnew System::Windows::Forms::CheckBox());
-			this->PSESigmaCountBtn = (gcnew System::Windows::Forms::Button());
 			this->PSEKernelRadUpD = (gcnew System::Windows::Forms::NumericUpDown());
 			this->PSEAutoBackgroundChck = (gcnew System::Windows::Forms::CheckBox());
 			this->SavePSChck = (gcnew System::Windows::Forms::CheckBox());
@@ -2316,6 +2331,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->BackgroundCountsPixelFrameTxt = (gcnew System::Windows::Forms::ToolStripTextBox());
 			this->ExtractROICentroidListMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->UVFinalizeScienceBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->UVFinalizeIncludeExpMapChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->UVFinalizeIncludeTablesChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->UVFinalizeDeleteIntrmdtChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->UVFinalizeMoveOrCopyZipChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2366,7 +2382,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->TEST_TEXT_BOX = (gcnew System::Windows::Forms::TextBox());
 			this->DriftFromPCPSTrackBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
 			this->UVFinalizeBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
-			this->UVFinalizeIncludeExpMapChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->PSEDropContextPlotAll = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->ImageWindowCntxt->SuspendLayout();
 			this->ImageFingerPointContext->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->HalfWidthXUpD))->BeginInit();
@@ -2392,6 +2408,7 @@ private: System::ComponentModel::IContainer^  components;
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->COGIgnoreNPtsUpD))->BeginInit();
 			this->PSEFitResultsCntxt->SuspendLayout();
 			this->FindSourcesPnl->SuspendLayout();
+			this->PSEDropContextMenu->SuspendLayout();
 			this->DrawROIContextMenu->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->PSESaturationUpD))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->PSESeparationUpD))->BeginInit();
@@ -2930,6 +2947,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->SubImagePanel->Controls->Add(this->HalfWidthXUpD);
 			this->SubImagePanel->Controls->Add(this->HalfWidthStatic);
 			this->SubImagePanel->Enabled = false;
+			this->SubImagePanel->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
 			this->SubImagePanel->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->SubImagePanel->Location = System::Drawing::Point(1150, 583);
@@ -4908,7 +4926,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->ROIOnlyPnl->Controls->Add(this->SubImgROITab);
 			this->ROIOnlyPnl->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->ROIOnlyPnl->Location = System::Drawing::Point(6, 205);
+			this->ROIOnlyPnl->Location = System::Drawing::Point(6, 198);
 			this->ROIOnlyPnl->Name = L"ROIOnlyPnl";
 			this->ROIOnlyPnl->Size = System::Drawing::Size(305, 120);
 			this->ROIOnlyPnl->TabIndex = 3;
@@ -5066,9 +5084,9 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->PSEFitResultListBox->ContextMenuStrip = this->PSEFitResultsCntxt;
 			this->PSEFitResultListBox->FormattingEnabled = true;
-			this->PSEFitResultListBox->Location = System::Drawing::Point(6, 336);
+			this->PSEFitResultListBox->Location = System::Drawing::Point(6, 320);
 			this->PSEFitResultListBox->Name = L"PSEFitResultListBox";
-			this->PSEFitResultListBox->Size = System::Drawing::Size(305, 160);
+			this->PSEFitResultListBox->Size = System::Drawing::Size(305, 173);
 			this->PSEFitResultListBox->TabIndex = 2;
 			this->PSEFitResultListBox->UseTabStops = false;
 			this->PSEFitResultListBox->Visible = false;
@@ -5101,6 +5119,8 @@ private: System::ComponentModel::IContainer^  components;
 			// FindSourcesPnl
 			// 
 			this->FindSourcesPnl->BackColor = System::Drawing::Color::LightGray;
+			this->FindSourcesPnl->Controls->Add(this->PSESigmaCountBtn);
+			this->FindSourcesPnl->Controls->Add(this->PSEDrop);
 			this->FindSourcesPnl->Controls->Add(this->PSEDrawROI);
 			this->FindSourcesPnl->Controls->Add(this->PSESaturationUpD);
 			this->FindSourcesPnl->Controls->Add(this->label24);
@@ -5112,7 +5132,6 @@ private: System::ComponentModel::IContainer^  components;
 			this->FindSourcesPnl->Controls->Add(this->label3);
 			this->FindSourcesPnl->Controls->Add(this->PSEEllipticalROI);
 			this->FindSourcesPnl->Controls->Add(this->PSESeachROIOnlyChck);
-			this->FindSourcesPnl->Controls->Add(this->PSESigmaCountBtn);
 			this->FindSourcesPnl->Controls->Add(this->PSEKernelRadUpD);
 			this->FindSourcesPnl->Controls->Add(this->PSEAutoBackgroundChck);
 			this->FindSourcesPnl->Controls->Add(this->SavePSChck);
@@ -5140,6 +5159,58 @@ private: System::ComponentModel::IContainer^  components;
 			this->FindSourcesPnl->TabStop = false;
 			this->FindSourcesPnl->Text = L"Point Source Extraction";
 			// 
+			// PSESigmaCountBtn
+			// 
+			this->PSESigmaCountBtn->Location = System::Drawing::Point(104, 103);
+			this->PSESigmaCountBtn->Name = L"PSESigmaCountBtn";
+			this->PSESigmaCountBtn->Size = System::Drawing::Size(58, 22);
+			this->PSESigmaCountBtn->TabIndex = 14;
+			this->PSESigmaCountBtn->Text = L"SN";
+			this->PSESigmaCountBtn->UseVisualStyleBackColor = true;
+			this->PSESigmaCountBtn->Click += gcnew System::EventHandler(this, &Form1::PSESigmaCountBtn_Click);
+			// 
+			// PSEDrop
+			// 
+			this->PSEDrop->ContextMenuStrip = this->PSEDropContextMenu;
+			this->PSEDrop->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->PSEDrop->Enabled = false;
+			this->PSEDrop->FormattingEnabled = true;
+			this->PSEDrop->Location = System::Drawing::Point(9, 15);
+			this->PSEDrop->Name = L"PSEDrop";
+			this->PSEDrop->Size = System::Drawing::Size(85, 21);
+			this->PSEDrop->TabIndex = 59;
+			this->PSEDrop->SelectedIndexChanged += gcnew System::EventHandler(this, &Form1::PSEDrop_SelectedIndexChanged);
+			// 
+			// PSEDropContextMenu
+			// 
+			this->PSEDropContextMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(4) {
+				this->PSEDropContextAdd,
+					this->PSEDropContextRemove, this->PSEDropContextPlotAll, this->PSEDropContextClearAll
+			});
+			this->PSEDropContextMenu->Name = L"PSEDropContextMenu";
+			this->PSEDropContextMenu->Size = System::Drawing::Size(181, 114);
+			// 
+			// PSEDropContextAdd
+			// 
+			this->PSEDropContextAdd->Name = L"PSEDropContextAdd";
+			this->PSEDropContextAdd->Size = System::Drawing::Size(180, 22);
+			this->PSEDropContextAdd->Text = L"Add New PSE";
+			this->PSEDropContextAdd->Click += gcnew System::EventHandler(this, &Form1::PSEDropContextAdd_Click);
+			// 
+			// PSEDropContextRemove
+			// 
+			this->PSEDropContextRemove->Name = L"PSEDropContextRemove";
+			this->PSEDropContextRemove->Size = System::Drawing::Size(180, 22);
+			this->PSEDropContextRemove->Text = L"Remove PSE";
+			this->PSEDropContextRemove->Click += gcnew System::EventHandler(this, &Form1::PSEDropContextRemove_Click);
+			// 
+			// PSEDropContextClearAll
+			// 
+			this->PSEDropContextClearAll->Name = L"PSEDropContextClearAll";
+			this->PSEDropContextClearAll->Size = System::Drawing::Size(180, 22);
+			this->PSEDropContextClearAll->Text = L"Clear All";
+			this->PSEDropContextClearAll->Click += gcnew System::EventHandler(this, &Form1::PSEDropContextClearAll_Click);
+			// 
 			// PSEDrawROI
 			// 
 			this->PSEDrawROI->AutoSize = true;
@@ -5147,7 +5218,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEDrawROI->Enabled = false;
 			this->PSEDrawROI->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEDrawROI->Location = System::Drawing::Point(210, 21);
+			this->PSEDrawROI->Location = System::Drawing::Point(210, 22);
 			this->PSEDrawROI->Name = L"PSEDrawROI";
 			this->PSEDrawROI->Size = System::Drawing::Size(73, 17);
 			this->PSEDrawROI->TabIndex = 63;
@@ -5183,7 +5254,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSESaturationUpD->DecimalPlaces = 3;
 			this->PSESaturationUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular,
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			this->PSESaturationUpD->Location = System::Drawing::Point(217, 82);
+			this->PSESaturationUpD->Location = System::Drawing::Point(217, 83);
 			this->PSESaturationUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1410065407, 2, 0, 196608 });
 			this->PSESaturationUpD->Name = L"PSESaturationUpD";
 			this->PSESaturationUpD->Size = System::Drawing::Size(84, 20);
@@ -5194,7 +5265,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label24->AutoSize = true;
 			this->label24->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label24->Location = System::Drawing::Point(132, 84);
+			this->label24->Location = System::Drawing::Point(132, 85);
 			this->label24->Name = L"label24";
 			this->label24->Size = System::Drawing::Size(83, 13);
 			this->label24->TabIndex = 61;
@@ -5204,7 +5275,7 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->PSEClearBtn->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEClearBtn->Location = System::Drawing::Point(186, 165);
+			this->PSEClearBtn->Location = System::Drawing::Point(186, 166);
 			this->PSEClearBtn->Name = L"PSEClearBtn";
 			this->PSEClearBtn->Size = System::Drawing::Size(46, 23);
 			this->PSEClearBtn->TabIndex = 18;
@@ -5217,7 +5288,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSETableViewBtn->Enabled = false;
 			this->PSETableViewBtn->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSETableViewBtn->Location = System::Drawing::Point(143, 154);
+			this->PSETableViewBtn->Location = System::Drawing::Point(143, 155);
 			this->PSETableViewBtn->Name = L"PSETableViewBtn";
 			this->PSETableViewBtn->Size = System::Drawing::Size(42, 34);
 			this->PSETableViewBtn->TabIndex = 16;
@@ -5229,7 +5300,7 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->PSESeparationUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular,
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			this->PSESeparationUpD->Location = System::Drawing::Point(261, 104);
+			this->PSESeparationUpD->Location = System::Drawing::Point(261, 105);
 			this->PSESeparationUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 99, 0, 0, 0 });
 			this->PSESeparationUpD->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 			this->PSESeparationUpD->Name = L"PSESeparationUpD";
@@ -5242,7 +5313,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label20->AutoSize = true;
 			this->label20->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label20->Location = System::Drawing::Point(166, 106);
+			this->label20->Location = System::Drawing::Point(166, 107);
 			this->label20->Name = L"label20";
 			this->label20->Size = System::Drawing::Size(98, 13);
 			this->label20->TabIndex = 60;
@@ -5255,7 +5326,7 @@ private: System::ComponentModel::IContainer^  components;
 				static_cast<System::Byte>(0)));
 			this->PSELoadSrcDrop->FormattingEnabled = true;
 			this->PSELoadSrcDrop->Items->AddRange(gcnew cli::array< System::Object^  >(2) { L"[RA,Dec ...] list", L"[X, Y ...] list" });
-			this->PSELoadSrcDrop->Location = System::Drawing::Point(58, 165);
+			this->PSELoadSrcDrop->Location = System::Drawing::Point(58, 166);
 			this->PSELoadSrcDrop->Name = L"PSELoadSrcDrop";
 			this->PSELoadSrcDrop->Size = System::Drawing::Size(82, 21);
 			this->PSELoadSrcDrop->TabIndex = 55;
@@ -5266,7 +5337,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label3->AutoSize = true;
 			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label3->Location = System::Drawing::Point(8, 169);
+			this->label3->Location = System::Drawing::Point(8, 170);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(53, 13);
 			this->label3->TabIndex = 58;
@@ -5278,7 +5349,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEEllipticalROI->Enabled = false;
 			this->PSEEllipticalROI->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular,
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			this->PSEEllipticalROI->Location = System::Drawing::Point(210, 7);
+			this->PSEEllipticalROI->Location = System::Drawing::Point(210, 8);
 			this->PSEEllipticalROI->Name = L"PSEEllipticalROI";
 			this->PSEEllipticalROI->Size = System::Drawing::Size(86, 17);
 			this->PSEEllipticalROI->TabIndex = 17;
@@ -5291,7 +5362,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSESeachROIOnlyChck->AutoSize = true;
 			this->PSESeachROIOnlyChck->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular,
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			this->PSESeachROIOnlyChck->Location = System::Drawing::Point(98, 17);
+			this->PSESeachROIOnlyChck->Location = System::Drawing::Point(101, 15);
 			this->PSESeachROIOnlyChck->Name = L"PSESeachROIOnlyChck";
 			this->PSESeachROIOnlyChck->Size = System::Drawing::Size(106, 17);
 			this->PSESeachROIOnlyChck->TabIndex = 15;
@@ -5299,21 +5370,11 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSESeachROIOnlyChck->UseVisualStyleBackColor = true;
 			this->PSESeachROIOnlyChck->CheckedChanged += gcnew System::EventHandler(this, &Form1::PSESeachROIOnlyChck_CheckedChanged);
 			// 
-			// PSESigmaCountBtn
-			// 
-			this->PSESigmaCountBtn->Location = System::Drawing::Point(9, 15);
-			this->PSESigmaCountBtn->Name = L"PSESigmaCountBtn";
-			this->PSESigmaCountBtn->Size = System::Drawing::Size(51, 20);
-			this->PSESigmaCountBtn->TabIndex = 14;
-			this->PSESigmaCountBtn->Text = L"SN";
-			this->PSESigmaCountBtn->UseVisualStyleBackColor = true;
-			this->PSESigmaCountBtn->Click += gcnew System::EventHandler(this, &Form1::PSESigmaCountBtn_Click);
-			// 
 			// PSEKernelRadUpD
 			// 
 			this->PSEKernelRadUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEKernelRadUpD->Location = System::Drawing::Point(261, 127);
+			this->PSEKernelRadUpD->Location = System::Drawing::Point(261, 128);
 			this->PSEKernelRadUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 99, 0, 0, 0 });
 			this->PSEKernelRadUpD->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 			this->PSEKernelRadUpD->Name = L"PSEKernelRadUpD";
@@ -5329,7 +5390,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEAutoBackgroundChck->CheckState = System::Windows::Forms::CheckState::Checked;
 			this->PSEAutoBackgroundChck->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular,
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			this->PSEAutoBackgroundChck->Location = System::Drawing::Point(9, 85);
+			this->PSEAutoBackgroundChck->Location = System::Drawing::Point(9, 86);
 			this->PSEAutoBackgroundChck->Name = L"PSEAutoBackgroundChck";
 			this->PSEAutoBackgroundChck->Size = System::Drawing::Size(109, 17);
 			this->PSEAutoBackgroundChck->TabIndex = 10;
@@ -5341,7 +5402,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->SavePSChck->AutoSize = true;
 			this->SavePSChck->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->SavePSChck->Location = System::Drawing::Point(9, 105);
+			this->SavePSChck->Location = System::Drawing::Point(9, 106);
 			this->SavePSChck->Name = L"SavePSChck";
 			this->SavePSChck->Size = System::Drawing::Size(89, 17);
 			this->SavePSChck->TabIndex = 12;
@@ -5354,7 +5415,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label26->AutoSize = true;
 			this->label26->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label26->Location = System::Drawing::Point(69, 62);
+			this->label26->Location = System::Drawing::Point(69, 66);
 			this->label26->Name = L"label26";
 			this->label26->Size = System::Drawing::Size(27, 13);
 			this->label26->TabIndex = 8;
@@ -5371,7 +5432,7 @@ private: System::ComponentModel::IContainer^  components;
 				L"Gaussian (2-D Circular)", L"Gaussian (2-D Elliptical)",
 					L"Moffat (2-D Circular)", L"Moffat (2-D Elliptical)"
 			});
-			this->PSEFitTypeChck->Location = System::Drawing::Point(10, 142);
+			this->PSEFitTypeChck->Location = System::Drawing::Point(10, 143);
 			this->PSEFitTypeChck->Name = L"PSEFitTypeChck";
 			this->PSEFitTypeChck->Size = System::Drawing::Size(127, 21);
 			this->PSEFitTypeChck->TabIndex = 11;
@@ -5383,7 +5444,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEKernelMinUpD->DecimalPlaces = 3;
 			this->PSEKernelMinUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEKernelMinUpD->Location = System::Drawing::Point(98, 60);
+			this->PSEKernelMinUpD->Location = System::Drawing::Point(98, 62);
 			this->PSEKernelMinUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10000000, 0, 0, 0 });
 			this->PSEKernelMinUpD->Name = L"PSEKernelMinUpD";
 			this->PSEKernelMinUpD->Size = System::Drawing::Size(84, 20);
@@ -5395,7 +5456,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEViewFitChck->Enabled = false;
 			this->PSEViewFitChck->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEViewFitChck->Location = System::Drawing::Point(92, 125);
+			this->PSEViewFitChck->Location = System::Drawing::Point(92, 126);
 			this->PSEViewFitChck->Name = L"PSEViewFitChck";
 			this->PSEViewFitChck->Size = System::Drawing::Size(74, 17);
 			this->PSEViewFitChck->TabIndex = 9;
@@ -5407,7 +5468,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEKernelMaxUpD->DecimalPlaces = 3;
 			this->PSEKernelMaxUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEKernelMaxUpD->Location = System::Drawing::Point(217, 60);
+			this->PSEKernelMaxUpD->Location = System::Drawing::Point(217, 62);
 			this->PSEKernelMaxUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1410065407, 2, 0, 196608 });
 			this->PSEKernelMaxUpD->Name = L"PSEKernelMaxUpD";
 			this->PSEKernelMaxUpD->Size = System::Drawing::Size(84, 20);
@@ -5419,7 +5480,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEFitChck->AutoSize = true;
 			this->PSEFitChck->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEFitChck->Location = System::Drawing::Point(9, 125);
+			this->PSEFitChck->Location = System::Drawing::Point(9, 126);
 			this->PSEFitChck->Name = L"PSEFitChck";
 			this->PSEFitChck->Size = System::Drawing::Size(85, 17);
 			this->PSEFitChck->TabIndex = 7;
@@ -5432,7 +5493,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label27->AutoSize = true;
 			this->label27->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label27->Location = System::Drawing::Point(185, 62);
+			this->label27->Location = System::Drawing::Point(185, 66);
 			this->label27->Name = L"label27";
 			this->label27->Size = System::Drawing::Size(30, 13);
 			this->label27->TabIndex = 9;
@@ -5442,7 +5503,7 @@ private: System::ComponentModel::IContainer^  components;
 			// 
 			this->PSEFindSrcBtn->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEFindSrcBtn->Location = System::Drawing::Point(233, 165);
+			this->PSEFindSrcBtn->Location = System::Drawing::Point(233, 166);
 			this->PSEFindSrcBtn->Name = L"PSEFindSrcBtn";
 			this->PSEFindSrcBtn->Size = System::Drawing::Size(70, 23);
 			this->PSEFindSrcBtn->TabIndex = 6;
@@ -5460,7 +5521,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEPixelCntLbl->AutoSize = true;
 			this->PSEPixelCntLbl->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEPixelCntLbl->Location = System::Drawing::Point(6, 62);
+			this->PSEPixelCntLbl->Location = System::Drawing::Point(6, 66);
 			this->PSEPixelCntLbl->Name = L"PSEPixelCntLbl";
 			this->PSEPixelCntLbl->Size = System::Drawing::Size(65, 13);
 			this->PSEPixelCntLbl->TabIndex = 5;
@@ -5471,7 +5532,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEPixelValLbl->AutoSize = true;
 			this->PSEPixelValLbl->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEPixelValLbl->Location = System::Drawing::Point(6, 40);
+			this->PSEPixelValLbl->Location = System::Drawing::Point(6, 46);
 			this->PSEPixelValLbl->Name = L"PSEPixelValLbl";
 			this->PSEPixelValLbl->Size = System::Drawing::Size(62, 13);
 			this->PSEPixelValLbl->TabIndex = 4;
@@ -5482,7 +5543,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label23->AutoSize = true;
 			this->label23->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label23->Location = System::Drawing::Point(188, 129);
+			this->label23->Location = System::Drawing::Point(188, 130);
 			this->label23->Name = L"label23";
 			this->label23->Size = System::Drawing::Size(76, 13);
 			this->label23->TabIndex = 5;
@@ -5493,7 +5554,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label22->AutoSize = true;
 			this->label22->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label22->Location = System::Drawing::Point(185, 40);
+			this->label22->Location = System::Drawing::Point(185, 46);
 			this->label22->Name = L"label22";
 			this->label22->Size = System::Drawing::Size(30, 13);
 			this->label22->TabIndex = 3;
@@ -5504,7 +5565,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEPixelMaxUpD->DecimalPlaces = 3;
 			this->PSEPixelMaxUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEPixelMaxUpD->Location = System::Drawing::Point(217, 38);
+			this->PSEPixelMaxUpD->Location = System::Drawing::Point(217, 42);
 			this->PSEPixelMaxUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1410065407, 2, 0, 196608 });
 			this->PSEPixelMaxUpD->Name = L"PSEPixelMaxUpD";
 			this->PSEPixelMaxUpD->Size = System::Drawing::Size(84, 20);
@@ -5516,7 +5577,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEPixelMinUpD->DecimalPlaces = 3;
 			this->PSEPixelMinUpD->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->PSEPixelMinUpD->Location = System::Drawing::Point(98, 38);
+			this->PSEPixelMinUpD->Location = System::Drawing::Point(98, 42);
 			this->PSEPixelMinUpD->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10000000, 0, 0, 0 });
 			this->PSEPixelMinUpD->Name = L"PSEPixelMinUpD";
 			this->PSEPixelMinUpD->Size = System::Drawing::Size(84, 20);
@@ -5527,7 +5588,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->label21->AutoSize = true;
 			this->label21->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label21->Location = System::Drawing::Point(69, 40);
+			this->label21->Location = System::Drawing::Point(69, 46);
 			this->label21->Name = L"label21";
 			this->label21->Size = System::Drawing::Size(27, 13);
 			this->label21->TabIndex = 2;
@@ -10367,6 +10428,14 @@ private: System::ComponentModel::IContainer^  components;
 			this->UVFinalizeScienceBtn->Text = L"Finalize Science Products";
 			this->UVFinalizeScienceBtn->DoubleClick += gcnew System::EventHandler(this, &Form1::UVFinalizeScienceBtn_DoubleClick);
 			// 
+			// UVFinalizeIncludeExpMapChck
+			// 
+			this->UVFinalizeIncludeExpMapChck->CheckOnClick = true;
+			this->UVFinalizeIncludeExpMapChck->Name = L"UVFinalizeIncludeExpMapChck";
+			this->UVFinalizeIncludeExpMapChck->Size = System::Drawing::Size(238, 22);
+			this->UVFinalizeIncludeExpMapChck->Text = L"Include Exposure Maps";
+			this->UVFinalizeIncludeExpMapChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeIncludeExpMapChck_Click);
+			// 
 			// UVFinalizeIncludeTablesChck
 			// 
 			this->UVFinalizeIncludeTablesChck->CheckOnClick = true;
@@ -10789,13 +10858,12 @@ private: System::ComponentModel::IContainer^  components;
 			this->UVFinalizeBGWrkr->ProgressChanged += gcnew System::ComponentModel::ProgressChangedEventHandler(this, &Form1::UVFinalizeBGWrkr_ProgressChanged);
 			this->UVFinalizeBGWrkr->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &Form1::UVFinalizeBGWrkr_RunWorkerCompleted);
 			// 
-			// UVFinalizeIncludeExpMapChck
+			// PSEDropContextPlotAll
 			// 
-			this->UVFinalizeIncludeExpMapChck->CheckOnClick = true;
-			this->UVFinalizeIncludeExpMapChck->Name = L"UVFinalizeIncludeExpMapChck";
-			this->UVFinalizeIncludeExpMapChck->Size = System::Drawing::Size(238, 22);
-			this->UVFinalizeIncludeExpMapChck->Text = L"Include Exposure Maps";
-			this->UVFinalizeIncludeExpMapChck->Click += gcnew System::EventHandler(this, &Form1::UVFinalizeIncludeExpMapChck_Click);
+			this->PSEDropContextPlotAll->Name = L"PSEDropContextPlotAll";
+			this->PSEDropContextPlotAll->Size = System::Drawing::Size(180, 22);
+			this->PSEDropContextPlotAll->Text = L"Plot All";
+			this->PSEDropContextPlotAll->Click += gcnew System::EventHandler(this, &Form1::PSEDropContextPlotAll_Click);
 			// 
 			// Form1
 			// 
@@ -10881,6 +10949,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->PSEFitResultsCntxt->ResumeLayout(false);
 			this->FindSourcesPnl->ResumeLayout(false);
 			this->FindSourcesPnl->PerformLayout();
+			this->PSEDropContextMenu->ResumeLayout(false);
 			this->DrawROIContextMenu->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->PSESaturationUpD))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->PSESeparationUpD))->EndInit();
@@ -11056,10 +11125,15 @@ Bitmap^ IMAGEBMP;
 UVIT^ UVIT_Data;
 array<unsigned __int16,2>^ UVBGArray;
 
-JPFITS::SourceExtractor^ PSE;
-array<Rectangle, 1>^ PSERECTS;
+array<JPFITS::SourceExtractor^>^ PSES;
+int PSESINDEX = -1;
+array<array<Rectangle>^>^ PSESRECTS;
+//array<Rectangle>^ PSERECTS;
+array<Color>^ PSERECTCOLOURS;
 void MAKEPSERECTS();
 void MAKEMARKCOORDRECTS();
+bool PSESPLOTALL = false;
+int PSECOUNT = 0;
 
 //PSETableViewer^ PSETABLEVIEWER;
 TypeCode FILESAVEPREC;
@@ -11836,9 +11910,14 @@ private: System::Void UVFinalizeMoveOrCopyZipChck_Click(System::Object^  sender,
 private: System::Void UVAutoPSFPostMergeChck_Click(System::Object^  sender, System::EventArgs^  e);
 private: System::Void Form1_Shown(System::Object^  sender, System::EventArgs^  e);
 private: System::Void UVFinalizeIncludeExpMapChck_Click(System::Object^  sender, System::EventArgs^  e);
+private: System::Void PSEDropContextAdd_Click(System::Object^  sender, System::EventArgs^  e);
+private: System::Void PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e);
+private: System::Void PSEDropContextRemove_Click(System::Object^  sender, System::EventArgs^  e);
+private: System::Void PSEDropContextClearAll_Click(System::Object^  sender, System::EventArgs^  e);
+private: System::Void PSEDropContextPlotAll_Click(System::Object^  sender, System::EventArgs^  e);
 
-
-
-
+		
+		
+		
 };
 }

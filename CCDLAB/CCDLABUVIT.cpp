@@ -2566,10 +2566,11 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 				Array::Resize(radeg, goodcount - 1);
 				Array::Resize(dedeg, goodcount - 1);
 				//now have CP's and CV's...now need to re-do centroids at CV locations
-				PSE = gcnew JPFITS::SourceExtractor();
-				PSE->Extract_Sources(fitsimg->Image, xpix, ypix, 2, false, "");
-				xpix = PSE->Centroids_X;
-				ypix = PSE->Centroids_Y;
+				PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
+				PSESINDEX = 0;
+				PSES[PSESINDEX]->Extract_Sources(fitsimg->Image, xpix, ypix, 2, false, "");
+				xpix = PSES[PSESINDEX]->Centroids_X;
+				ypix = PSES[PSESINDEX]->Centroids_Y;
 				WCS_DEROT = gcnew JPFITS::WorldCoordinateSolution();
 				WCS_DEROT->Solve_WCS("TAN", xpix, ypix, true, radeg, dedeg, fitsimg);
 			}
@@ -5195,25 +5196,26 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 		if (PointSrcROIFindSrcChck->Checked && !PointSrcROIAutoRunChck->Checked)//should this be done for each image individually?????????????????????????????      could put it below so it always fires if requested
 		{
 			int Nsrc = Convert::ToInt32(PointSrcROIFindNSrcDrop->SelectedItem);
-			PSE = gcnew JPFITS::SourceExtractor();
-			PSE->Extract_Attempt_N_Sources(Nsrc, IMAGESET[FILELISTINDEX]->Image, 0, 0, Double::MaxValue, 0, Double::MaxValue, false, 9, 35, true, "", nullptr, false);
-			if (PSE->N_Sources > Nsrc)
-				PSE->ClipToNBrightest(Nsrc);
+			PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+			PSESINDEX = 0;
+			PSES[PSESINDEX]->Extract_Attempt_N_Sources(Nsrc, IMAGESET[FILELISTINDEX]->Image, 0, 0, Double::MaxValue, 0, Double::MaxValue, false, 9, 35, true, "", nullptr, false);
+			if (PSES[PSESINDEX]->N_Sources > Nsrc)
+				PSES[PSESINDEX]->ClipToNBrightest(Nsrc);
 
-			if (PSE->N_Sources == 0)
+			if (PSES[PSESINDEX]->N_Sources == 0)
 			{
 				MessageBox::Show("No sources found. Please manually select sources.", "Error...");
 				return;
 			}
 
-			MARKCOORDS = gcnew array<double, 2>(2, PSE->N_Sources);
-			for (int i = 0; i < PSE->N_Sources; i++)
+			MARKCOORDS = gcnew array<double, 2>(2, PSES[PSESINDEX]->N_Sources);
+			for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 			{
-				MARKCOORDS[0, i] = PSE->Centroids_X[i];
-				MARKCOORDS[1, i] = PSE->Centroids_Y[i];
+				MARKCOORDS[0, i] = PSES[PSESINDEX]->Centroids_X[i];
+				MARKCOORDS[1, i] = PSES[PSESINDEX]->Centroids_Y[i];
 			}
 			MAKEMARKCOORDRECTS();
-			PSE = nullptr;
+			PSES = nullptr;
 
 			ImageWindow->Refresh();
 			SubImageWindow->Refresh();
@@ -5254,12 +5256,13 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 	{
 		FileListDrop->SelectedIndex = UVDRIFTBATCHFILESINDEX;
 		int Nsrc = Convert::ToInt32(PointSrcROIFindNSrcDrop->SelectedItem);//or just set to 3???
-		PSE = gcnew JPFITS::SourceExtractor();
-		PSE->Extract_Attempt_N_Sources(Nsrc, IMAGESET[UVDRIFTBATCHFILESINDEX]->Image, 0, 0, Double::MaxValue, 0, Double::MaxValue, false, 9, 35, true, "", nullptr, false);
-		if (PSE->N_Sources > Nsrc)
-			PSE->ClipToNBrightest(Nsrc);
+		PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
+		PSESINDEX = 0;
+		PSES[PSESINDEX]->Extract_Attempt_N_Sources(Nsrc, IMAGESET[UVDRIFTBATCHFILESINDEX]->Image, 0, 0, Double::MaxValue, 0, Double::MaxValue, false, 9, 35, true, "", nullptr, false);
+		if (PSES[PSESINDEX]->N_Sources > Nsrc)
+			PSES[PSESINDEX]->ClipToNBrightest(Nsrc);
 
-		if (PSE->N_Sources == 0)
+		if (PSES[PSESINDEX]->N_Sources == 0)
 		{
 			MessageBox::Show("No sources found. Please manually select sources.", "Error...");
 			AUTOLOADIMAGESFILES = nullptr;
@@ -5274,14 +5277,14 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 			return;
 		}
 
-		MARKCOORDS = gcnew array<double, 2>(2, PSE->N_Sources);
-		for (int i = 0; i < PSE->N_Sources; i++)
+		MARKCOORDS = gcnew array<double, 2>(2, PSES[PSESINDEX]->N_Sources);
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 		{
-			MARKCOORDS[0, i] = PSE->Centroids_X[i];
-			MARKCOORDS[1, i] = PSE->Centroids_Y[i];
+			MARKCOORDS[0, i] = PSES[PSESINDEX]->Centroids_X[i];
+			MARKCOORDS[1, i] = PSES[PSESINDEX]->Centroids_Y[i];
 		}
 		MAKEMARKCOORDRECTS();
-		PSE = nullptr;
+		PSES = nullptr;
 
 		ImageWindow->Refresh();
 		SubImageWindow->Refresh();
@@ -7098,11 +7101,13 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 				for (int y = 0; y < 512; y++)
 					if ((x - 255) * (x - 255) + (y - 255) * (y - 255) < 225 * 225)
 						ROI[x, y] = true;
-			PSE = gcnew JPFITS::SourceExtractor();
-			PSE->Extract_Sources(IMAGESET[0]->Image, 0, 150, 25000, 200, Double::MaxValue, false, 2, 10, PSEAutoBackgroundChck->Checked, "", ROI, false);
-			if (PSE->N_Sources > 35)
-				PSE->ClipToNBrightest(35);
-			if (PSE->N_Sources > 0)
+			PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
+			PSESINDEX = 0;
+			PSESRECTS = gcnew array<array<Rectangle>^>(1);
+			PSES[PSESINDEX]->Extract_Sources(IMAGESET[0]->Image, 0, 150, 25000, 200, Double::MaxValue, false, 2, 10, PSEAutoBackgroundChck->Checked, "", ROI, false);
+			if (PSES[PSESINDEX]->N_Sources > 35)
+				PSES[PSESINDEX]->ClipToNBrightest(35);
+			if (PSES[PSESINDEX]->N_Sources > 0)
 			{
 				MAKEPSERECTS();
 				ShowPSEChck->Checked = true;
@@ -7111,11 +7116,11 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 			}
 
 			::DialogResult res;
-			if (PSE->N_Sources == 0)
+			if (PSES[PSESINDEX]->N_Sources == 0)
 				res = ::DialogResult::No;
-			else if (PSE->N_Sources > 0 && !PointSrcINTDriftNoPSEConfChck->Checked)
-				res = MessageBox::Show("Use " + PSE->N_Sources + " auto-found sources for tracking?", "Track?", MessageBoxButtons::YesNoCancel);
-			else if (PSE->N_Sources > 0 && PointSrcINTDriftNoPSEConfChck->Checked)
+			else if (PSES[PSESINDEX]->N_Sources > 0 && !PointSrcINTDriftNoPSEConfChck->Checked)
+				res = MessageBox::Show("Use " + PSES[PSESINDEX]->N_Sources + " auto-found sources for tracking?", "Track?", MessageBoxButtons::YesNoCancel);
+			else if (PSES[PSESINDEX]->N_Sources > 0 && PointSrcINTDriftNoPSEConfChck->Checked)
 				res = ::DialogResult::Yes;
 
 			if (res == ::DialogResult::No)
@@ -7133,11 +7138,11 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 			if (res == ::DialogResult::Yes)
 			{
 				UVITMANREG_CONTINUE = true;
-				MANREGCOORDS = gcnew array<int, 2>(PSE->N_Sources, 2);
-				for (int i = 0; i < PSE->N_Sources; i++)
+				MANREGCOORDS = gcnew array<int, 2>(PSES[PSESINDEX]->N_Sources, 2);
+				for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 				{
-					MANREGCOORDS[i, 0] = (int)PSE->Centroids_X[i];
-					MANREGCOORDS[i, 1] = (int)PSE->Centroids_Y[i];
+					MANREGCOORDS[i, 0] = (int)PSES[PSESINDEX]->Centroids_X[i];
+					MANREGCOORDS[i, 1] = (int)PSES[PSESINDEX]->Centroids_Y[i];
 				}
 				HalfWidthXUpD->Value = 5;
 				HalfWidthYUpD->Value = 5;
@@ -7434,8 +7439,8 @@ void Form1::DriftFromINTWrkr_RunWorkerCompleted(System::Object^  sender, System:
 				UVITINTMODEDRIFTPOLYPOINTS = nullptr;
 				DOUVITMANREG = false;
 				UVREGISTRATION = false;
-				PSERECTS = nullptr;
-				PSE = nullptr;
+				PSESRECTS = nullptr;
+				PSES = nullptr;
 				ImageWindow->Refresh();
 
 				if (!L1AutoApplyVISDrift->Checked)

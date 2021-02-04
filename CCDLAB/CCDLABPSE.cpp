@@ -48,9 +48,9 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 	if (!PSEFitChck->Checked || MARKCOORDS->Length == 0)
 		return;*/
 
-	if (PSE == nullptr)
+	if (PSES == nullptr)
 		return;
-	if (PSE->N_Sources <= 0)
+	if (PSES[PSESINDEX]->N_Sources <= 0)
 		return;
 
 	array<double>^ PLB;
@@ -75,27 +75,27 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 	}
 
 	if (PSEFitTypeChck->SelectedIndex == 0)//circular gaussian
-		PSE->Extract_Source_LSFits_Gaussian_Circular(P0, PLB, PUB);
+		PSES[PSESINDEX]->Extract_Source_LSFits_Gaussian_Circular(P0, PLB, PUB);
 	if (PSEFitTypeChck->SelectedIndex == 1)//circular gaussian
-		PSE->Extract_Source_LSFits_Gaussian_Elliptical(P0, PLB, PUB);
+		PSES[PSESINDEX]->Extract_Source_LSFits_Gaussian_Elliptical(P0, PLB, PUB);
 	if (PSEFitTypeChck->SelectedIndex == 2)//circular moffat
-		PSE->Extract_Source_LSFits_Moffat_Circular(P0, PLB, PUB);
+		PSES[PSESINDEX]->Extract_Source_LSFits_Moffat_Circular(P0, PLB, PUB);
 	if (PSEFitTypeChck->SelectedIndex == 3)//elliptical moffat
-		PSE->Extract_Source_LSFits_Moffat_Elliptical(P0, PLB, PUB);
+		PSES[PSESINDEX]->Extract_Source_LSFits_Moffat_Elliptical(P0, PLB, PUB);
 
-	if (PSE->Fitted == false)//cancelled
+	if (PSES[PSESINDEX]->Fitted == false)//cancelled
 	{
 		ImageWindow->Refresh();
 		Form1::Enabled = true;
 		return;
 	}
 
-	array<double, 2>^ P = PSE->Fitted_Parameter_List;
-	array<double>^ Amp = gcnew array<double>(PSE->N_Sources);
-	array<double>^ X = gcnew array<double>(PSE->N_Sources);
-	array<double>^ Y = gcnew array<double>(PSE->N_Sources);
-	array<double>^ BG = gcnew array<double>(PSE->N_Sources);
-	for (int i = 0; i < PSE->N_Sources; i++)
+	array<double, 2>^ P = PSES[PSESINDEX]->Fitted_Parameter_List;
+	array<double>^ Amp = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+	array<double>^ X = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+	array<double>^ Y = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+	array<double>^ BG = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+	for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 	{
 		Amp[i] = P[0, i];
 		X[i] = P[1, i];
@@ -103,16 +103,16 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 		BG[i] = P[P->GetLength(0) - 1, i];
 	}
 	PSEFitResultListBox->Items->Clear();
-	PSEFitResultListBox->Items->Add("N:  " + PSE->N_Sources);
+	PSEFitResultListBox->Items->Add("N:  " + PSES[PSESINDEX]->N_Sources);
 	PSEFitResultListBox->Items->Add("Amplitude:  " + Math::Round(JPMath::Mean(Amp, true), 4) + " +- " + Math::Round(JPMath::Stdv(Amp, false), 4));
 	PSEFitResultListBox->Items->Add("X:          " + Math::Round(JPMath::Mean(X, true), 4) + " +- " + Math::Round(JPMath::Stdv(X, false), 4));
 	PSEFitResultListBox->Items->Add("Y:          " + Math::Round(JPMath::Mean(Y, true), 4) + " +- " + Math::Round(JPMath::Stdv(Y, false), 4));
 
 	if (PSEFitTypeChck->SelectedIndex == 0)//symmetric gaussian
 	{
-		array<double>^ Sig = gcnew array<double>(PSE->N_Sources);
+		array<double>^ Sig = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
 		
-		for (int i = 0; i < PSE->N_Sources; i++)
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 			Sig[i] = P[3, i];
 		
 		PSEFitResultListBox->Items->Add(String::Concat("FWHM:       ", Math::Round(2 * Math::Sqrt(2 * Math::Log(2))*JPMath::Mean(Sig, true), 4), " +- ", Math::Round(2 * Math::Sqrt(2 * Math::Log(2))*JPMath::Stdv(Sig, false), 4)));
@@ -120,11 +120,11 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 
 	if (PSEFitTypeChck->SelectedIndex == 1)//elliptical gaussian
 	{
-		array<double>^ Phi = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Xsig = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Ysig = gcnew array<double>(PSE->N_Sources);
+		array<double>^ Phi = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Xsig = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Ysig = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
 
-		for (int i = 0; i < PSE->N_Sources; i++)
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 		{
 			Phi[i] = P[3, i];
 			Xsig[i] = P[4, i];
@@ -138,10 +138,10 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 
 	if (PSEFitTypeChck->SelectedIndex == 2)//circular moffat
 	{
-		array<double>^ Theta = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Beta = gcnew array<double>(PSE->N_Sources);
+		array<double>^ Theta = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Beta = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
 
-		for (int i = 0; i < PSE->N_Sources; i++)
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 		{
 			Theta[i] = P[3, i];
 			Beta[i] = P[4, i];
@@ -154,12 +154,12 @@ void Form1::PSEFitTypeChck_SelectedIndexChanged(System::Object^  sender, System:
 
 	if (PSEFitTypeChck->SelectedIndex == 3)//elliptical moffat
 	{
-		array<double>^ Phi = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Xtheta = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Ytheta = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Beta = gcnew array<double>(PSE->N_Sources);
+		array<double>^ Phi = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Xtheta = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Ytheta = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Beta = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
 
-		for (int i = 0; i < PSE->N_Sources; i++)
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 		{
 			Phi[i] = P[3, i];
 			Xtheta[i] = P[4, i];
@@ -404,6 +404,84 @@ void Form1::PSEFindSrcBtn_MouseLeave(System::Object^  sender, System::EventArgs^
 	PSEFindSrcBtn->Refresh();*/
 }
 
+void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
+{
+	if (PSESPLOTALL)
+	{
+		PSESPLOTALL = false;
+		//return;
+	}
+
+	PSESINDEX = PSEDrop->SelectedIndex;
+	if (PSESRECTS == nullptr || PSESRECTS[PSESINDEX] == nullptr)
+		return;
+	MAKEPSERECTS();
+	ImageWindow->Refresh();
+	SubImageWindow->Refresh();
+}
+
+void Form1::PSEDropContextPlotAll_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	PSESPLOTALL = true;
+	SubImageWindow->Refresh();
+	ImageWindow->Refresh();	
+}
+
+void Form1::PSEDropContextRemove_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	if (PSES == nullptr || PSES->Length == 0)
+		return;
+
+	array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length - 1);
+	array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length - 1);
+
+	int c = 0;
+	for (int i = 0; i < PSES->Length; i++)
+	{
+		if (i != PSEDrop->SelectedIndex)
+		{
+			temppses[c] = PSES[i];
+			temprecs[c] = PSESRECTS[i];
+			c++;
+		}
+	}
+	PSES = temppses;
+	PSESRECTS = temprecs;
+	if (PSESINDEX >= PSES->Length)
+		PSESINDEX = PSES->Length - 1;
+
+	PSEDrop->Items->RemoveAt(PSEDrop->SelectedIndex);
+	PSEDrop->SelectedIndex = PSESINDEX;
+}
+
+void Form1::PSEDropContextClearAll_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	PSES = nullptr;
+	PSESRECTS = nullptr;
+	PSESINDEX = -1;
+	PSEDrop->Items->Clear();
+	ImageWindow->Refresh();
+	SubImageWindow->Refresh();
+}
+
+void Form1::PSEDropContextAdd_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	PSECOUNT++;
+	array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length + 1);
+	array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length + 1);
+	for (int i = 0; i < PSES->Length; i++)
+	{
+		temppses[i] = PSES[i];
+		temprecs[i] = PSESRECTS[i];
+	}
+	PSES = temppses;
+	PSESRECTS = temprecs;
+	PSESINDEX = PSEDrop->Items->Count - 1;
+
+	PSEDrop->Items->Add("PSE_" + PSECOUNT.ToString());
+	PSEDrop->SelectedIndex = PSEDrop->Items->Count - 1;
+}
+
 void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	if (FIRSTLOAD)
@@ -415,7 +493,7 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 
 	if (e->Button == ::MouseButtons::Left)
 	{
-		Form1::Enabled = false;
+		//Form1::Enabled = false;
 
 		double pix_min = (double)PSEPixelMinUpD->Value;
 		double pix_max = (double)PSEPixelMaxUpD->Value;
@@ -483,10 +561,18 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 			count_max = ::Double::MaxValue;
 		}
 
-		PSE = gcnew JPFITS::SourceExtractor();
-		PSE->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pix_min, pix_max, count_min, count_max, sn, kernel_radius, src_sep, auto_bg, saveps, ROI_REGION, true);
+		if (PSES == nullptr)
+		{
+			PSECOUNT++;
+			PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+			PSESINDEX = 0;
+		}
+		else
+			PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor();
 
-		if (PSE->N_Sources == 0)
+		PSES[PSESINDEX]->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pix_min, pix_max, count_min, count_max, sn, kernel_radius, src_sep, auto_bg, saveps, ROI_REGION, true);
+
+		if (PSES[PSESINDEX]->N_Sources == 0)
 		{
 			MessageBox::Show("Found 0 sources matching search criteria...", "Nothing found...");
 			Form1::Enabled = true;
@@ -494,7 +580,7 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 			return;
 		}
 
-		if (PSE->N_Sources == -1)//cancelled
+		if (PSES[PSESINDEX]->N_Sources == -1)//cancelled
 		{
 			ShowPSEChck->Checked = false;
 			ImageWindow->Refresh();
@@ -503,44 +589,55 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 			PSETableViewBtn->Enabled = false;
 			return;
 		}
+
+		PSEDrop->Enabled = true;
+		if (PSEDrop->Items->Count == 0)
+		{
+			PSEDrop->Items->Add("PSE_1");
+			PSEDrop->SelectedIndex = 0;
+		}
 	}
 
 	if (e->Button == ::MouseButtons::Right)
 	{
-		if (PSE == nullptr || PSE->N_Sources < 1)
+		if (PSES == nullptr || PSES[PSESINDEX]->N_Sources < 1)
 			return;
 
 		if (MessageBox::Show("Are you sure you want to re-determine the Point Source Extraction with the current cooridnates?", "Warning...", MessageBoxButtons::YesNo) == ::DialogResult::No)
 			return;
 
-		array<double>^ Xcoords = gcnew array<double>(PSE->N_Sources);
-		array<double>^ Ycoords = gcnew array<double>(PSE->N_Sources);
-		for (int i = 0; i < PSE->N_Sources; i++)
+		array<double>^ Xcoords = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		array<double>^ Ycoords = gcnew array<double>(PSES[PSESINDEX]->N_Sources);
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
 		{
-			Xcoords[i] = PSE->Centroids_X[i];
-			Ycoords[i] = PSE->Centroids_Y[i];
+			Xcoords[i] = PSES[PSESINDEX]->Centroids_X[i];
+			Ycoords[i] = PSES[PSESINDEX]->Centroids_Y[i];
 		}
 
-		PSE = gcnew JPFITS::SourceExtractor();
-		PSE->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, Xcoords, Ycoords, (int)PSEKernelRadUpD->Value, PSEAutoBackgroundChck->Checked, saveps);
+		PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor();
+		PSES[PSESINDEX]->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, Xcoords, Ycoords, (int)PSEKernelRadUpD->Value, PSEAutoBackgroundChck->Checked, saveps);
 	}
 
 	float xsc = (float(ImageWindow->Size.Width) / (float)IMAGESET[FILELISTINDEX]->Width);
 	float ysc = (float(ImageWindow->Size.Height) / (float)IMAGESET[FILELISTINDEX]->Height);
-	PSERECTS = gcnew array<Rectangle, 1>(PSE->N_Sources);
+	if (PSESRECTS == nullptr)
+		PSESRECTS = gcnew array<array<Rectangle>^>(1) { gcnew array<Rectangle>(PSES[PSESINDEX]->N_Sources) };
+	else
+		PSESRECTS[PSESINDEX] = gcnew array<Rectangle>(PSES[PSESINDEX]->N_Sources);
+
 	#pragma omp parallel for
-	for (int i = 0; i < PSE->N_Sources; i++)
-		PSERECTS[i] = Rectangle(int((float(PSE->Centroids_X[i]) + 0.5)*xsc - 3), int((float(PSE->Centroids_Y[i]) + 0.5)*ysc - 3), 7, 7);
+	for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+		PSESRECTS[PSESINDEX][i] = Rectangle(int((float(PSES[PSESINDEX]->Centroids_X[i]) + 0.5)*xsc - 3), int((float(PSES[PSESINDEX]->Centroids_Y[i]) + 0.5)*ysc - 3), 7, 7);
 
 	PSEFitResultListBox->Items->Clear();
-	PSEFitResultListBox->Items->Add(String::Concat("N:   ", PSE->N_Sources));
+	PSEFitResultListBox->Items->Add(String::Concat("N:   ", PSES[PSESINDEX]->N_Sources));
 	PSEFitResultListBox->Visible = true;
 	ShowPSEChck->Checked = true;
 	ShowPSEChck->Enabled = true;
 	PSETableViewBtn->Enabled = true;
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
-	Form1::Enabled = true;
+	//Form1::Enabled = true;
 }
 
 void Form1::PSEFindSrcBtn_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e){}
@@ -630,15 +727,15 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	}
 
 	//check if multiple PSE coords are within the ROI...if they are then gather them to marked coords and do compound fit
-	if (PSE != nullptr && PSE->N_Sources > 0)
+	if (PSES != nullptr && PSES[PSESINDEX]->N_Sources > 0)
 	{
 		ArrayList^ contained = gcnew ArrayList();
 
-		for (int i = 0; i < PSE->N_Sources; i++)
-			if (PSE->Centroids_X[i] > XSUBRANGE[0] && PSE->Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSE->Centroids_Y[i] > YSUBRANGE[0] && PSE->Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
+		for (int i = 0; i < PSES[PSESINDEX]->N_Sources; i++)
+			if (PSES[PSESINDEX]->Centroids_X[i] > XSUBRANGE[0] && PSES[PSESINDEX]->Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSES[PSESINDEX]->Centroids_Y[i] > YSUBRANGE[0] && PSES[PSESINDEX]->Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
 			{
-				contained->Add(PSE->Centroids_X[i]);
-				contained->Add(PSE->Centroids_Y[i]);
+				contained->Add(PSES[PSESINDEX]->Centroids_X[i]);
+				contained->Add(PSES[PSESINDEX]->Centroids_Y[i]);
 			}
 
 		if (contained->Count > 2)
@@ -1173,7 +1270,7 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	if (PSELoadSrcDrop->SelectedIndex == 0 && !WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
 	{
-		MessageBox::Show("CD matrix for WCS not found in current image header.  Can not transform [RA, Dec] to [x, y]...", "Error...");
+		MessageBox::Show("CD matrix for WCS not found in current image header. Can not transform [RA, Dec] to [x, y]...", "Error...");
 		return;
 	}
 
@@ -1187,16 +1284,37 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	SetReg("CCDLAB", "PSESavePath", ofd->FileName->Substring(0, ofd->FileName->LastIndexOf("\\")));
 	SetReg("CCDLAB", "PSESaveFilter", ofd->FilterIndex);
 
+	if (PSES == nullptr)
+	{
+		PSES = gcnew array<JPFITS::SourceExtractor^>(ofd->FileNames->Length);
+		PSESRECTS = gcnew array<array<Rectangle>^>(ofd->FileNames->Length);
+		PSESINDEX = 0;
+		PSEDrop->Enabled = true;
+	}
+	else//add PSES
+	{
+		array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length + ofd->FileNames->Length);
+		array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length + ofd->FileNames->Length);
+		for (int i = 0; i < PSES->Length; i++)
+		{
+			temppses[i] = PSES[i];
+			temprecs[i] = PSESRECTS[i];
+		}
+		PSESINDEX = PSES->Length;
+		PSES = temppses;
+		PSESRECTS = temprecs;
+	}
+
 	String^ delimit = "\t";
 	if (ofd->FilterIndex == 2)
 		delimit = ",";
 
 	StreamReader^ sr;
-	String^ line;
-	int Nsrc = 0;
+	String^ line;	
 
 	for (int i = 0; i < ofd->FileNames->Length; i++)
 	{
+		int Nsrc = 0;
 		sr = gcnew StreamReader(ofd->FileNames[i]);
 		int j = -1;
 
@@ -1212,18 +1330,13 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 			}
 			Nsrc++;
 		}
-		sr->Close();
-	}
 
-	array<double>^ c1 = gcnew array<double>(Nsrc);
-	array<double>^ c2 = gcnew array<double>(Nsrc);
-	Nsrc = 0;
+		array<double>^ c1 = gcnew array<double>(Nsrc);
+		array<double>^ c2 = gcnew array<double>(Nsrc);
 
-	for (int i = 0; i < ofd->FileNames->Length; i++)
-	{
-		sr = gcnew StreamReader(ofd->FileNames[i]);
-		int j = -1;
-
+		Nsrc = 0;
+		sr->BaseStream->Position = 0;
+		j = -1;
 		while (!sr->EndOfStream)
 		{
 			line = sr->ReadLine();
@@ -1240,39 +1353,42 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 			Nsrc++;
 		}
 		sr->Close();
-	}
 
-	if (PSELoadSrcDrop->SelectedIndex == 0)//RA, Dec
-	{
-		WCS = gcnew JPFITS::WorldCoordinateSolution();
-		WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-		array<double>^ Xcoords = gcnew array<double>(Nsrc);
-		array<double>^ Ycoords = gcnew array<double>(Nsrc);
-		WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
-		PSE = gcnew JPFITS::SourceExtractor(Xcoords, Ycoords);
-		PSE->Generate_Source_RADec_Coords(WCS);
+		if (PSELoadSrcDrop->SelectedIndex == 0)//RA, Dec
+		{
+			WCS = gcnew JPFITS::WorldCoordinateSolution();
+			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+			array<double>^ Xcoords = gcnew array<double>(Nsrc);
+			array<double>^ Ycoords = gcnew array<double>(Nsrc);
+			WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
+			PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(Xcoords, Ycoords);
+			PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
+		}
+		if (PSELoadSrcDrop->SelectedIndex == 1)//X, Y
+			PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(c1, c2);
+		MAKEPSERECTS();
+		PSECOUNT++;
+		PSEDrop->Items->Add(/*"PSE_" + PSECOUNT.ToString()*/ ofd->FileNames[i]->Substring(ofd->FileNames[i]->LastIndexOf("\\") + 1));
+		//PSEDrop->SelectedIndex = PSEDrop->Items->Count - 1;
+		if (i < ofd->FileNames->Length - 1)
+			PSESINDEX++;
 	}
-	if (PSELoadSrcDrop->SelectedIndex == 1)//X, Y
-		PSE = gcnew JPFITS::SourceExtractor(c1, c2);
-	
-	float xsc = (float(ImageWindow->Size.Width) / (float)IMAGESET[FILELISTINDEX]->Width);
-	float ysc = (float(ImageWindow->Size.Height) / (float)IMAGESET[FILELISTINDEX]->Height);
-	PSERECTS = gcnew array<Rectangle, 1>(PSE->N_Sources);
-	#pragma omp parallel for
-	for (int i = 0; i < PSE->N_Sources; i++)
-		PSERECTS[i] = Rectangle(int((float(PSE->Centroids_X[i]) + 0.5)*xsc - 3), int((float(PSE->Centroids_Y[i]) + 0.5)*ysc - 3), 7, 7);
 	
 	PSETableViewBtn->Enabled = true;
 	ShowPSEChck->Enabled = true;
 	ShowPSEChck->Checked = true;
-	ImageWindow->Refresh();
-	SubImageWindow->Refresh();
+	/*ImageWindow->Refresh();
+	SubImageWindow->Refresh();*/
+	PSEDropContextPlotAll->PerformClick();
 }
 
 void Form1::PSEClearBtn_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	PSE = nullptr;
+	PSES = nullptr;
+	PSESRECTS = nullptr;
+	PSESINDEX = -1;
 	ShowPSEChck->Checked = false;
+	PSEDrop->Items->Clear();
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
 }
@@ -1295,16 +1411,16 @@ void Form1::PSESigmaCountBtn_Click(System::Object^  sender, System::EventArgs^  
 
 void Form1::PSETableViewBtn_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	if (PSE == nullptr)
+	if (PSES == nullptr)
 		return;
 
 	if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
 	{
 		WCS = gcnew JPFITS::WorldCoordinateSolution();
 		WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-		PSE->Generate_Source_RADec_Coords(WCS);
+		PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
 	}
-	array<String^, 2>^ table = PSE->Source_Table;
+	array<String^, 2>^ table = PSES[PSESINDEX]->Source_Table;
 
 	PSETableViewer^ PSETABLEVIEWER = gcnew PSETableViewer();
 	PSETABLEVIEWER->PSETable->ColumnCount = table->GetLength(0);
@@ -1327,7 +1443,7 @@ void Form1::PSETableViewBtn_Click(System::Object^  sender, System::EventArgs^  e
 				PSETABLEVIEWER->PSETable[i, j]->Value = strvalue;
 		}
 
-	PSETABLEVIEWER->Text = PSE->LSFit_Equation;
+	PSETABLEVIEWER->Text = PSES[PSESINDEX]->LSFit_Equation;
 	PSETABLEVIEWER->Show(this);
 }
 
@@ -1535,75 +1651,67 @@ void Form1::WCSClarifyListSources_Click(System::Object^  sender, System::EventAr
 	if (IMAGESET->Count == 0)
 		return;
 
-	WCSMenu->ShowDropDown();
-	AutoWCSMenuItem->ShowDropDown();
-	WCSRefineSolutionBtn->ShowDropDown();
+	try
+	{
+		WCSMenu->ShowDropDown();
+		AutoWCSMenuItem->ShowDropDown();
+		WCSRefineSolutionBtn->ShowDropDown();
 
-	array<bool>^ match = gcnew array<bool>(MARKCOORDRECTS->Length);
-	int n = 0;
+		array<bool>^ match = gcnew array<bool>(MARKCOORDRECTS->Length);
+		int n = 0;
 
-	for (int i = 0; i < MARKCOORDRECTS->Length; i++)
-		if ((int)MARKCOORDS[0, i] > 0 && (int)MARKCOORDS[0, i] < IMAGESET[FILELISTINDEX]->Width && (int)MARKCOORDS[1, i] > 0 && (int)MARKCOORDS[1, i] < IMAGESET[FILELISTINDEX]->Height)
-			if (PSE->SourceBooleanMap[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]])
+		for (int i = 0; i < MARKCOORDRECTS->Length; i++)
+			if ((int)MARKCOORDS[0, i] > 0 && (int)MARKCOORDS[0, i] < IMAGESET[FILELISTINDEX]->Width && (int)MARKCOORDS[1, i] > 0 && (int)MARKCOORDS[1, i] < IMAGESET[FILELISTINDEX]->Height)
+				if (PSES[PSESINDEX]->SourceBooleanMap[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]] && PSES[PSESINDEX]->SourceIndexMap[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]] < PSES[PSESINDEX]->N_Sources)
+				{
+					n++;
+					match[i] = true;
+				}
+
+		array<double>^ cp1 = gcnew array<double>(n);
+		array<double>^ cp2 = gcnew array<double>(n);
+		array<double>^ ratemp = gcnew array<double>(n);
+		array<double>^ dectemp = gcnew array<double>(n);
+		array<double, 2>^ temp = gcnew array<double, 2>(2, n);
+		n = 0;
+		for (int i = 0; i < MARKCOORDRECTS->Length; i++)
+			if (match[i])
 			{
+				int ind = PSES[PSESINDEX]->SourceIndexMap[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]];
+				cp1[n] = PSES[PSESINDEX]->Centroids_X[ind];
+				cp2[n] = PSES[PSESINDEX]->Centroids_Y[ind];
+				ratemp[n] = WCS_RA[i];
+				dectemp[n] = WCS_DEC[i];
+				temp[0, n] = MARKCOORDS[0, i];
+				temp[1, n] = MARKCOORDS[1, i];
 				n++;
-				match[i] = true;
 			}
 
+		PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(cp1, cp2);
+		PSESRECTS = gcnew array<array<Rectangle>^>(1);
+		MAKEPSERECTS();
 
-
-
-	/*array<double>^ axis = gcnew array<double>(MARKCOORDRECTS->Length);
-	array<double>^ trus = gcnew array<double>(MARKCOORDRECTS->Length);
-	for (int i = 0; i < MARKCOORDRECTS->Length; i++)
-	{
-		axis[i] = double(i);
-		if (match[i])
-			trus[i] = 1;
-	}
-	JPPlot^ plot = gcnew JPPlot();
-	plot->PlotLine(axis, trus, "", "", "", ::Charting::SeriesChartType::Line, "test");*/
-
-
-
-
-	array<double>^ cp1 = gcnew array<double>(n);
-	array<double>^ cp2 = gcnew array<double>(n);
-	array<double>^ ratemp = gcnew array<double>(n);
-	array<double>^ dectemp = gcnew array<double>(n);
-	array<double, 2>^ temp = gcnew array<double, 2>(2, n);
-	n = 0;
-	for (int i = 0; i < MARKCOORDRECTS->Length; i++)
-		if (match[i])
+		WCS_RA = gcnew array<double>(n);
+		WCS_DEC = gcnew array<double>(n);
+		MARKCOORDS = gcnew array<double, 2>(2, n);
+		for (int i = 0; i < n; i++)
 		{
-			int ind = PSE->SourceIndexMap[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]];
-			cp1[n] = PSE->Centroids_X[ind];
-			cp2[n] = PSE->Centroids_Y[ind];
-			ratemp[n] = WCS_RA[i];
-			dectemp[n] = WCS_DEC[i];
-			temp[0, n] = MARKCOORDS[0, i];
-			temp[1, n] = MARKCOORDS[1, i];
-			n++;
+			WCS_RA[i] = ratemp[i];
+			WCS_DEC[i] = dectemp[i];
+			MARKCOORDS[0, i] = temp[0, i];
+			MARKCOORDS[1, i] = temp[1, i];
 		}
-	PSE = gcnew JPFITS::SourceExtractor(cp1, cp2);
-	MAKEPSERECTS();
+		MAKEMARKCOORDRECTS();
 
-	WCS_RA = gcnew array<double>(n);
-	WCS_DEC = gcnew array<double>(n);
-	MARKCOORDS = gcnew array<double, 2>(2, n);
-	for (int i = 0; i < n; i++)
-	{
-		WCS_RA[i] = ratemp[i];
-		WCS_DEC[i] = dectemp[i];
-		MARKCOORDS[0, i] = temp[0, i];
-		MARKCOORDS[1, i] = temp[1, i];
+		PSEFitResultListBox->Items->Clear();
+		PSEFitResultListBox->Items->Add(String::Concat("N:   ", PSES[PSESINDEX]->N_Sources));
+		ImageWindow->Refresh();
+		SubImageWindow->Refresh();
 	}
-	MAKEMARKCOORDRECTS();
-
-	PSEFitResultListBox->Items->Clear();
-	PSEFitResultListBox->Items->Add(String::Concat("N:   ", PSE->N_Sources));
-	ImageWindow->Refresh();
-	SubImageWindow->Refresh();
+	catch (Exception^ e)
+	{
+		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
+	}
 }
 
 void Form1::WCSSolveList_Click(System::Object^  sender, System::EventArgs^  e)
@@ -1612,7 +1720,7 @@ void Form1::WCSSolveList_Click(System::Object^  sender, System::EventArgs^  e)
 		return;
 
 	WCS = gcnew JPFITS::WorldCoordinateSolution();
-	WCS->Solve_WCS("TAN", PSE->Centroids_X, PSE->Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]);
+	WCS->Solve_WCS("TAN", PSES[PSESINDEX]->Centroids_X, PSES[PSESINDEX]->Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]);
 	FileTxtsUpD();
 	array<double>^ x = gcnew array<double>(MARKCOORDRECTS->Length);
 	array<double>^ y = gcnew array<double>(MARKCOORDRECTS->Length);
@@ -1747,7 +1855,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 {
 	POLYPOINTS = nullptr;
 	POLYPOINTS2 = nullptr;
-	PSERECTS = nullptr;
+	PSESRECTS = nullptr;
 	MARKCOORDRECTS = nullptr;
 	WCSRADecShowChck->Checked = false;
 	SHOW_WCSCOORDS = false;
@@ -1876,7 +1984,9 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	//get PSE image sources
 	ShowPSEChck->Checked = true;
 	ShowPSEChck->Enabled = true;
-	PSE = gcnew JPFITS::SourceExtractor();
+	PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+	PSESINDEX = 0;
+	PSESRECTS = gcnew array<array<Rectangle>^>(1);
 	double immax = IMAGESET[FILELISTINDEX]->Max;//assume bg subtracted
 	double pixthresh = immax / 32;
 	double div = 2;
@@ -1884,40 +1994,40 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	int PSEiters = 0;
 	int maxPSEiters = 15;
 	double pix_sat = (double)PSESaturationUpD->Value;
-	while (PSE->N_Sources < nPSEpts_min || PSE->N_Sources > nPSEpts_max)
+	while (PSES[PSESINDEX]->N_Sources < nPSEpts_min || PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 	{
 		PSEiters++;
 		if (PSEiters > maxPSEiters)
 			break;
 
-		if (PSE->N_SaturatedSources >= nPSEpts_max || PSE->N_Sources >= nPSEpts_max)
+		if (PSES[PSESINDEX]->N_SaturatedSources >= nPSEpts_max || PSES[PSESINDEX]->N_Sources >= nPSEpts_max)
 			break;
 
-		PSE->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pixthresh, Double::MaxValue, 0, Double::MaxValue, false, (int)PSEKernelRadUpD->Value, (int)PSESeparationUpD->Value, PSEAutoBackgroundChck->Checked, "", ROI_REGION, false);
+		PSES[PSESINDEX]->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pixthresh, Double::MaxValue, 0, Double::MaxValue, false, (int)PSEKernelRadUpD->Value, (int)PSESeparationUpD->Value, PSEAutoBackgroundChck->Checked, nullptr, ROI_REGION, false);
 		MAKEPSERECTS();
 		ImageWindow->Refresh();
 		SubImageWindow->Refresh();
 
-		if (PSE->N_Sources < nPSEpts_min)
+		if (PSES[PSESINDEX]->N_Sources < nPSEpts_min)
 			pixthresh -= amp / div;
-		if (PSE->N_Sources > nPSEpts_max)
+		if (PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 			pixthresh += amp / div;
 		div *= 2;
 	}
-	if (PSE->N_Sources > nPSEpts_max)
+	if (PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 	{
-		PSE->ClipToNBrightest(nPSEpts_max);
+		PSES[PSESINDEX]->ClipToNBrightest(nPSEpts_max);
 		MAKEPSERECTS();
 		ImageWindow->Refresh();
 		SubImageWindow->Refresh();
 	}
 
 	//turn the PSE results into points
-	array<JPMath::PointD^>^ PSEpts = gcnew array<JPMath::PointD^>(PSE->N_Sources);
+	array<JPMath::PointD^>^ PSEpts = gcnew array<JPMath::PointD^>(PSES[PSESINDEX]->N_Sources);
 	double crpix1_init = 0, crpix2_init = 0, crpix1_lb = Double::MaxValue, crpix1_ub = Double::MinValue, crpix2_lb = Double::MaxValue, crpix2_ub = Double::MinValue;
 	for (int i = 0; i < PSEpts->Length; i++)
 	{
-		PSEpts[i] = gcnew JPMath::PointD(IMAGESET[FILELISTINDEX]->Width - 1 - PSE->Centroids_X[i], IMAGESET[FILELISTINDEX]->Height - 1 - PSE->Centroids_Y[i], PSE->Centroids_Volume[i]);
+		PSEpts[i] = gcnew JPMath::PointD(IMAGESET[FILELISTINDEX]->Width - 1 - PSES[PSESINDEX]->Centroids_X[i], IMAGESET[FILELISTINDEX]->Height - 1 - PSES[PSESINDEX]->Centroids_Y[i], PSES[PSESINDEX]->Centroids_Volume[i]);
 		crpix1_init += PSEpts[i]->X;
 		crpix2_init += PSEpts[i]->Y;
 		if (crpix1_ub < PSEpts[i]->X)
@@ -2087,7 +2197,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 				if (!do_parallel)
 					POLYPOINTS2[k] = System::Drawing::Point(int((x + 0.5) * xsc), int((y + 0.5) * ysc));
 
-				if (x > 0 && y > 0 && x < IMAGESET[FILELISTINDEX]->Width && y < IMAGESET[FILELISTINDEX]->Height && PSE->SourceIndexMap[x, y] == PSE->SourceIndexMap[IMAGESET[FILELISTINDEX]->Width - 1 - (int)Math::Round(xpix_triplet[k]), IMAGESET[FILELISTINDEX]->Height - 1 - (int)Math::Round(ypix_triplet[k])])
+				if (x > 0 && y > 0 && x < IMAGESET[FILELISTINDEX]->Width && y < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceIndexMap[x, y] == PSES[PSESINDEX]->SourceIndexMap[IMAGESET[FILELISTINDEX]->Width - 1 - (int)Math::Round(xpix_triplet[k]), IMAGESET[FILELISTINDEX]->Height - 1 - (int)Math::Round(ypix_triplet[k])])
 					N_pt_matches++;
 			}
 			if (!do_parallel)
@@ -2131,7 +2241,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 							int x_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / P0[0] * (Math::Cos(-P0[1]) * x_int - Math::Sin(-P0[1]) * y_int) + P0[2]));
 							int y_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / P0[0] * (Math::Sin(-P0[1]) * x_int + Math::Cos(-P0[1]) * y_int) + P0[3]));
 
-							if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSE->SourceBooleanMap[x_pix, y_pix])
+							if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix])
 								N_pt_matches++;
 						}
 
@@ -2163,7 +2273,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	{
 		POLYPOINTS = nullptr;
 		POLYPOINTS2 = nullptr;
-		PSERECTS = nullptr;
+		PSESRECTS = nullptr;
 		MARKCOORDRECTS = nullptr;
 		ImageWindow->Refresh();
 		if (WCSAUTOCANCEL)
@@ -2187,11 +2297,11 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 		int x_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / p00 * (Math::Cos(-p01) * x_intrmdt - Math::Sin(-p01) * y_intrmdt) + p02));
 		int y_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / p00 * (Math::Sin(-p01) * x_intrmdt + Math::Cos(-p01) * y_intrmdt) + p03));
 
-		if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSE->SourceBooleanMap[x_pix, y_pix])
+		if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix])
 		{
-			int index = PSE->SourceIndexMap[x_pix, y_pix];
-			xpix_matches[c] = PSE->Centroids_X[index];
-			ypix_matches[c] = PSE->Centroids_Y[index];
+			int index = PSES[PSESINDEX]->SourceIndexMap[x_pix, y_pix];
+			xpix_matches[c] = PSES[PSESINDEX]->Centroids_X[index];
+			ypix_matches[c] = PSES[PSESINDEX]->Centroids_Y[index];
 			WCS_RA[c] = CATpts[k]->X;
 			WCS_DEC[c] = CATpts[k]->Y;
 			MARKCOORDS[0, c] = x_pix;
@@ -2201,7 +2311,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	}
 
 	MAKEMARKCOORDRECTS();
-	PSE = gcnew JPFITS::SourceExtractor(xpix_matches, ypix_matches);
+	PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(xpix_matches, ypix_matches);
 	MAKEPSERECTS();
 	WCSSolveList->PerformClick();
 
@@ -2210,7 +2320,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	{
 		POLYPOINTS = nullptr;
 		POLYPOINTS2 = nullptr;
-		PSERECTS = nullptr;
+		PSESRECTS = nullptr;
 		MARKCOORDRECTS = nullptr;
 		ImageWindow->Refresh();
 	}
@@ -2221,7 +2331,8 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	
 	if (WCSAutoRefineChck->Checked)
 	{
-		PSE = gcnew JPFITS::SourceExtractor();
+		PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+		PSESINDEX = 0;
 		immax = IMAGESET[FILELISTINDEX]->Max;//assume bg subtracted
 		pixthresh = immax / 32;
 		div = 2;
@@ -2230,44 +2341,46 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 		nPSEpts_max = Convert::ToInt32(WCSAutoRefineNPtsTxt->Text);
 		WCSLoadListNPtsTxt->Text = (nPSEpts_max * 2).ToString();
 		PSEiters = 0;
-		while (PSE->N_Sources < nPSEpts_min || PSE->N_Sources > nPSEpts_max)
+
+		while (PSES[PSESINDEX]->N_Sources < nPSEpts_min || PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 		{
 			PSEiters++;
 			if (PSEiters > maxPSEiters)
 				break;
 
-			if (PSE->N_SaturatedSources >= nPSEpts_max || PSE->N_Sources >= nPSEpts_max)
+			if (PSES[PSESINDEX]->N_SaturatedSources >= nPSEpts_max || PSES[PSESINDEX]->N_Sources >= nPSEpts_max)
 				break;
 
-			PSE->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pixthresh, Double::MaxValue, 0, Double::MaxValue, false, (int)PSEKernelRadUpD->Value, (int)PSESeparationUpD->Value, PSEAutoBackgroundChck->Checked, "", ROI_REGION, false);
+			PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+			PSES[PSESINDEX]->Extract_Sources(IMAGESET[FILELISTINDEX]->Image, pix_sat, pixthresh, Double::MaxValue, 0, Double::MaxValue, false, (int)PSEKernelRadUpD->Value, (int)PSESeparationUpD->Value, PSEAutoBackgroundChck->Checked, "", ROI_REGION, false);
+			PSESRECTS = gcnew array<array<Rectangle>^>(1);
 			MAKEPSERECTS();
 			ImageWindow->Refresh();
 			SubImageWindow->Refresh();
 
-			if (PSE->N_Sources < nPSEpts_min)
+			if (PSES[PSESINDEX]->N_Sources < nPSEpts_min)
 				pixthresh -= amp / div;
-			if (PSE->N_Sources > nPSEpts_max)
+			if (PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 				pixthresh += amp / div;
 			div *= 2;
 		}
-		if (PSE->N_Sources > nPSEpts_max)
+		if (PSES[PSESINDEX]->N_Sources > nPSEpts_max)
 		{
-			PSE->ClipToNBrightest(nPSEpts_max);
+			PSES[PSESINDEX]->ClipToNBrightest(nPSEpts_max);
+			PSESRECTS = gcnew array<array<Rectangle>^>(1);
 			MAKEPSERECTS();
 			ImageWindow->Refresh();
 			SubImageWindow->Refresh();
 		}
-
-		//WCSLoadSimbadList->PerformClick();
 		WCSLoadSimbadAscii_Click(sender, e);
 		WCSClarifyListSources->PerformClick();
 		WCSSolveList->PerformClick();
-		::DialogResult res = MessageBox::Show(PSE->N_Sources + " sources of " + WCSAutoRefineNPtsTxt->Text + " were able to be used for WCS refinement. \r\n\r\nClear Solution points?", "Finished...", MessageBoxButtons::YesNo);
+		::DialogResult res = MessageBox::Show(PSES[PSESINDEX]->N_Sources + " sources of " + WCSAutoRefineNPtsTxt->Text + " were able to be used for WCS refinement. \r\n\r\nClear Solution points?", "Finished...", MessageBoxButtons::YesNo);
 		if (res == ::DialogResult::Yes)
 		{
 			POLYPOINTS = nullptr;
 			POLYPOINTS2 = nullptr;
-			PSERECTS = nullptr;
+			PSESRECTS = nullptr;
 			MARKCOORDRECTS = nullptr;
 			ImageWindow->Refresh();
 		}
@@ -2908,10 +3021,10 @@ void Form1::AutoWCSXCorr_Click(System::Object^ sender, System::EventArgs^ e)
 	int kernelradius = 1;
 	array<double>^ x_pix_hist_vec = gcnew array<double>(IMAGESET[FILELISTINDEX]->Width / kernelradius);
 	array<double>^ y_pix_hist_vec = gcnew array<double>(IMAGESET[FILELISTINDEX]->Height / kernelradius);
-	for (int k = 0; k < PSE->N_Sources; k++)
+	for (int k = 0; k < PSES[PSESINDEX]->N_Sources; k++)
 	{
-		x_pix_hist_vec[(int)Math::Round(PSE->Centroids_X[k] / (double)kernelradius)] ++;
-		y_pix_hist_vec[(int)Math::Round(PSE->Centroids_Y[k] / (double)kernelradius)] ++;
+		x_pix_hist_vec[(int)Math::Round(PSES[PSESINDEX]->Centroids_X[k] / (double)kernelradius)] ++;
+		y_pix_hist_vec[(int)Math::Round(PSES[PSESINDEX]->Centroids_Y[k] / (double)kernelradius)] ++;
 	}
 	//x_pix_hist_vec = JPMath::VectorSubScalar(x_pix_hist_vec, JPMath::Mean(x_pix_hist_vec));
 	//y_pix_hist_vec = JPMath::VectorSubScalar(y_pix_hist_vec, JPMath::Mean(y_pix_hist_vec));
@@ -2964,8 +3077,8 @@ void Form1::AutoWCSXCorr_Click(System::Object^ sender, System::EventArgs^ e)
 		CATpts_intrmdt[i] = gcnew JPMath::PointD(x_intrmdt, y_intrmdt, 0);
 	}
 
-	double crpix1 = JPMath::Mean(PSE->Centroids_X, true);
-	double crpix2 = JPMath::Mean(PSE->Centroids_Y, true);
+	double crpix1 = JPMath::Mean(PSES[PSESINDEX]->Centroids_X, true);
+	double crpix2 = JPMath::Mean(PSES[PSESINDEX]->Centroids_Y, true);
 
 	double minangle = -2 * Math::PI / 180;
 	double maxangle = 2 * Math::PI / 180;
@@ -3082,7 +3195,7 @@ void Form1::AutoWCSXCorr_Click(System::Object^ sender, System::EventArgs^ e)
 			int x_intrmdt_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / S * (Math::Cos(-phi) * CATpts_intrmdt[k]->X - Math::Sin(-phi) * CATpts_intrmdt[k]->Y) + crpix1));
 			int y_intrmdt_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / S * (Math::Sin(-phi) * CATpts_intrmdt[k]->X + Math::Cos(-phi) * CATpts_intrmdt[k]->Y) + crpix2));
 
-			if (x_intrmdt_pix > 0 && y_intrmdt_pix > 0 && x_intrmdt_pix < IMAGESET[FILELISTINDEX]->Width && y_intrmdt_pix < IMAGESET[FILELISTINDEX]->Height && PSE->SourceBooleanMap[x_intrmdt_pix, y_intrmdt_pix])
+			if (x_intrmdt_pix > 0 && y_intrmdt_pix > 0 && x_intrmdt_pix < IMAGESET[FILELISTINDEX]->Width && y_intrmdt_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_intrmdt_pix, y_intrmdt_pix])
 				c++;
 		}
 		//c should be >= n_matches........*******************************
@@ -3099,11 +3212,11 @@ void Form1::AutoWCSXCorr_Click(System::Object^ sender, System::EventArgs^ e)
 			int x_intrmdt_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / S * (Math::Cos(-phi) * CATpts_intrmdt[k]->X - Math::Sin(-phi) * CATpts_intrmdt[k]->Y) + crpix1));
 			int y_intrmdt_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / S * (Math::Sin(-phi) * CATpts_intrmdt[k]->X + Math::Cos(-phi) * CATpts_intrmdt[k]->Y) + crpix2));
 
-			if (x_intrmdt_pix > 0 && y_intrmdt_pix > 0 && x_intrmdt_pix < IMAGESET[FILELISTINDEX]->Width && y_intrmdt_pix < IMAGESET[FILELISTINDEX]->Height && PSE->SourceBooleanMap[x_intrmdt_pix, y_intrmdt_pix])
+			if (x_intrmdt_pix > 0 && y_intrmdt_pix > 0 && x_intrmdt_pix < IMAGESET[FILELISTINDEX]->Width && y_intrmdt_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_intrmdt_pix, y_intrmdt_pix])
 			{
-				int index = PSE->SourceIndexMap[x_intrmdt_pix, y_intrmdt_pix];
-				xpix_pse_matches[c] = PSE->Centroids_X[index];
-				ypix_pse_matches[c] = PSE->Centroids_Y[index];
+				int index = PSES[PSESINDEX]->SourceIndexMap[x_intrmdt_pix, y_intrmdt_pix];
+				xpix_pse_matches[c] = PSES[PSESINDEX]->Centroids_X[index];
+				ypix_pse_matches[c] = PSES[PSESINDEX]->Centroids_Y[index];
 				WCS_RA[c] = CATpts[k]->X;
 				WCS_DEC[c] = CATpts[k]->Y;
 				MARKCOORDS[0, c] = x_intrmdt_pix;
