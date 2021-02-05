@@ -418,6 +418,20 @@ void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventA
 	MAKEPSERECTS();
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
+
+	if (PSES[PSESINDEX]->PSEParametersSet)
+	{
+		PSESaturationUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->PixelSaturation);
+		PSEKernelRadUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->KernelRadius);
+		PSESeparationUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->SourceSeparation);
+		PSEPixelMaxUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->PixelMaximum);
+		PSEPixelMinUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->PixelMinimum);
+		PSEKernelMinUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->KernelMinimum);
+		PSEKernelMaxUpD->Value = Convert::ToDecimal(PSES[PSESINDEX]->KernelMaximum);
+		PSEAutoBackgroundChck->Checked = PSES[PSESINDEX]->AutoBackground;
+		SavePSChck->Checked = PSES[PSESINDEX]->SavePointSources;
+		PSESeachROIOnlyChck->Checked = PSES[PSESINDEX]->SearchROI;
+	}
 }
 
 void Form1::PSEDropContextPlotAll_Click(System::Object^  sender, System::EventArgs^  e)
@@ -452,6 +466,17 @@ void Form1::PSEDropContextRemove_Click(System::Object^  sender, System::EventArg
 
 	PSEDrop->Items->RemoveAt(PSEDrop->SelectedIndex);
 	PSEDrop->SelectedIndex = PSESINDEX;
+
+	if (PSES->Length == 0)
+	{
+		PSES = nullptr;
+		PSESRECTS = nullptr;
+		PSESINDEX = -1;
+		PSECOUNT = 0;
+		PSEDrop->Enabled = false;
+		ImageWindow->Refresh();
+		SubImageWindow->Refresh();
+	}
 }
 
 void Form1::PSEDropContextClearAll_Click(System::Object^  sender, System::EventArgs^  e)
@@ -459,7 +484,9 @@ void Form1::PSEDropContextClearAll_Click(System::Object^  sender, System::EventA
 	PSES = nullptr;
 	PSESRECTS = nullptr;
 	PSESINDEX = -1;
+	PSECOUNT = 0;
 	PSEDrop->Items->Clear();
+	PSEDrop->Enabled = false;
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
 }
