@@ -111,7 +111,7 @@ void Form1::InitializeVars(array<String^>^ startargs)
 	FNDCOORDS = gcnew array<int,2>(1,2);
 	FNDCOORDRECTS = gcnew array<Rectangle,1>(1);
 
-	PSERECTCOLOURS = gcnew array<Color>(14) { Color::OrangeRed, Color::Cyan, Color::LawnGreen, Color::BlueViolet, Color::Yellow, Color::DeepPink, Color::Aqua, Color::Crimson, Color::DarkGoldenrod, Color::Red, Color::Chartreuse, Color::Gold, Color::Blue, Color::HotPink };
+	PSERECTCOLOURS = gcnew array<Color>(11) { Color::OrangeRed, Color::Cyan, Color::LawnGreen, Color::BlueViolet, Color::DeepPink, Color::Aqua, Color::Crimson, Color::DarkGoldenrod, Color::Red, Color::Chartreuse, Color::HotPink };
 
 	RADIALLINEBOXPOINTS = gcnew array<Drawing::Point>(4);
 	RADIALPLOT_SETPHI = false;
@@ -126,6 +126,22 @@ void Form1::InitializeVars(array<String^>^ startargs)
 
 void Form1::Form1_Load(System::Object ^  sender, System::EventArgs ^  e)
 {
+	bool license = ::Convert::ToBoolean(GetReg("CCDLAB", "LicenseAgree"));
+	if (!license)
+	{
+		/*String^ agree = "This software is distributed under Creative Commons license 'Attribution-NonCommercial-NoDerivatives 4.0 International' (CC BY-NC-ND 4.0).  ";
+		agree += "By clicking Yes you agree to the terms of that license agreement.  See:  https://creativecommons.org/licenses/by-nc-nd/4.0/";*/
+
+		String^ agree = "This software is released under GNU Public General License v 3.0 (GPLv3).  ";
+		agree += "By clicking Yes you agree to the terms of that license agreement.  See:  http://www.gnu.org/licenses/";
+
+		::DialogResult res = ::MessageBox::Show(agree, "License Agreement", ::MessageBoxButtons::YesNo);
+		if (res == ::DialogResult::No)
+			::Application::Exit();
+		else
+			SetReg("CCDLAB", "LicenseAgree", true);
+	}
+
 	//CCDLABPATH = "C:\\Program Files\\Astrowerks\\CCDLABx64\\";
 	if (!::Directory::Exists(CCDLABPATH))
 		::Directory::CreateDirectory(CCDLABPATH);
@@ -199,23 +215,7 @@ void Form1::Form1_Load(System::Object ^  sender, System::EventArgs ^  e)
 	/*HalfWidthXUpD->Value = ::Convert::ToInt32(GetReg("CCDLAB", "SubImageHWX"));
 	HalfWidthYUpD->Value = ::Convert::ToInt32(GetReg("CCDLAB", "SubImageHWY"));*/
 	SubImageSizeTxt->Text = "Size: " + ((int)HalfWidthXUpD->Value * 2 + 1).ToString() + " x " + ((int)HalfWidthYUpD->Value * 2 + 1).ToString();
-
-	bool license = ::Convert::ToBoolean(GetReg("CCDLAB", "LicenseAgree"));
-	if (!license)
-	{
-		/*String^ agree = "This software is distributed under Creative Commons license 'Attribution-NonCommercial-NoDerivatives 4.0 International' (CC BY-NC-ND 4.0).  ";
-		agree += "By clicking Yes you agree to the terms of that license agreement.  See:  https://creativecommons.org/licenses/by-nc-nd/4.0/";*/
-
-		String^ agree = "This software is released under GNU Public General License v 3.0 (GPLv3).  ";
-		agree += "By clicking Yes you agree to the terms of that license agreement.  See:  http://www.gnu.org/licenses/";
-
-		::DialogResult res = ::MessageBox::Show(agree, "License Agreement", ::MessageBoxButtons::YesNo);
-		if (res == ::DialogResult::No)
-			::Application::Exit();
-		else
-			SetReg("CCDLAB", "LicenseAgree", true);
-	}
-
+	
 	RecentFilesUpD();
 
 	TBZipCopyChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "TBZipCopyChck"));
@@ -2932,6 +2932,7 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist)
 	if (Convert::ToInt32(tblcheck->GetKeyValue("NAXIS")) == 0)
 	{
 		JPFITS::FitsExtensionTableViewer^ view = gcnew FitsExtensionTableViewer(fullpathlist[0]);
+		view->TopMost = true;
 		return;
 	}
 

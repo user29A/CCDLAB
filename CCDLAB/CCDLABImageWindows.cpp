@@ -45,7 +45,7 @@ void Form1::SubImageWindow_Paint(System::Object^  sender, System::Windows::Forms
 				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush,(float)((float(FNDCOORDS[i,0])-float(XSUBRANGE[0])+0.5)*subxsc-3.0),(float)((float(FNDCOORDS[i,1])-float(YSUBRANGE[0])+0.5)*subysc-3.0),7.0,7.0);
 	}
 
-	if (ShowPSEChck->Checked && PSESRECTS != nullptr)
+	if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSES[PSESINDEX] != nullptr)
 	{
 		IMAGEWINDOWPEN->Width = 2;
 		int rem = 0;
@@ -146,7 +146,7 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			e->Graphics->DrawRectangles(IMAGEWINDOWPEN,MANREGCOORDRECTS);
 		}
 
-		if (ShowPSEChck->Checked && PSESRECTS != nullptr)
+		if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSES[PSESINDEX] != nullptr)
 		{
 			IMAGEWINDOWPEN->Width = 2;
 			int rem = 0;
@@ -795,6 +795,8 @@ void Form1::ImageWindow_MouseUp(System::Object^  sender, System::Windows::Forms:
 
 					 array<double, 2>^ subim = gcnew array<double, 2>(SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWX * 2 + 1);
 					 PSES = gcnew array<JPFITS::SourceExtractor^>(1) { gcnew JPFITS::SourceExtractor() };
+					 PSESINDEX = 0;
+					 PSESRECTS = gcnew array<array<Rectangle>^>(1);
 
 					 double pad = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("PADOFSET")) * Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("IMAGPREC"));
 
@@ -2204,5 +2206,8 @@ void Form1::Form1_Shown(System::Object^  sender, System::EventArgs^  e)
 
 		SubImagePanel->Location = ::Drawing::Point(SubImageSlideY->Right + 10, SubImageWindow->Location.Y);
 	}
+
+	//if(EXTENSIONTABLEFIRSTLOAD)
+		//this->SendToBack();
 }
 

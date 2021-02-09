@@ -404,6 +404,67 @@ void Form1::PSEFindSrcBtn_MouseLeave(System::Object^  sender, System::EventArgs^
 	PSEFindSrcBtn->Refresh();*/
 }
 
+void Form1::PSEDropContextSave_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	SaveFileDialog^ sf = gcnew SaveFileDialog();
+	sf->InitialDirectory = IMAGESET[FILELISTINDEX]->FilePath;
+	sf->Filter = "FITS|*.fits;*.fit;*.fts";
+	sf->OverwritePrompt = false;
+	if (sf->ShowDialog() == ::DialogResult::Cancel)
+		return;
+
+	for (int i = 0; i < PSEDrop->Items->Count; i++)
+	{
+		if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
+		{
+			WCS = gcnew JPFITS::WorldCoordinateSolution();
+			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+			PSES[i]->Generate_Source_RADec_Coords(WCS);
+		}
+		array<String^, 2>^ table = PSES[i]->Source_Table;
+
+		array<String^>^ ttypes = gcnew array<String^>(table->GetLength(0));
+		for (int j = 0; j < ttypes->Length; j++)
+			ttypes[j] = table[j, 0];
+
+		array<Object^>^ entries = gcnew array<Object^>(ttypes->Length);
+		for (int j = 0; j < ttypes->Length; j++)
+		{
+			if (!JPMath::IsNumeric(table[j, 1]))
+			{
+				entries[j] = gcnew array<String^>(table->GetLength(1) - 1);
+				for (int k = 1; k < table->GetLength(1); k++)
+					((array<String^>^)entries[j])[k - 1] = table[j, k];
+			}
+			else
+			{
+				entries[j] = gcnew array<double>(table->GetLength(1) - 1);
+				for (int k = 1; k < table->GetLength(1); k++)
+					((array<double>^)entries[j])[k - 1] = Convert::ToDouble(table[j, k]);
+			}
+		}
+
+		FITSBinTable^ bt = gcnew FITSBinTable();
+		bt->AddExtraHeaderKey("PSESET", PSES[i]->PSEParametersSet.ToString(), "PSE parameters available");
+		if (PSES[i]->PSEParametersSet)
+		{
+			bt->AddExtraHeaderKey("PIXSAT", PSES[i]->PixelSaturation.ToString(), "Pixel saturation threshold");
+			bt->AddExtraHeaderKey("KERNRAD", PSES[i]->KernelRadius.ToString(), "Pixel kernel radius");
+			bt->AddExtraHeaderKey("SRCSEP", PSES[i]->SourceSeparation.ToString(), "Pixel source separation");
+			bt->AddExtraHeaderKey("PIXMIN", PSES[i]->PixelMinimum.ToString(), "Pixel minimum threshold");
+			bt->AddExtraHeaderKey("PIXMAX", PSES[i]->PixelMaximum.ToString(), "Pixel maximum threshold");
+			bt->AddExtraHeaderKey("KERNMIN", PSES[i]->KernelMinimum.ToString(), "Kernel minimum threshold");
+			bt->AddExtraHeaderKey("KERNMAX", PSES[i]->KernelMaximum.ToString(), "Kernel maximum threshold");
+			bt->AddExtraHeaderKey("AUTOBG", PSES[i]->AutoBackground.ToString(), "Auto background");
+			bt->AddExtraHeaderKey("SAVESRC", PSES[i]->SavePointSources.ToString(), "Save sources");
+			//bt->AddExtraHeaderKey("SAVESRCF", PSES[i]->SavePointSources.ToString(), "Save sources file name template");
+			bt->AddExtraHeaderKey("ROIONLY", PSES[i]->SearchROI.ToString(), "Search ROI only");
+		}
+		bt->SetTTYPEEntries(ttypes, nullptr, entries);
+		bt->Write(sf->FileName, PSEDrop->Items[i]->ToString(), true);
+	}
+}
+
 void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
 {
 	if (PSESPLOTALL)
@@ -414,7 +475,12 @@ void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventA
 
 	PSESINDEX = PSEDrop->SelectedIndex;
 	if (PSESRECTS == nullptr || PSESRECTS[PSESINDEX] == nullptr)
+	{
+		ImageWindow->Refresh();
+		SubImageWindow->Refresh();
 		return;
+	}
+	ShowPSEChck->Checked = true;
 	MAKEPSERECTS();
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
@@ -436,9 +502,17 @@ void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventA
 
 void Form1::PSEDropContextPlotAll_Click(System::Object^  sender, System::EventArgs^  e)
 {
+	ShowPSEChck->Checked = true;
 	PSESPLOTALL = true;
 	SubImageWindow->Refresh();
-	ImageWindow->Refresh();	
+	ImageWindow->Refresh();
+}
+
+void Form1::PSEDropContextPlotNone_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	ShowPSEChck->Checked = false;
+	SubImageWindow->Refresh();
+	ImageWindow->Refresh();
 }
 
 void Form1::PSEDropContextRemove_Click(System::Object^  sender, System::EventArgs^  e)
@@ -507,6 +581,10 @@ void Form1::PSEDropContextAdd_Click(System::Object^  sender, System::EventArgs^ 
 
 	PSEDrop->Items->Add("PSE_" + PSECOUNT.ToString());
 	PSEDrop->SelectedIndex = PSEDrop->Items->Count - 1;
+
+	ShowPSEChck->Checked = false;
+	ImageWindow->Refresh();
+	SubImageWindow->Refresh();
 }
 
 void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
@@ -528,7 +606,7 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 		double count_min = (double)PSEKernelMinUpD->Value;
 		double count_max = (double)PSEKernelMaxUpD->Value;
 		bool auto_bg = PSEAutoBackgroundChck->Checked;
-		bool sn = !(PSESigmaCountBtn->Text == "SN");
+		bool sn = (PSEPixelValLbl->Text->Contains("SN"));
 		int kernel_radius = (int)PSEKernelRadUpD->Value;
 		int src_sep = (int)PSESeparationUpD->Value;
 
@@ -1302,7 +1380,7 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	}
 
 	OpenFileDialog^ ofd = gcnew OpenFileDialog();
-	ofd->Filter = "Tab Delimited Text|*.txt|CSV (Comma Delimited)|*.csv";
+	ofd->Filter = "Tab Delimited Text|*.txt|CSV (Comma Delimited)|*.csv|FITS BinTable|*.fits;*.fit;*.fts";
 	ofd->FilterIndex = Convert::ToInt32(GetReg("CCDLAB", "PSESaveFilter"));
 	ofd->Multiselect = true;
 	ofd->InitialDirectory = (String^)GetReg("CCDLAB", "PSESavePath");
@@ -1311,128 +1389,171 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	SetReg("CCDLAB", "PSESavePath", ofd->FileName->Substring(0, ofd->FileName->LastIndexOf("\\")));
 	SetReg("CCDLAB", "PSESaveFilter", ofd->FilterIndex);
 
-	if (PSES == nullptr)
+	if (PSELoadSrcDrop->SelectedIndex <= 1)
 	{
-		PSES = gcnew array<JPFITS::SourceExtractor^>(ofd->FileNames->Length);
-		PSESRECTS = gcnew array<array<Rectangle>^>(ofd->FileNames->Length);
-		PSESINDEX = 0;
-		PSEDrop->Enabled = true;
-	}
-	else//add PSES
-	{
-		array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length + ofd->FileNames->Length);
-		array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length + ofd->FileNames->Length);
-		for (int i = 0; i < PSES->Length; i++)
+		if (PSES == nullptr)
 		{
-			temppses[i] = PSES[i];
-			temprecs[i] = PSESRECTS[i];
+			PSES = gcnew array<JPFITS::SourceExtractor^>(ofd->FileNames->Length);
+			PSESRECTS = gcnew array<array<Rectangle>^>(ofd->FileNames->Length);
+			PSESINDEX = 0;
+			PSEDrop->Enabled = true;
 		}
-		PSESINDEX = PSES->Length;
-		PSES = temppses;
-		PSESRECTS = temprecs;
-	}
-
-	String^ delimit = "\t";
-	if (ofd->FilterIndex == 2)
-		delimit = ",";
-
-	StreamReader^ sr;
-	String^ line;	
-
-	for (int i = 0; i < ofd->FileNames->Length; i++)
-	{
-		int Nsrc = 0;
-		sr = gcnew StreamReader(ofd->FileNames[i]);
-		int j = -1;
-
-		while (!sr->EndOfStream)
+		else//add PSES
 		{
-			line = sr->ReadLine();
-			j++;
-			if (j == 0)//check if first line is a header
+			array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length + ofd->FileNames->Length);
+			array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length + ofd->FileNames->Length);
+			for (int i = 0; i < PSES->Length; i++)
 			{
-				int delimitindex = line->IndexOf(delimit);
-				if (!JPMath::IsNumeric(line->Substring(0, delimitindex)))
-					continue;
+				temppses[i] = PSES[i];
+				temprecs[i] = PSESRECTS[i];
 			}
-			Nsrc++;
+			PSESINDEX = PSES->Length;
+			PSES = temppses;
+			PSESRECTS = temprecs;
 		}
 
-		array<double>^ c1 = gcnew array<double>(Nsrc);
-		array<double>^ c2 = gcnew array<double>(Nsrc);
-
-		Nsrc = 0;
-		sr->BaseStream->Position = 0;
-		j = -1;
-		while (!sr->EndOfStream)
+		for (int i = 0; i < ofd->FileNames->Length; i++)
 		{
-			line = sr->ReadLine();
-			j++;
-			int delimitindex = line->IndexOf(delimit);
-			if (j == 0)//check if header line
-				if (!JPMath::IsNumeric(line->Substring(0, delimitindex)))
-					continue;
-			c1[Nsrc] = Convert::ToDouble(line->Substring(0, delimitindex));
-			int nextdelimitindex = line->IndexOf(delimit, delimitindex + 1);
-			if (nextdelimitindex == -1)
-				nextdelimitindex = line->Length;
-			c2[Nsrc] = Convert::ToDouble(line->Substring(delimitindex + 1, nextdelimitindex - delimitindex - 1));
-			Nsrc++;
-		}
-		sr->Close();
+			String^ delimit = "\t";
+			if (ofd->FilterIndex == 2)
+				delimit = ",";
+			StreamReader^ sr;
+			String^ line;
 
-		if (PSELoadSrcDrop->SelectedIndex == 0)//RA, Dec
-		{
-			WCS = gcnew JPFITS::WorldCoordinateSolution();
-			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-			array<double>^ Xcoords = gcnew array<double>(Nsrc);
-			array<double>^ Ycoords = gcnew array<double>(Nsrc);
-			WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
-			PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(Xcoords, Ycoords);
-			PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
+			int Nsrc = 0;
+			sr = gcnew StreamReader(ofd->FileNames[i]);
+			int j = -1;
+
+			while (!sr->EndOfStream)
+			{
+				line = sr->ReadLine();
+				j++;
+				if (j == 0)//check if first line is a header
+				{
+					int delimitindex = line->IndexOf(delimit);
+					if (!JPMath::IsNumeric(line->Substring(0, delimitindex)))
+						continue;
+				}
+				Nsrc++;
+			}
+
+			array<double>^ c1 = gcnew array<double>(Nsrc);
+			array<double>^ c2 = gcnew array<double>(Nsrc);
+
+			Nsrc = 0;
+			sr->BaseStream->Position = 0;
+			j = -1;
+			while (!sr->EndOfStream)
+			{
+				line = sr->ReadLine();
+				j++;
+				int delimitindex = line->IndexOf(delimit);
+				if (j == 0)//check if header line
+					if (!JPMath::IsNumeric(line->Substring(0, delimitindex)))
+						continue;
+				c1[Nsrc] = Convert::ToDouble(line->Substring(0, delimitindex));
+				int nextdelimitindex = line->IndexOf(delimit, delimitindex + 1);
+				if (nextdelimitindex == -1)
+					nextdelimitindex = line->Length;
+				c2[Nsrc] = Convert::ToDouble(line->Substring(delimitindex + 1, nextdelimitindex - delimitindex - 1));
+				Nsrc++;
+			}
+			sr->Close();
+
+			if (PSELoadSrcDrop->SelectedIndex == 0)//RA, Dec
+			{
+				WCS = gcnew JPFITS::WorldCoordinateSolution();
+				WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+				array<double>^ Xcoords = gcnew array<double>(Nsrc);
+				array<double>^ Ycoords = gcnew array<double>(Nsrc);
+				WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
+				PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(Xcoords, Ycoords);
+				PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
+			}
+			if (PSELoadSrcDrop->SelectedIndex == 1)//X, Y
+				PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(c1, c2);
+			MAKEPSERECTS();
+			PSECOUNT++;
+			PSEDrop->Items->Add(ofd->FileNames[i]->Substring(ofd->FileNames[i]->LastIndexOf("\\") + 1));
+			//PSEDrop->SelectedIndex = PSEDrop->Items->Count - 1;
+			if (i < ofd->FileNames->Length - 1)
+				PSESINDEX++;
 		}
-		if (PSELoadSrcDrop->SelectedIndex == 1)//X, Y
-			PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(c1, c2);
-		MAKEPSERECTS();
-		PSECOUNT++;
-		PSEDrop->Items->Add(/*"PSE_" + PSECOUNT.ToString()*/ ofd->FileNames[i]->Substring(ofd->FileNames[i]->LastIndexOf("\\") + 1));
-		//PSEDrop->SelectedIndex = PSEDrop->Items->Count - 1;
-		if (i < ofd->FileNames->Length - 1)
-			PSESINDEX++;
+	}
+	else if (PSELoadSrcDrop->SelectedIndex == 2)//PSE bintables
+	{
+		int Nnewpses = 0;
+		for (int i = 0; i < ofd->FileNames->Length; i++)
+		{
+			array<String^>^ tables = FITSBinTable::GetAllExtensionNames(ofd->FileNames[i]);
+			Nnewpses += tables->Length;
+		}
+		if (PSES == nullptr)
+		{
+			PSES = gcnew array<JPFITS::SourceExtractor^>(Nnewpses);
+			PSESRECTS = gcnew array<array<Rectangle>^>(Nnewpses);
+			PSESINDEX = 0;
+			PSEDrop->Enabled = true;
+		}
+		else//add PSES
+		{
+			array<JPFITS::SourceExtractor^>^ temppses = gcnew array<JPFITS::SourceExtractor^>(PSES->Length + Nnewpses);
+			array<array<Rectangle>^>^ temprecs = gcnew array<array<Rectangle>^>(PSES->Length + Nnewpses);
+			for (int i = 0; i < PSES->Length; i++)
+			{
+				temppses[i] = PSES[i];
+				temprecs[i] = PSESRECTS[i];
+			}
+			PSESINDEX = PSES->Length;
+			PSES = temppses;
+			PSESRECTS = temprecs;
+		}
+
+		for (int i = 0; i < ofd->FileNames->Length; i++)
+		{
+			array<String^>^ tables = FITSBinTable::GetAllExtensionNames(ofd->FileNames[i]);
+			for (int j = 0; j < tables->Length; j++)
+			{
+				FITSBinTable^ bt = gcnew FITSBinTable(ofd->FileNames[i], tables[j]);
+				PSES[PSESINDEX] = gcnew SourceExtractor(bt);
+				MAKEPSERECTS();
+				PSECOUNT++;
+				PSEDrop->Items->Add(bt->ExtensionNameEXTNAME);
+				if (j < PSES->Length - 1)
+					PSESINDEX++;
+			}
+		}
 	}
 	
 	PSETableViewBtn->Enabled = true;
 	ShowPSEChck->Enabled = true;
 	ShowPSEChck->Checked = true;
-	/*ImageWindow->Refresh();
-	SubImageWindow->Refresh();*/
 	PSEDropContextPlotAll->PerformClick();
 }
 
-void Form1::PSEClearBtn_Click(System::Object^  sender, System::EventArgs^  e)
+void Form1::PSEPixelValLbl_MouseHover(System::Object^  sender, System::EventArgs^  e)
 {
-	PSES = nullptr;
-	PSESRECTS = nullptr;
-	PSESINDEX = -1;
-	ShowPSEChck->Checked = false;
-	PSEDrop->Items->Clear();
-	ImageWindow->Refresh();
-	SubImageWindow->Refresh();
+	PSEPixelValLbl->Font = gcnew ::Font(PSEPixelValLbl->Font, ::FontStyle::Bold);
+	PSEPixelCntLbl->Font = gcnew ::Font(PSEPixelCntLbl->Font, ::FontStyle::Bold);
 }
 
-void Form1::PSESigmaCountBtn_Click(System::Object^  sender, System::EventArgs^  e)
+void Form1::PSEPixelValLbl_MouseLeave(System::Object^  sender, System::EventArgs^  e)
 {
-	if (PSESigmaCountBtn->Text == "SN")
+	PSEPixelValLbl->Font = gcnew ::Font(PSEPixelValLbl->Font, ::FontStyle::Regular);
+	PSEPixelCntLbl->Font = gcnew ::Font(PSEPixelCntLbl->Font, ::FontStyle::Regular);
+}
+
+void Form1::PSEPixelValLbl_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	if (((Label^)sender)->Text->Contains("SN"))
 	{
-		PSESigmaCountBtn->Text = "Count";
-		PSEPixelValLbl->Text = "Pixel SN";
-		PSEPixelCntLbl->Text = "Total SN";
+		PSEPixelValLbl->Text = "Pixel Value:";
+		PSEPixelCntLbl->Text = "Kernel Sum:";
 	}
 	else
 	{
-		PSESigmaCountBtn->Text = "SN";
-		PSEPixelValLbl->Text = "Pixel Count";
-		PSEPixelCntLbl->Text = "Total Count";
+		PSEPixelValLbl->Text = "Pixel SN:";
+		PSEPixelCntLbl->Text = "Kernel SN:";
 	}
 }
 
@@ -1470,7 +1591,10 @@ void Form1::PSETableViewBtn_Click(System::Object^  sender, System::EventArgs^  e
 				PSETABLEVIEWER->PSETable[i, j]->Value = strvalue;
 		}
 
-	PSETABLEVIEWER->Text = PSES[PSESINDEX]->LSFit_Equation;
+	for (int j = 0; j < PSETABLEVIEWER->PSETable->RowCount; j++)
+		PSETABLEVIEWER->PSETable->Rows[j]->HeaderCell->Value = (j + 1).ToString();
+
+	PSETABLEVIEWER->Text = PSEDrop->Items[PSESINDEX] + " " + PSES[PSESINDEX]->LSFit_Equation;
 	PSETABLEVIEWER->Show(this);
 }
 
