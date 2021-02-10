@@ -1382,6 +1382,10 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	OpenFileDialog^ ofd = gcnew OpenFileDialog();
 	ofd->Filter = "Tab Delimited Text|*.txt|CSV (Comma Delimited)|*.csv|FITS BinTable|*.fits;*.fit;*.fts";
 	ofd->FilterIndex = Convert::ToInt32(GetReg("CCDLAB", "PSESaveFilter"));
+	if (PSELoadSrcDrop->SelectedIndex == 2)
+		ofd->FilterIndex = 3;
+	else
+		ofd->FilterIndex = 2;
 	ofd->Multiselect = true;
 	ofd->InitialDirectory = (String^)GetReg("CCDLAB", "PSESavePath");
 	if (ofd->ShowDialog() == ::DialogResult::Cancel)
