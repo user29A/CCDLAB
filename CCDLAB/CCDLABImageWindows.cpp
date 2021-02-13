@@ -798,7 +798,7 @@ void Form1::ImageWindow_MouseUp(System::Object^  sender, System::Windows::Forms:
 					 PSESINDEX = 0;
 					 PSESRECTS = gcnew array<array<Rectangle>^>(1);
 
-					 double pad = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("PADOFSET")) * Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("IMAGPREC"));
+					 double pad = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("PADOFSET")) * Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("IMAGPREC"));
 
 					 for (int i = 0; i < MANREGCOORDRECTS->Length; i++)
 					 {
@@ -838,10 +838,10 @@ void Form1::ImageWindow_MouseUp(System::Object^  sender, System::Windows::Forms:
 			 if (UVREGISTRATIONFILESINDEX == 0 && IMAGESET[FILELISTINDEX]->FileName->Contains("RGSTRD"))
 				 if (MessageBox::Show("Run through with the registration coordinates for all images?", "Auto Run Through Registration?", MessageBoxButtons::YesNo) == ::DialogResult::Yes)
 				 {
+					 UVITAUTOREGISTER = true;
 					 ProgressBar->Value = 0;
 					 ProgressBar->Maximum = UVREGISTRATIONFILES->Length;
 					 ProgressBar->Refresh();
-					 UVITAUTOREGISTER = true;
 				 }
 
 			 //MessageBox::Show("here2");
@@ -1812,8 +1812,8 @@ void Form1::MarkCoordSave_Click(System::Object^  sender, System::EventArgs^  e)
 		rects[1, i] = MARKCOORDRECTDPTS[i]->Y;//(MARKCOORDS[1, i] + 1) * ysc - 6;
 	}
 	JPFITS::FITSImage^ ff = gcnew FITSImage(fsd->FileName, rects, false, false);
-	ff->AddKey("RECWIDTH", MARKCOORDRECTS[0].Width.ToString(), "", -1);
-	ff->AddKey("RECHEIGT", MARKCOORDRECTS[0].Height.ToString(), "", -1);
+	ff->Header->AddKey("RECWIDTH", MARKCOORDRECTS[0].Width.ToString(), "", -1);
+	ff->Header->AddKey("RECHEIGT", MARKCOORDRECTS[0].Height.ToString(), "", -1);
 	ff->WriteImage(TypeCode::Double, false);
 }
 
@@ -2148,7 +2148,7 @@ void Form1::SubImCntxtGoToRATxt_KeyDown(System::Object^  sender, System::Windows
 			}
 		}
 
-		if (IMAGESET[FILELISTINDEX]->GetKeyValue("CD1_1") == "")
+		if (IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CD1_1") == "")
 		{
 			MessageBox::Show("CD matrix for WCS not found in current image header.  Can not transform RA-Dec to x-y...", "Error...");
 			return;

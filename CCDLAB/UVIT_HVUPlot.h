@@ -804,7 +804,7 @@ void Plot_Telem(array<String^>^ files, int ind)
 		axisxLabel = "Frame Count Tick";
 
 	FITSImage^ f = gcnew FITSImage(files[0], nullptr, true, false, false, false);
-	TitleTxt->Text = f->GetKeyValue("SRCFILE");
+	TitleTxt->Text = f->Header->GetKeyValue("SRCFILE");
 
 	wb = gcnew JPWaitBar::WaitBar();
 	PlotWrkr->RunWorkerAsync(files);
@@ -845,23 +845,23 @@ private: System::Void PlotWrkr_DoWork(System::Object^  sender, System::Component
 		}
 
 		f = gcnew FITSImage(FileList[i], nullptr, true, false, false, false);
-		anode[i] = ::Convert::ToDouble(f->GetKeyValue("AND_TEL"));
-		mcp[i] = ::Convert::ToDouble(f->GetKeyValue("MCP_TEL"));
-		cathode[i] = ::Convert::ToDouble(f->GetKeyValue("CAT_TEL"));
-		hvu[i] = ::Convert::ToDouble(f->GetKeyValue("HVU_TEL"));
+		anode[i] = ::Convert::ToDouble(f->Header->GetKeyValue("AND_TEL"));
+		mcp[i] = ::Convert::ToDouble(f->Header->GetKeyValue("MCP_TEL"));
+		cathode[i] = ::Convert::ToDouble(f->Header->GetKeyValue("CAT_TEL"));
+		hvu[i] = ::Convert::ToDouble(f->Header->GetKeyValue("HVU_TEL"));
 
 		if (i == 0)
 		{
-			time_start = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;//minutes
-			num_start = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+			time_start = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;//minutes
+			num_start = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		}
 		if (i == NFiles-1)
 		{
-			time_end = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;//minutes
-			num_end = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+			time_end = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;//minutes
+			num_end = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		}
-		time_cur = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;
-		num_cur = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+		time_cur = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;
+		num_cur = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		if (IND == 0)
 			tick[i] = time_cur;
 		else

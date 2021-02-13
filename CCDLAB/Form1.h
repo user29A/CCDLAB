@@ -154,12 +154,12 @@ namespace CCDLAB {
 	private: System::Windows::Forms::GroupBox^  ImageBatchRedxnPnl;
 	private: System::Windows::Forms::ToolStripButton^  TBOpenFound;
 	private: System::Windows::Forms::ToolStripMenuItem^  FMOpenFound;
-	private: System::Windows::Forms::ListBox^  HeaderKeyValTxt;
-	private: System::Windows::Forms::ListBox^  HeaderKeyComTxt;
+
+
 	private: System::Windows::Forms::ContextMenuStrip^  HeaderCntxt;
 
 	private: System::Windows::Forms::ToolStripMenuItem^  HCInsert;
-	private: System::Windows::Forms::ListBox^  HeaderKeyTxt;
+
 	private: System::Windows::Forms::ToolStripMenuItem^  HCEdit;
 	private: System::Windows::Forms::ComboBox^  FindPtsDrop;
 	private: System::Windows::Forms::TextBox^  ReplaceImagePtsTxt;
@@ -1304,6 +1304,7 @@ private: System::Windows::Forms::ToolStripMenuItem^  UVAutoPSFPostMergeChck;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextPlotAll;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextPlotNone;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextSave;
+	private: System::Windows::Forms::ListBox^  HeaderTxt;
 
 
 
@@ -1564,8 +1565,8 @@ private: System::ComponentModel::IContainer^  components;
 		{
 			this->components = (gcnew System::ComponentModel::Container());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(Form1::typeid));
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea4 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series4 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->ImageWindowCntxt = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
 			this->ImageWndwCntxtView = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->ShowCursorBox = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2057,9 +2058,6 @@ private: System::ComponentModel::IContainer^  components;
 			this->HCPlot = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->HCPlotKeyValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->HCPlotListValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->HeaderKeyValTxt = (gcnew System::Windows::Forms::ListBox());
-			this->HeaderKeyComTxt = (gcnew System::Windows::Forms::ListBox());
-			this->HeaderKeyTxt = (gcnew System::Windows::Forms::ListBox());
 			this->MainMenu = (gcnew System::Windows::Forms::MenuStrip());
 			this->FileMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->FMLoad = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2385,6 +2383,7 @@ private: System::ComponentModel::IContainer^  components;
 			this->TEST_TEXT_BOX = (gcnew System::Windows::Forms::TextBox());
 			this->DriftFromPCPSTrackBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
 			this->UVFinalizeBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
+			this->HeaderTxt = (gcnew System::Windows::Forms::ListBox());
 			this->ImageWindowCntxt->SuspendLayout();
 			this->ImageFingerPointContext->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->HalfWidthXUpD))->BeginInit();
@@ -7993,60 +7992,6 @@ private: System::ComponentModel::IContainer^  components;
 			this->HCPlotListValues->Text = L"Found File List Key Values";
 			this->HCPlotListValues->Click += gcnew System::EventHandler(this, &Form1::HCPlotListValues_Click);
 			// 
-			// HeaderKeyValTxt
-			// 
-			this->HeaderKeyValTxt->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom));
-			this->HeaderKeyValTxt->BackColor = System::Drawing::Color::LightGray;
-			this->HeaderKeyValTxt->ContextMenuStrip = this->HeaderCntxt;
-			this->HeaderKeyValTxt->FormattingEnabled = true;
-			this->HeaderKeyValTxt->HorizontalScrollbar = true;
-			this->HeaderKeyValTxt->Location = System::Drawing::Point(258, 41);
-			this->HeaderKeyValTxt->Name = L"HeaderKeyValTxt";
-			this->HeaderKeyValTxt->ScrollAlwaysVisible = true;
-			this->HeaderKeyValTxt->SelectionMode = System::Windows::Forms::SelectionMode::MultiExtended;
-			this->HeaderKeyValTxt->Size = System::Drawing::Size(186, 797);
-			this->HeaderKeyValTxt->TabIndex = 41;
-			this->HeaderKeyValTxt->Visible = false;
-			this->HeaderKeyValTxt->DoubleClick += gcnew System::EventHandler(this, &Form1::HCEdit_Click);
-			this->HeaderKeyValTxt->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::HeaderKeyTxt_KeyDown);
-			this->HeaderKeyValTxt->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::HeaderKeyTxt_MouseUp);
-			// 
-			// HeaderKeyComTxt
-			// 
-			this->HeaderKeyComTxt->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom));
-			this->HeaderKeyComTxt->BackColor = System::Drawing::Color::LightGray;
-			this->HeaderKeyComTxt->ContextMenuStrip = this->HeaderCntxt;
-			this->HeaderKeyComTxt->FormattingEnabled = true;
-			this->HeaderKeyComTxt->HorizontalScrollbar = true;
-			this->HeaderKeyComTxt->Location = System::Drawing::Point(444, 41);
-			this->HeaderKeyComTxt->Name = L"HeaderKeyComTxt";
-			this->HeaderKeyComTxt->ScrollAlwaysVisible = true;
-			this->HeaderKeyComTxt->SelectionMode = System::Windows::Forms::SelectionMode::MultiExtended;
-			this->HeaderKeyComTxt->Size = System::Drawing::Size(306, 797);
-			this->HeaderKeyComTxt->TabIndex = 42;
-			this->HeaderKeyComTxt->Visible = false;
-			this->HeaderKeyComTxt->DoubleClick += gcnew System::EventHandler(this, &Form1::HCEdit_Click);
-			this->HeaderKeyComTxt->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::HeaderKeyTxt_KeyDown);
-			this->HeaderKeyComTxt->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::HeaderKeyTxt_MouseUp);
-			// 
-			// HeaderKeyTxt
-			// 
-			this->HeaderKeyTxt->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom));
-			this->HeaderKeyTxt->BackColor = System::Drawing::Color::LightGray;
-			this->HeaderKeyTxt->ContextMenuStrip = this->HeaderCntxt;
-			this->HeaderKeyTxt->FormattingEnabled = true;
-			this->HeaderKeyTxt->HorizontalScrollbar = true;
-			this->HeaderKeyTxt->Location = System::Drawing::Point(159, 41);
-			this->HeaderKeyTxt->Name = L"HeaderKeyTxt";
-			this->HeaderKeyTxt->ScrollAlwaysVisible = true;
-			this->HeaderKeyTxt->SelectionMode = System::Windows::Forms::SelectionMode::MultiExtended;
-			this->HeaderKeyTxt->Size = System::Drawing::Size(99, 797);
-			this->HeaderKeyTxt->TabIndex = 43;
-			this->HeaderKeyTxt->Visible = false;
-			this->HeaderKeyTxt->DoubleClick += gcnew System::EventHandler(this, &Form1::HCEdit_Click);
-			this->HeaderKeyTxt->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::HeaderKeyTxt_KeyDown);
-			this->HeaderKeyTxt->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::HeaderKeyTxt_MouseUp);
-			// 
 			// MainMenu
 			// 
 			this->MainMenu->BackColor = System::Drawing::Color::Gainsboro;
@@ -10701,17 +10646,17 @@ private: System::ComponentModel::IContainer^  components;
 			this->Chart1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
 				| System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
-			chartArea1->AxisX->MajorGrid->Enabled = false;
-			chartArea1->AxisY->MajorGrid->Enabled = false;
-			chartArea1->BorderDashStyle = System::Windows::Forms::DataVisualization::Charting::ChartDashStyle::Solid;
-			chartArea1->Name = L"ChartArea1";
-			this->Chart1->ChartAreas->Add(chartArea1);
+			chartArea4->AxisX->MajorGrid->Enabled = false;
+			chartArea4->AxisY->MajorGrid->Enabled = false;
+			chartArea4->BorderDashStyle = System::Windows::Forms::DataVisualization::Charting::ChartDashStyle::Solid;
+			chartArea4->Name = L"ChartArea1";
+			this->Chart1->ChartAreas->Add(chartArea4);
 			this->Chart1->Location = System::Drawing::Point(35, 41);
 			this->Chart1->Name = L"Chart1";
-			series1->ChartArea = L"ChartArea1";
-			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series1->Name = L"Series1";
-			this->Chart1->Series->Add(series1);
+			series4->ChartArea = L"ChartArea1";
+			series4->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series4->Name = L"Series1";
+			this->Chart1->Series->Add(series4);
 			this->Chart1->Size = System::Drawing::Size(812, 812);
 			this->Chart1->TabIndex = 56;
 			this->Chart1->Text = L"chart1";
@@ -10866,6 +10811,27 @@ private: System::ComponentModel::IContainer^  components;
 			this->UVFinalizeBGWrkr->ProgressChanged += gcnew System::ComponentModel::ProgressChangedEventHandler(this, &Form1::UVFinalizeBGWrkr_ProgressChanged);
 			this->UVFinalizeBGWrkr->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &Form1::UVFinalizeBGWrkr_RunWorkerCompleted);
 			// 
+			// HeaderTxt
+			// 
+			this->HeaderTxt->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom));
+			this->HeaderTxt->BackColor = System::Drawing::Color::LightGray;
+			this->HeaderTxt->ContextMenuStrip = this->HeaderCntxt;
+			this->HeaderTxt->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->HeaderTxt->FormattingEnabled = true;
+			this->HeaderTxt->HorizontalScrollbar = true;
+			this->HeaderTxt->ItemHeight = 15;
+			this->HeaderTxt->Location = System::Drawing::Point(143, 41);
+			this->HeaderTxt->Name = L"HeaderTxt";
+			this->HeaderTxt->ScrollAlwaysVisible = true;
+			this->HeaderTxt->SelectionMode = System::Windows::Forms::SelectionMode::MultiExtended;
+			this->HeaderTxt->Size = System::Drawing::Size(599, 784);
+			this->HeaderTxt->TabIndex = 59;
+			this->HeaderTxt->Visible = false;
+			this->HeaderTxt->DoubleClick += gcnew System::EventHandler(this, &Form1::HCEdit_Click);
+			this->HeaderTxt->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::HeaderKeyTxt_KeyDown);
+			this->HeaderTxt->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::HeaderKeyTxt_MouseUp);
+			// 
 			// Form1
 			// 
 			this->AccessibleRole = System::Windows::Forms::AccessibleRole::Application;
@@ -10896,12 +10862,10 @@ private: System::ComponentModel::IContainer^  components;
 			this->Controls->Add(this->SubImageSlideY);
 			this->Controls->Add(this->MainTab);
 			this->Controls->Add(this->YPositionTxt);
-			this->Controls->Add(this->HeaderKeyTxt);
 			this->Controls->Add(this->SubImageBtn);
-			this->Controls->Add(this->HeaderKeyValTxt);
-			this->Controls->Add(this->HeaderKeyComTxt);
-			this->Controls->Add(this->Chart1);
+			this->Controls->Add(this->HeaderTxt);
 			this->Controls->Add(this->ImageWindow);
+			this->Controls->Add(this->Chart1);
 			this->Controls->Add(this->InvQuitBtn);
 			this->Controls->Add(this->TEST_TEXT_BOX);
 			this->DoubleBuffered = true;

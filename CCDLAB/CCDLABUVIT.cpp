@@ -120,9 +120,9 @@ void Form1::UVAlgorithmContxtFunction(int type)
 	 array<double>^ values;
 	 JPPlot^ jpplot = gcnew JPPlot();
 	 String^ algorithm;
-	 String^ chan = IMAGESET[FILELISTINDEX]->GetKeyValue("CHANNEL");
+	 String^ chan = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CHANNEL");
 	 if (chan->Length == 0)
-		 chan = IMAGESET[FILELISTINDEX]->GetKeyValue("DETECTOR");
+		 chan = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("DETECTOR");
 
 	 switch (ind)//ind is Algorithm type index
 	 {
@@ -876,9 +876,9 @@ void Form1::UVIT_ApplyCPUCorrectionMenu_Click(System::Object^  sender, System::E
 
 	String^ CPUXDistFile;
 	String^ CPUYDistFile;
-	String^ channel = IntsFits->GetKeyValue("CHANNEL");
+	String^ channel = IntsFits->Header->GetKeyValue("CHANNEL");
 	if (channel->Length == 0)
-		channel = IntsFits->GetKeyValue("DETECTOR");
+		channel = IntsFits->Header->GetKeyValue("DETECTOR");
 	if (channel == "FUV")
 	{
 		if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits"))
@@ -970,12 +970,12 @@ void Form1::ApplyUVFPNMenu_Click(System::Object^  sender, System::EventArgs^  e)
 	SetReg("CCDLAB", "L2EventListPath",dir);
 
 	String^ FPNFile;
-	String^ channel = IntsFits->GetKeyValue("CHANNEL");
+	String^ channel = IntsFits->Header->GetKeyValue("CHANNEL");
 	if (channel->Length == 0)
-		channel = IntsFits->GetKeyValue("DETECTOR");
-	String^ alg = IntsFits->GetKeyValue("CENTROID");
+		channel = IntsFits->Header->GetKeyValue("DETECTOR");
+	String^ alg = IntsFits->Header->GetKeyValue("CENTROID");
 	if (alg->Length == 0)
-		alg = IntsFits->GetKeyValue("ALGRITHM");
+		alg = IntsFits->Header->GetKeyValue("ALGRITHM");
 	bool FPNsuccess = false;
 	if (channel == "FUV")
 	{
@@ -2030,9 +2030,9 @@ void Form1::ConvertListToImgMenu_DropDownOpened(System::Object^  sender, System:
 
 void Form1::UVAutoThreshChck_CheckedChanged(System::Object^  sender, System::EventArgs^  e)
 {
-	String^ chan = IMAGESET[FILELISTINDEX]->GetKeyValue("CHANNEL");
+	String^ chan = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CHANNEL");
 	if (chan->Length == 0)
-		chan = IMAGESET[FILELISTINDEX]->GetKeyValue("DETECTOR");
+		chan = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("DETECTOR");
 
 	if (chan == "VIS")
 	{
@@ -2188,16 +2188,16 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 		JPFITS::FITSImage^ FracFits = gcnew JPFITS::FITSImage(FracFile, nullptr, true, true, false, !do_parallel);
 		int NPts = FracFits->Height;
 
-		String^ channel = IntsFits->GetKeyValue("CHANNEL");
+		String^ channel = IntsFits->Header->GetKeyValue("CHANNEL");
 		if (channel->Length == 0)
-			channel = IntsFits->GetKeyValue("DETECTOR");
+			channel = IntsFits->Header->GetKeyValue("DETECTOR");
 
 		double prec = UVLISTTOIMAGEPREC;
 
-		String^ EXTXRNG = FracFits->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+		String^ EXTXRNG = FracFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
 		if (EXTXRNG == "")
 			EXTXRNG = "0:511";//from L2 data
-		String^ EXTYRNG = FracFits->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+		String^ EXTYRNG = FracFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
 		if (EXTYRNG == "")
 			EXTYRNG = "0:511";//from L2 data
 		int ix = EXTXRNG->IndexOf(":");
@@ -2207,21 +2207,21 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 		double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix+1));//range end
 		double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy+1));
 
-		String^ xoffset = FracFits->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+		String^ xoffset = FracFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 		if (xoffset == "")
-			xoffset = FracFits->GetKeyValue("WIN_XOFF");//from L2 data
+			xoffset = FracFits->Header->GetKeyValue("WIN_XOFF");//from L2 data
 		double ox = ::Convert::ToDouble(xoffset);//x offset
-		String^ yoffset = FracFits->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+		String^ yoffset = FracFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 		if (yoffset == "")
-			yoffset = FracFits->GetKeyValue("WIN_YOFF");//from L2 data
+			yoffset = FracFits->Header->GetKeyValue("WIN_YOFF");//from L2 data
 		double oy = ::Convert::ToDouble(yoffset);//y offset
-		String^ sizex = FracFits->GetKeyValue("XSIZE");
+		String^ sizex = FracFits->Header->GetKeyValue("XSIZE");
 		if (sizex == "")
-			sizex = FracFits->GetKeyValue("WIN_X_SZ");
+			sizex = FracFits->Header->GetKeyValue("WIN_X_SZ");
 		double szx = ::Convert::ToDouble(sizex);//x size
-		String^ sizey = FracFits->GetKeyValue("YSIZE");
+		String^ sizey = FracFits->Header->GetKeyValue("YSIZE");
 		if (sizey == "")
-			sizey = FracFits->GetKeyValue("WIN_Y_SZ");
+			sizey = FracFits->Header->GetKeyValue("WIN_Y_SZ");
 		double szy = ::Convert::ToDouble(sizey);//y size
 
 		if (rx1 != 0 && rx2 != 511)
@@ -2319,7 +2319,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 		times = FITSImage::ReadImageVectorOnly(TimeFileList, nullptr, !do_parallel);
 		frames = FITSImage::ReadImageVectorOnly(FrameFileList, nullptr, !do_parallel);//should be no roll-overs in these
 		double time_per_frame = (times[times->Length-1] - times[0]) / 1000 / (frames[times->Length-1] - frames[0]);//need to subtract this from total integration time whenver a CR frame is rejected
-		String^ multstr = IntsFits->GetKeyValue("TIMEMULT");
+		String^ multstr = IntsFits->Header->GetKeyValue("TIMEMULT");
 		double mult = 1;
 		if (multstr != "")
 			mult = ::Convert::ToDouble(multstr);
@@ -2479,13 +2479,13 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 			imgname = imgname->Replace(".fits", "_deExp.fits");
 
 		JPFITS::FITSImage^ fitsimg = gcnew FITSImage(imgname, img, false, !do_parallel);
-		fitsimg->CopyHeader(FracFits);
+		fitsimg->Header->CopyHeaderFrom(FracFits->Header);//  CopyHeader(FracFits);
 
 		double missingframephotredc = 0, parityphotredc = 0;
 		try
 		{
-			missingframephotredc = Convert::ToDouble(fitsimg->GetKeyValue("FRAMREDC"));
-			parityphotredc = Convert::ToDouble(fitsimg->GetKeyValue("PARTREDC"));
+			missingframephotredc = Convert::ToDouble(fitsimg->Header->GetKeyValue("FRAMREDC"));
+			parityphotredc = Convert::ToDouble(fitsimg->Header->GetKeyValue("PARTREDC"));
 		}
 		catch (...)
 		{
@@ -2495,18 +2495,18 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 		double datatime = physicaltime * (1 - missingframephotredc) - nCRframes * time_per_frame;
 		double rdcdtime = datatime * (1 - parityphotredc);
 		
-		fitsimg->AddKey("TIMEPERF", time_per_frame.ToString("#.000000"), "Time per Frame (s)", 14);
-		fitsimg->AddKey("FRAMPERS", (1/time_per_frame).ToString("#.000"), "Frames per Second", 14);
-		fitsimg->AddKey("NCOSMICF", nCRframes.ToString(), "Number of rejected cosmic ray frames", 14);
-		fitsimg->AddKey("PHYSTIME", physicaltime.ToString("#.000"), "Physical Integration Time for Image (s)", 14);
-		fitsimg->AddKey("DATATIME", datatime.ToString("#.000"), "PHYSTIME Reduced for Cosmic and Missing Frames (s)", 14);
-		fitsimg->AddKey("RDCDTIME", rdcdtime.ToString("#.000"), "DATATIME Reduced for Parity Errors (s)", 14);
-		fitsimg->SetKey("EXP_TIME", rdcdtime.ToString("#.000"), "Same as RDCDTIME-Final Science Integration Time(s)", true, 14);
+		fitsimg->Header->AddKey("TIMEPERF", time_per_frame.ToString("#.000000"), "Time per Frame (s)", 14);
+		fitsimg->Header->AddKey("FRAMPERS", (1/time_per_frame).ToString("#.000"), "Frames per Second", 14);
+		fitsimg->Header->AddKey("NCOSMICF", nCRframes.ToString(), "Number of rejected cosmic ray frames", 14);
+		fitsimg->Header->AddKey("PHYSTIME", physicaltime.ToString("#.000"), "Physical Integration Time for Image (s)", 14);
+		fitsimg->Header->AddKey("DATATIME", datatime.ToString("#.000"), "PHYSTIME Reduced for Cosmic and Missing Frames", 14);
+		fitsimg->Header->AddKey("RDCDTIME", rdcdtime.ToString("#.000"), "DATATIME Reduced for Parity Errors (s)", 14);
+		fitsimg->Header->SetKey("EXP_TIME", rdcdtime.ToString("#.000"), "Same as RDCDTIME-Final Science Integration Time", true, 14);
 
 		double bjd0 = 0;
 		try
 		{
-			bjd0 = ::Convert::ToDouble(fitsimg->GetKeyValue("BJD0"));
+			bjd0 = ::Convert::ToDouble(fitsimg->Header->GetKeyValue("BJD0"));
 		}
 		catch (...)
 		{
@@ -2517,23 +2517,23 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 			}
 		}
 		double meanBJD = bjd0 + physicaltime/2/1000/86400;
-		fitsimg->AddKey("MEANBJD",meanBJD.ToString("#.0000000"),"Mean Heliocentric Julian Date for Image",12);
+		fitsimg->Header->AddKey("MEANBJD",meanBJD.ToString("#.0000000"),"Mean Heliocentric Julian Date for Image",12);
 
 		if (filterCR)
 		{
-			fitsimg->AddKey("CRCUTOFF",CRthresh.ToString(),"Cosmic Ray Cutoff Count per Frame Threshold",13);
-			fitsimg->AddKey("CRFRTIME",(double(nCRframes)*time_per_frame/1000).ToString("#.000"),"Cosmic Ray Time Removed from Original List",13);
+			fitsimg->Header->AddKey("CRCUTOFF",CRthresh.ToString(),"Cosmic Ray Cutoff Count per Frame Threshold",13);
+			fitsimg->Header->AddKey("CRFRTIME",(double(nCRframes)*time_per_frame/1000).ToString("#.000"),"Cosmic Ray Time Removed from Original List",13);
 		}
 
 		if (maxminReject)
 		{
-			fitsimg->AddKey("MAXMINTH",maxminThresh.ToString(),"Max-Min Threshold",12);
+			fitsimg->Header->AddKey("MAXMINTH",maxminThresh.ToString(),"Max-Min Threshold",12);
 			if (maxminCountTwice)
-				fitsimg->AddKey("MAXMINCT","true","Max-Min Threshold Counted Twice",12);
+				fitsimg->Header->AddKey("MAXMINCT","true","Max-Min Threshold Counted Twice",12);
 		}
 
-		fitsimg->AddKey("IMAGPREC", prec.ToString(), "Image Pixel Precision",13);
-		fitsimg->AddKey("PADOFSET", UVPCMODEPADOFFSET.ToString(), "Image Padding (CMOS pixels)", 13);
+		fitsimg->Header->AddKey("IMAGPREC", prec.ToString(), "Image Pixel Precision",13);
+		fitsimg->Header->AddKey("PADOFSET", UVPCMODEPADOFFSET.ToString(), "Image Padding (CMOS pixels)", 13);
 
 		if (UVIT_DEROTATE_WCS)//then re-compute WCS from de-rotated image...need to re-get centroids from image, update their CP1/2_ values in header, then do & update WCS params
 		{
@@ -2543,7 +2543,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 				while (key != -1)
 				{
 					num++;
-					key = fitsimg->GetKeyIndex("WCP1_" + num.ToString("000"));
+					key = fitsimg->Header->GetKeyIndex("WCP1_" + num.ToString("000"), false);
 				}
 				num--;
 				array<double>^ xpix = gcnew array<double>(num);
@@ -2553,10 +2553,10 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 				int goodcount = 0;
 				for (int j = 1; j <= num; j++)
 				{
-					xpix[goodcount] = Convert::ToDouble(fitsimg->GetKeyValue("WCP1_" + j.ToString("000")));
-					ypix[goodcount] = Convert::ToDouble(fitsimg->GetKeyValue("WCP2_" + j.ToString("000")));
-					radeg[goodcount] = Convert::ToDouble(fitsimg->GetKeyValue("WCV1_" + j.ToString("000")));
-					dedeg[goodcount] = Convert::ToDouble(fitsimg->GetKeyValue("WCV2_" + j.ToString("000")));
+					xpix[goodcount] = Convert::ToDouble(fitsimg->Header->GetKeyValue("WCP1_" + j.ToString("000")));
+					ypix[goodcount] = Convert::ToDouble(fitsimg->Header->GetKeyValue("WCP2_" + j.ToString("000")));
+					radeg[goodcount] = Convert::ToDouble(fitsimg->Header->GetKeyValue("WCV1_" + j.ToString("000")));
+					dedeg[goodcount] = Convert::ToDouble(fitsimg->Header->GetKeyValue("WCV2_" + j.ToString("000")));
 
 					if (xpix[goodcount] > 0 && ypix[goodcount] > 0 && xpix[goodcount] < szx && ypix[goodcount] < szy)
 						goodcount++;
@@ -3023,7 +3023,8 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 			String^ dir = FileName->Substring(0,FileName->LastIndexOf("\\"));
 			String^ path = dir;
 			FITSImage^ source = gcnew FITSImage(FileName, nullptr, true, false, false, false);
-			String^ mode = source->GetKeyValue("OBS_MODE");
+			source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
+			String^ mode = source->Header->GetKeyValue("OBS_MODE");
 			if (mode != "PC" && mode != "IM")
 			{
 				MessageBox::Show("Can't determine observation mode: " + mode, "Error...");
@@ -3198,8 +3199,8 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 				}
 			}
 			
-			String^ filterindex = UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER"));
-			source->SetKey("FILTERID", filterindex, "Filter type", true, source->GetKeyIndex("FILTER") + 1);
+			String^ filterindex = UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER"));
+			source->Header->SetKey("FILTERID", filterindex, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
 			
 			if (mode == "PC")
 			{
@@ -3235,8 +3236,8 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 						discardtimeint = ::Convert::ToInt32(discardtimestring) * 60 * 1000;
 					}
 
-					String^ channel = source->GetKeyValue("DETECTOR");
-					String^ alg = source->GetKeyValue("CENTROID");
+					String^ channel = source->Header->GetKeyValue("DETECTOR");
+					String^ alg = source->Header->GetKeyValue("CENTROID");
 					if (alg != "5S" && alg != "3S")//happened once with some L1 file
 						alg = "3S"; //3S is always running in orbit now...so just assume
 					String^ FPNFile;
@@ -3562,11 +3563,11 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 												while (/*midtime*/ firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
 													lbtcounter++;
 												double fwangle;
-												if (source->GetKeyValue("DETECTOR") == "FUV")
+												if (source->Header->GetKeyValue("DETECTOR") == "FUV")
 													fwangle = lbt_FUVfwangle[lbtcounter];
-												if (source->GetKeyValue("DETECTOR") == "NUV")
+												if (source->Header->GetKeyValue("DETECTOR") == "NUV")
 													fwangle = lbt_NUVfwangle[lbtcounter];
-												String^ filterindex = UVITFilter_FWAngle_to_Index(source->GetKeyValue("DETECTOR"), fwangle);
+												String^ filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
 
 												/*if (L1TBCChck->Checked && filterindex == "F0" || L1TBCChck->Checked && filterindex == "NA")
 												{
@@ -3575,60 +3576,61 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 													while (firsttime_mjd_forfilter > lbt_times[lbtcounter])
 														lbtcounter++;
 													fwangle = lbt_VISfwangle[lbtcounter];
-													filterindex = UVITFilter_FWAngle_to_Index(source->GetKeyValue("DETECTOR"), fwangle);
+													filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
 												}*/
 
-												String^ filter = source->GetKeyValue("FILTER");
+												String^ filter = source->Header->GetKeyValue("FILTER");
 												if (filterindex != filter)
-													source->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
-												String^ filtertype = UVITFilter(source->GetKeyValue("DETECTOR"), filterindex);
-												source->SetKey("FILTERID", filtertype, "Filter type", true, source->GetKeyIndex("FILTER") + 1);
+													source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
+												String^ filtertype = UVITFilter(source->Header->GetKeyValue("DETECTOR"), filterindex);
+												source->Header->SetKey("FILTERID", filtertype, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
 												lasttime_mjd_forfilter = Double::MinValue;
 												firsttime_mjd_forfilter = Double::MaxValue;
 											}
 
-											dir = path + "\\" + source->GetKeyValue("DETECTOR") + "\\" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "\\" + (source->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "_" + source->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
+											dir = path + "\\" + source->Header->GetKeyValue("DETECTOR") + "\\" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
 											::Directory::CreateDirectory(dir);
 											String^ obj_orb_chan;
-											obj_orb_chan = dir + "\\" + (source->GetKeyValue("SOURCEID")->Replace(" ",""))->Replace("/", "") + "_" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "_" + source->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
+											obj_orb_chan = dir + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ",""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
 											dir_list->Add(dir);
 											e->Result = dir_list;
 
 											String^ BJDfile = obj_orb_chan + "_BJDList.fits";
 											if (tctfileexists)//else all 0's
-												BJDS = BJDC(BJDS, Convert::ToDouble(source->GetKeyValue("RA_PNT")), Convert::ToDouble(source->GetKeyValue("DEC_PNT")), false);
+												BJDS = BJDC(BJDS, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
 
 											if (channel == "NUV" && L1TransformNUVtoFUVChck->Checked)
-												source->SetKey("NUVTOFUV", "true", true, -1);
-											source->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
-											source->SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
-											source->SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
-											source->SetKey("NCENTROD", times->Length.ToString(), "Number of Centroids", true, 14);
-											source->SetKey("PARTREDC", Math::Round(double(N_p_errors) / double(times->Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
-											source->SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
-											source->RemoveKey("NFRAMES");
-											source->SetKey("NFRAMES", (frames[frames->Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
-											source->SetKey("FRAMREDC", Math::Round(double(Nskipped[Nset - 1]) / double(frames[frames->Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
+												source->Header->SetKey("NUVTOFUV", "true", true, -1);
+											//source->Header->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
+											//source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
+											source->Header->SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
+											source->Header->SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
+											source->Header->SetKey("NCENTROD", times->Length.ToString(), "Number of Centroids", true, 14);
+											source->Header->SetKey("PARTREDC", Math::Round(double(N_p_errors) / double(times->Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
+											source->Header->SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
+											source->Header->RemoveKey("NFRAMES");
+											source->Header->SetKey("NFRAMES", (frames[frames->Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
+											source->Header->SetKey("FRAMREDC", Math::Round(double(Nskipped[Nset - 1]) / double(frames[frames->Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
 											N_p_errors = 0;//reset for new set
 											JPFITS::FITSImage^ f = gcnew FITSImage(BJDfile, BJDS, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::Double, true);
 
 											String^ framefile = obj_orb_chan + "_FrameList.fits";
 											f = gcnew FITSImage(framefile, frames, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::UInt16, true);
 
 											String^ timefile = obj_orb_chan + "_TimeList.fits";
 											f = gcnew FITSImage(timefile, times, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::UInt32, true);
 
 											String^ flatid;
 											FITSImage^ flat;
-											String^ channel = f->GetKeyValue("CHANNEL");
+											String^ channel = f->Header->GetKeyValue("CHANNEL");
 											if (channel->Length == 0)
-												channel = f->GetKeyValue("DETECTOR");
+												channel = f->Header->GetKeyValue("DETECTOR");
 											if (channel == "FUV")
 											{
 												//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUV Normalized Flat.fits";
@@ -3639,7 +3641,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 											{
 												//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\NUV Normalized Flat.fits";
 
-												String^ filterid = source->GetKeyValue("FILTERID");
+												String^ filterid = source->Header->GetKeyValue("FILTERID");
 												if (filterid->Contains("Silica"))
 													flatid = "N242W_flat_final_sens.fits";
 												if (filterid == "NUVB15")
@@ -3711,7 +3713,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 											}
 											String^ flatfile = obj_orb_chan + "_FlatList.fits";
 											FITSImage^ fitsflatlist = gcnew FITSImage(flatfile, flats, false, true);
-											fitsflatlist->CopyHeader(source);
+											fitsflatlist->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											fitsflatlist->WriteImage(::TypeCode::Double, true);
 
 											String^ intsfile = obj_orb_chan + "_XYInts_List.fits";
@@ -3720,7 +3722,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 											if (ApplyDIST)
 												intsfile = intsfile->Insert(intsfile->LastIndexOf("."), "_deDIST");
 											f = gcnew FITSImage(intsfile, ints, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::Int16, true);
 
 											String^ fracfile = obj_orb_chan + "_XYFrac_List.fits";
@@ -3729,12 +3731,12 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 											if (ApplyDIST)
 												fracfile = fracfile->Insert(fracfile->LastIndexOf("."), "_deDIST");
 											f = gcnew FITSImage(fracfile, decs, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::Int16, true);
 
 											String^ mdMmfile = obj_orb_chan + "_XYmdMm_List.fits";
 											f = gcnew FITSImage(mdMmfile, mdMm, false, true);
-											f->CopyHeader(source);
+											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
 											f->WriteImage(::TypeCode::Int16, true);
 										}
 							}
@@ -3924,8 +3926,8 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 				double bzero = 0;
 				double bscale = 1;
 
-				int xsize  = ::Convert::ToInt32(source->GetKeyValue("WIN_X_SZ"));//zero-based
-				int ysize  = ::Convert::ToInt32(source->GetKeyValue("WIN_Y_SZ"));//zero-based
+				int xsize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_X_SZ"));//zero-based
+				int ysize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_Y_SZ"));//zero-based
 				int imsize = (xsize+1)*(ysize+1);
 				array<double,2>^ d2im = gcnew array<double,2>(xsize+1,ysize+1);
 				array<unsigned __int16>^ d1im = gcnew array<unsigned __int16>(imsize);//just 1-D is fine cause we're just gonna write it
@@ -3995,7 +3997,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 									if (lbtcounter == lbt_times->Length)
 										lbtcounter /= 2;//?????
 									double fwangle = lbt_VISfwangle[lbtcounter];
-									String^ filterindex = UVITFilter_FWAngle_to_Index(source->GetKeyValue("DETECTOR"), fwangle);
+									String^ filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
 
 									if (DO_TBC && filterindex == "F0" || DO_TBC && filterindex == "NA")
 									{
@@ -4006,23 +4008,23 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 										if (lbtcounter == lbt_times->Length)
 											lbtcounter /= 2;//?????
 										fwangle = lbt_VISfwangle[lbtcounter];
-										filterindex = UVITFilter_FWAngle_to_Index(source->GetKeyValue("DETECTOR"), fwangle);
+										filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
 									}
 
-									String^ filter = source->GetKeyValue("FILTER");
+									String^ filter = source->Header->GetKeyValue("FILTER");
 									if (filterindex != filter)
-										source->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
-									String^ filtertype = UVITFilter(source->GetKeyValue("DETECTOR"), filterindex);
-									source->SetKey("FILTERID", filtertype, "Filter type", true, source->GetKeyIndex("FILTER") + 1);
+										source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
+									String^ filtertype = UVITFilter(source->Header->GetKeyValue("DETECTOR"), filterindex);
+									source->Header->SetKey("FILTERID", filtertype, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
 									lasttime_mjd_forfilter = Double::MinValue;
 									firsttime_mjd_forfilter = Double::MaxValue;
 								}
 
 								set++;//used in file name of image
-								if (source->GetKeyValue("DETECTOR") == "VIS")
-									dir = path + "\\" + "VIS" + "\\" + (source->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "_" + source->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
+								if (source->Header->GetKeyValue("DETECTOR") == "VIS")
+									dir = path + "\\" + "VIS" + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
 								else
-									dir = path + "\\" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "\\" + (source->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "_" + source->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
+									dir = path + "\\" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
 								::Directory::CreateDirectory(dir);
 							}
 							pixnum = 0;//force restart
@@ -4052,18 +4054,19 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 											d2im[ii, jj] = (double)(d1im[jj*(xsize + 1) + ii]);
 
 									String^ obj_orb_chan;
-									obj_orb_chan = dir + "\\" + (source->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->GetKeyValue("DETECTOR"), source->GetKeyValue("FILTER")) + "_" + source->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000") + ".fits";
+									obj_orb_chan = dir + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000") + ".fits";
 									if (degrade)
 										d2im = JPMath::DeGradient(d2im, 0, true);
 									FITSImage^ fits = gcnew FITSImage(obj_orb_chan, d2im, false, true);
-									source->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
-									fits->CopyHeader(source);
-									fits->AddKey("FRMTIME", (double(time) / 1000).ToString(), "EU Frame Time (s)", 18);
-									fits->AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
-									fits->AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
+									//source->Header->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
+									//source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
+									fits->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
+									fits->Header->AddKey("FRMTIME", (double(time) / 1000).ToString(), "EU Frame Time (s)", 18);
+									fits->Header->AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
+									fits->Header->AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
 									array<double>^ JD = gcnew array<double>(1) { (double(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
-									JD = BJDC(JD, Convert::ToDouble(source->GetKeyValue("RA_PNT")), Convert::ToDouble(source->GetKeyValue("DEC_PNT")), false);
-									fits->AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
+									JD = BJDC(JD, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
+									fits->Header->AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
 									if (frame > 16)//skip writing first image so that noise images don't come in
 									{
 										if (L1CleanINTMode->Checked)
@@ -4080,7 +4083,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 								pixnum++;
 							}
 						}
-						catch (...) {}
+						catch (...) { /*MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);*/ }
 					}
 				}
 				catch (Exception^ e)
@@ -4319,8 +4322,8 @@ void Form1::DiscardL1DuplicateWrkr_DoWork(System::Object^  sender, System::Compo
 				String^ diri = filei->Substring(0, filei->LastIndexOf("\\"));
 				String^ diritime = diri->Substring(diri->Length - 13);
 				fitsi = gcnew FITSImage(filei, nullptr, true, false, false, false);
-				String^ detectori = fitsi->GetKeyValue("DETECTOR");
-				String^ filteri = fitsi->GetKeyValue("FILTER");
+				String^ detectori = fitsi->Header->GetKeyValue("DETECTOR");
+				String^ filteri = fitsi->Header->GetKeyValue("FILTER");
 				fitsistart = JPFITS::FITSImage::ReadImageVectorOnly(filei, gcnew array<int>(4) { 0, 0, 0, 0 }, true);
 				fitsiend = JPFITS::FITSImage::ReadImageVectorOnly(filei, gcnew array<int>(4) { 0, 0, fitsi->Height - 1, fitsi->Height - 1 }, true);
 
@@ -4330,8 +4333,8 @@ void Form1::DiscardL1DuplicateWrkr_DoWork(System::Object^  sender, System::Compo
 					String^ dirj = filej->Substring(0, filej->LastIndexOf("\\"));
 					String^ dirjtime = dirj->Substring(dirj->Length - 13);
 					fitsj = gcnew FITSImage(filej, nullptr, true, false, false, false);
-					String^ detectorj = fitsj->GetKeyValue("DETECTOR");
-					String^ filterj = fitsj->GetKeyValue("FILTER");
+					String^ detectorj = fitsj->Header->GetKeyValue("DETECTOR");
+					String^ filterj = fitsj->Header->GetKeyValue("FILTER");
 
 					if (detectori != detectorj || filteri != filterj)
 						continue;
@@ -4667,7 +4670,7 @@ void Form1::DiscardL1DuplicateWrkr_RunWorkerCompleted(System::Object^  sender, S
 		medianset->Load(files, nullptr, false, true, true, "");
 
 		FITSImage^ median = FITSImageSet::Median(medianset, false, true, "Median Background");
-		median->AddKey("NIMAGES", medianset->Count.ToString(), "Number of images used", -1);
+		median->Header->AddKey("NIMAGES", medianset->Count.ToString(), "Number of images used", -1);
 		median->WriteImage(visparentdir + "\\" + "median.fts", TypeCode::Double, true);
 
 		FileListDrop->Items->Clear();
@@ -4738,9 +4741,9 @@ void Form1::CreateFlatFieldListMenuItem_Click(System::Object^  sender, System::E
 
 		FITSImage^ intsfits = gcnew JPFITS::FITSImage(dlg->FileNames[i], nullptr, true, true, false, true);
 		FITSImage^ flat;
-		String^ channel = intsfits->GetKeyValue("CHANNEL");
+		String^ channel = intsfits->Header->GetKeyValue("CHANNEL");
 		if (channel == "")
-			channel = intsfits->GetKeyValue("DETECTOR");
+			channel = intsfits->Header->GetKeyValue("DETECTOR");
 		bool flatsuccess = false;
 		if (channel == "FUV")
 			if (::File::Exists("C:\\UVIT_CalDB\\Flats Normalized\\FUV Normalized Flat.fits"))
@@ -4781,7 +4784,7 @@ void Form1::CreateFlatFieldListMenuItem_Click(System::Object^  sender, System::E
 
 		String^ name = dlg->FileNames[i]->Substring(0, dlg->FileNames[i]->IndexOf("XYInts")) + "FlatList.fits";
 		FITSImage^ fitsflatlist = gcnew FITSImage(name, flatlist, false, true);
-		fitsflatlist->CopyHeader(intsfits);
+		fitsflatlist->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 		fitsflatlist->WriteImage(::TypeCode::Double, true);
 	}
 
@@ -4901,10 +4904,10 @@ void Form1::ParcelUVCentroidWrkr_DoWork(System::Object^  sender, System::Compone
 	FITSImage^ fraclist = gcnew JPFITS::FITSImage(fraclistfile, nullptr, true, false, false, false);
 	array<double,2>^ frac = FITSImage::ReadImageArrayOnly(fraclistfile, nullptr, true);
 
-	String^ EXTXRNG = fraclist->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+	String^ EXTXRNG = fraclist->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
 	if (EXTXRNG == "")
 		EXTXRNG = "0:511";//from L2 data
-	String^ EXTYRNG = fraclist->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+	String^ EXTYRNG = fraclist->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
 	if (EXTYRNG == "")
 		EXTYRNG = "0:511";//from L2 data
 	int ix = EXTXRNG->IndexOf(":");
@@ -4914,21 +4917,21 @@ void Form1::ParcelUVCentroidWrkr_DoWork(System::Object^  sender, System::Compone
 	int rx2 = ::Convert::ToInt32(EXTXRNG->Substring(ix+1));//range end
 	int ry2 = ::Convert::ToInt32(EXTYRNG->Substring(iy+1));
 
-	String^ xoffset = intslist->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+	String^ xoffset = intslist->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 	if (xoffset == "")
-		xoffset = intslist->GetKeyValue("WIN_XOFF");//from L2 data
+		xoffset = intslist->Header->GetKeyValue("WIN_XOFF");//from L2 data
 	double ox = ::Convert::ToDouble(xoffset);//x offset
-	String^ yoffset = intslist->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+	String^ yoffset = intslist->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 	if (yoffset == "")
-		yoffset = intslist->GetKeyValue("WIN_YOFF");//from L2 data
+		yoffset = intslist->Header->GetKeyValue("WIN_YOFF");//from L2 data
 	double oy = ::Convert::ToDouble(yoffset);//y offset
-	String^ sizex = intslist->GetKeyValue("XSIZE");
+	String^ sizex = intslist->Header->GetKeyValue("XSIZE");
 	if (sizex == "")
-		sizex = intslist->GetKeyValue("WIN_X_SZ");
+		sizex = intslist->Header->GetKeyValue("WIN_X_SZ");
 	int szx = ::Convert::ToInt32(sizex);//x size
-	String^ sizey = intslist->GetKeyValue("YSIZE");
+	String^ sizey = intslist->Header->GetKeyValue("YSIZE");
 	if (sizey == "")
-		sizey = intslist->GetKeyValue("WIN_Y_SZ");
+		sizey = intslist->Header->GetKeyValue("WIN_Y_SZ");
 	int szy = ::Convert::ToInt32(sizey);//y size
 
 	if (rx1 != 0 && rx2 != 511)
@@ -5015,9 +5018,9 @@ void Form1::ParcelUVCentroidWrkr_DoWork(System::Object^  sender, System::Compone
 
 		parcelname = parceldir + currtime.ToString("0000000000000") + ".fits";
 		FITSimg = gcnew FITSImage(parcelname, img, false, true);
-		FITSimg->CopyHeader(intslist);
-		FITSimg->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
-		FITSimg->AddKey("FRMTIME", (double(currtime)/1000).ToString(), "Frame time.", 11);
+		FITSimg->Header->CopyHeaderFrom(intslist->Header);// CopyHeader(intslist);
+		FITSimg->Header->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
+		FITSimg->Header->AddKey("FRMTIME", (double(currtime)/1000).ToString(), "Frame time.", 11);
 		FITSimg->WriteImage(::TypeCode::UInt16, true);
 		imgfilenames->Add(parcelname);
 
@@ -5029,15 +5032,15 @@ void Form1::ParcelUVCentroidWrkr_DoWork(System::Object^  sender, System::Compone
 			FITSminimg = gcnew FITSImage(minname, minimg, false, true);
 			FITSmaxminimg = gcnew FITSImage(maxminname, maxminimg, false, true);
 
-			FITSminimg->CopyHeader(intslist);
-			FITSmaxminimg->CopyHeader(intslist);
+			FITSminimg->Header->CopyHeaderFrom(intslist->Header);// CopyHeader(intslist);
+			FITSmaxminimg->Header->CopyHeaderFrom(intslist->Header);// CopyHeader(intslist);
 
-			FITSminimg->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
-			FITSminimg->AddKey("FRMTIME", (double(currtime) / 1000).ToString(), "Frame time.", 11);
+			FITSminimg->Header->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
+			FITSminimg->Header->AddKey("FRMTIME", (double(currtime) / 1000).ToString(), "Frame time.", 11);
 			FITSminimg->WriteImage(::TypeCode::UInt16, true);
 
-			FITSmaxminimg->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
-			FITSmaxminimg->AddKey("FRMTIME", (double(currtime) / 1000).ToString(), "Frame time.", 11);
+			FITSmaxminimg->Header->AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
+			FITSmaxminimg->Header->AddKey("FRMTIME", (double(currtime) / 1000).ToString(), "Frame time.", 11);
 			FITSmaxminimg->WriteImage(::TypeCode::UInt16, true);
 		}
 	}
@@ -5137,7 +5140,7 @@ void Form1::PlotDriftListMenuItem_Click(System::Object^  sender, System::EventAr
 		ydrift[unique] = driftfits[2, i]/32;
 	}
 
-	String^ title = "Orbit: " + driftfits->GetKeyValue("ORB_NUM") + "; Source: " + driftfits->GetKeyValue("SOURCEID") + "; Detector:" + driftfits->GetKeyValue("DETECTOR");
+	String^ title = "Orbit: " + driftfits->Header->GetKeyValue("ORB_NUM") + "; Source: " + driftfits->Header->GetKeyValue("SOURCEID") + "; Detector:" + driftfits->Header->GetKeyValue("DETECTOR");
 
 	if (XDRIFT_PLOT->IsDisposed)
 		XDRIFT_PLOT = gcnew JPPlot();
@@ -5224,11 +5227,12 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 				return;
 		}
 
-		/*if (HalfWidthXUpD->Value >= 15 || HalfWidthYUpD->Value >= 15)
-		{
-			HalfWidthXUpD->Value = 9;
-			HalfWidthYUpD->Value = 9;
-		}*/
+		if (PointSrcROIAutoRunChck->Checked)
+			if (HalfWidthXUpD->Value >= 15 || HalfWidthYUpD->Value >= 15)
+			{
+				HalfWidthXUpD->Value = 9;
+				HalfWidthYUpD->Value = 9;
+			}
 
 		AUTOLOADIMAGESFILES = gcnew array<String^>(IMAGESET->Count);
 		UVDRIFTBATCHFILES = gcnew array<String^>(IMAGESET->Count);//must fill these here first with XYInts
@@ -5332,10 +5336,10 @@ void Form1::DriftFromPCPSTrackBGWrkr_DoWork(System::Object^ sender, System::Comp
 	FlatFileList = timesname->Replace("Time", "Flat");
 	flat = FITSImage::ReadImageVectorOnly(FlatFileList, nullptr, true);
 
-	String^ EXTXRNG = IntsFits->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+	String^ EXTXRNG = IntsFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
 	if (EXTXRNG == "")
 		EXTXRNG = "0:511";//from L1 data
-	String^ EXTYRNG = IntsFits->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+	String^ EXTYRNG = IntsFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
 	if (EXTYRNG == "")
 		EXTYRNG = "0:511";//from L1 data
 	int ix = EXTXRNG->IndexOf(":");
@@ -5347,14 +5351,14 @@ void Form1::DriftFromPCPSTrackBGWrkr_DoWork(System::Object^ sender, System::Comp
 	double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix + 1));//range end
 	double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy + 1));
 
-	String^ xoffset = IntsFits->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+	String^ xoffset = IntsFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 	if (xoffset == "")
-		xoffset = IntsFits->GetKeyValue("WIN_XOFF");//from L1 data
+		xoffset = IntsFits->Header->GetKeyValue("WIN_XOFF");//from L1 data
 	double ox = ::Convert::ToDouble(xoffset);//x offset
 	double ox32 = ox * 32;
-	String^ yoffset = IntsFits->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+	String^ yoffset = IntsFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 	if (yoffset == "")
-		yoffset = IntsFits->GetKeyValue("WIN_YOFF");//from L1 data
+		yoffset = IntsFits->Header->GetKeyValue("WIN_YOFF");//from L1 data
 	double oy = ::Convert::ToDouble(yoffset);//y offset
 	double oy32 = oy * 32;
 
@@ -5362,13 +5366,13 @@ void Form1::DriftFromPCPSTrackBGWrkr_DoWork(System::Object^ sender, System::Comp
 	double ry132oy32 = ry132 + oy32;
 
 	double prec = 1;
-	String^ strprec = IMAGESET[UVDRIFTBATCHFILESINDEX]->GetKeyValue("IMAGPREC");
+	String^ strprec = IMAGESET[UVDRIFTBATCHFILESINDEX]->Header->GetKeyValue("IMAGPREC");
 	if (strprec != "")
 		prec = ::Convert::ToDouble(strprec);
 	double precB32 = prec / 32;
 
 	int offset = 0;
-	String^ stroffset = IMAGESET[UVDRIFTBATCHFILESINDEX]->GetKeyValue("PADOFSET");
+	String^ stroffset = IMAGESET[UVDRIFTBATCHFILESINDEX]->Header->GetKeyValue("PADOFSET");
 	if (stroffset != "")
 		offset = ::Convert::ToInt32(stroffset);
 
@@ -5590,8 +5594,8 @@ void Form1::DriftFromPCPSTrackBGWrkr_DoWork(System::Object^ sender, System::Comp
 		::File::Delete(delfiles[i]);
 
 	FITSImage^ driftfits = gcnew FITSImage(driftslistfile, drift, false, true);
-	driftfits->CopyHeader(IntsFits);
-	driftfits->AddKey("PSDSTAKT", PointSrcROIStackDriftDrop->SelectedItem->ToString(), "Point Source Drift Stack Time", 14);
+	driftfits->Header->CopyHeaderFrom(IntsFits->Header);// CopyHeader(IntsFits);
+	driftfits->Header->AddKey("PSDSTAKT", PointSrcROIStackDriftDrop->SelectedItem->ToString(), "Point Source Drift Stack Time", 14);
 	driftfits->WriteImage(::TypeCode::Double, true);
 	UVPLOTDRIFTFILENAME = driftslistfile;
 	UVAPPLYDRIFTCENTROIDSFILENAME = intsname;
@@ -5869,8 +5873,8 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 			DriftPCROIOnly->Checked = false;
 		else
 		{
-			String^ prec = IMAGESET[Form1::FILELISTINDEX]->GetKeyValue("IMAGPREC");
-			String^ offs = IMAGESET[Form1::FILELISTINDEX]->GetKeyValue("PADOFSET");
+			String^ prec = IMAGESET[Form1::FILELISTINDEX]->Header->GetKeyValue("IMAGPREC");
+			String^ offs = IMAGESET[Form1::FILELISTINDEX]->Header->GetKeyValue("PADOFSET");
 
 			if (prec == "" || offs == "")
 				DriftPCROIOnly->Checked = false;
@@ -5882,9 +5886,9 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 		}
 	}
 
-	String^ xoffset = intslist->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+	String^ xoffset = intslist->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 	if (xoffset == "")
-		xoffset = intslist->GetKeyValue("WIN_XOFF");//from L1 data
+		xoffset = intslist->Header->GetKeyValue("WIN_XOFF");//from L1 data
 	if (xoffset == "")
 	{
 		::MessageBox::Show("Can't find the image x-offset...stopping.","Error");
@@ -5894,9 +5898,9 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 	if (DriftPCROIOnly->Checked)
 		ox = (XSUBRANGE[0] - padoffset * imageprec) / imageprec;
 
-	String^ yoffset = intslist->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+	String^ yoffset = intslist->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 	if (yoffset == "")
-		yoffset = intslist->GetKeyValue("WIN_YOFF");//from L1 data
+		yoffset = intslist->Header->GetKeyValue("WIN_YOFF");//from L1 data
 	if (yoffset == "")
 	{
 		::MessageBox::Show("Can't find the image y-offset...stopping.","Error");
@@ -5906,9 +5910,9 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 	if (DriftPCROIOnly->Checked)
 		oy = (YSUBRANGE[0] - padoffset * imageprec) / imageprec;
 
-	String^ sizex = intslist->GetKeyValue("XSIZE");
+	String^ sizex = intslist->Header->GetKeyValue("XSIZE");
 	if (sizex == "")
-		sizex = intslist->GetKeyValue("WIN_X_SZ");
+		sizex = intslist->Header->GetKeyValue("WIN_X_SZ");
 	if (sizex == "")
 	{
 		::MessageBox::Show("Can't find the image x-size...stopping.","Error");
@@ -5918,9 +5922,9 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 	if (DriftPCROIOnly->Checked)
 		szx = (XSUBRANGE[XSUBRANGE->Length - 1] - XSUBRANGE[0]) / imageprec;
 
-	String^ sizey = intslist->GetKeyValue("YSIZE");
+	String^ sizey = intslist->Header->GetKeyValue("YSIZE");
 	if (sizey == "")
-		sizey = intslist->GetKeyValue("WIN_Y_SZ");
+		sizey = intslist->Header->GetKeyValue("WIN_Y_SZ");
 	if (sizey == "")
 	{
 		::MessageBox::Show("Can't find the image y-size...stopping.","Error");
@@ -6083,7 +6087,7 @@ void Form1::DriftFromPCListWrkr_DoWork(System::Object^  sender, System::Componen
 		::File::Delete(delfiles[i]);
 
 	FITSImage^ driftfits = gcnew FITSImage(driftslistfile, xyshiftsLIST, false, true);
-	driftfits->CopyHeader(timeslist);
+	driftfits->Header->CopyHeaderFrom(timeslist->Header);// CopyHeader(timeslist);
 	driftfits->WriteImage(::TypeCode::Double, true);
 	UVPLOTDRIFTFILENAME = driftslistfile;
 	UVAPPLYDRIFTCENTROIDSFILENAME = intslistfile;
@@ -6298,8 +6302,8 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 		array<double, 2>^ frac = FITSImage::ReadImageArrayOnly(fraclistfile, nullptr, true);
 		FITSImage^ fracfits = gcnew FITSImage(fraclistfile, nullptr, true, false, false, false);
 		bool nuvTOfuv = false;
-		if (fracfits->GetKeyValue("DETECTOR") == "NUV")
-			if (fracfits->GetKeyIndex("NUVTOFUV") != -1)
+		if (fracfits->Header->GetKeyValue("DETECTOR") == "NUV")
+			if (fracfits->Header->GetKeyIndex("NUVTOFUV", false) != -1)
 				nuvTOfuv = true;
 
 		//make exposure array
@@ -6328,12 +6332,12 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 		int winxsz, szx, winysz, szy, ox, oy;
 		try
 		{
-			winxsz = Convert::ToInt32(driftsfits->GetKeyValue("WIN_X_SZ"));
+			winxsz = Convert::ToInt32(driftsfits->Header->GetKeyValue("WIN_X_SZ"));
 			szx = (winxsz + 1) * res + offset * 2;
-			winysz = Convert::ToInt32(driftsfits->GetKeyValue("WIN_Y_SZ"));
+			winysz = Convert::ToInt32(driftsfits->Header->GetKeyValue("WIN_Y_SZ"));
 			szy = (winysz + 1) * res + offset * 2;
-			ox = Convert::ToInt32(driftsfits->GetKeyValue("WIN_XOFF"));
-			oy = Convert::ToInt32(driftsfits->GetKeyValue("WIN_YOFF"));
+			ox = Convert::ToInt32(driftsfits->Header->GetKeyValue("WIN_XOFF"));
+			oy = Convert::ToInt32(driftsfits->Header->GetKeyValue("WIN_YOFF"));
 		}
 		catch (...)
 		{
@@ -6388,7 +6392,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 				}
 			}
 
-			String^ detector = driftsfits->GetKeyValue("DETECTOR");
+			String^ detector = driftsfits->Header->GetKeyValue("DETECTOR");
 			String^ FUVexpmapfile;
 			String^ NUVexpmapfile;
 			if (res == 1)
@@ -6583,8 +6587,8 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			//lastly normalize the array...
 			exposurearray = JPMath::MatrixDivScalar(exposurearray, nframes, true);
 
-			driftsfits->SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
-			driftsfits->SetKey("EXMAPTIM", (exposuredrifts[0, exposuredrifts->GetLength(1) - 1] - exposuredrifts[0, 0]).ToString(), "Exposure Map Time", true, 15);
+			driftsfits->Header->SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
+			driftsfits->Header->SetKey("EXMAPTIM", (exposuredrifts[0, exposuredrifts->GetLength(1) - 1] - exposuredrifts[0, 0]).ToString(), "Exposure Map Time", true, 15);
 		}
 
 		ApplyDriftListWrkr->ReportProgress(1);
@@ -6646,14 +6650,14 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 
 		//then save the dedrifted lists
 		if (BJDexists)
-			driftsfits->SetKey("BJD0", dedriftedBJD[0].ToString("#.0000000"), "BJD of start of imaging", true, 14);//now it will get added to all other copyheaders's
+			driftsfits->Header->SetKey("BJD0", dedriftedBJD[0].ToString("#.0000000"), "BJD of start of imaging", true, 14);//now it will get added to all other copyheaders's
 
 		int ind = intslistfile->LastIndexOf("_deDrift");
 		if (ind == -1)
 			ind = intslistfile->LastIndexOf(".");
 		String^ dedriftedXYIntsFile = intslistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedXYIntsFits = gcnew FITSImage(dedriftedXYIntsFile, dedriftedXYInts, false, true);
-		dedriftedXYIntsFits->CopyHeader(driftsfits);
+		dedriftedXYIntsFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedXYIntsFits->WriteImage(::TypeCode::Int16, true);
 
 		ind = fraclistfile->LastIndexOf("_deDrift");
@@ -6661,7 +6665,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ind = fraclistfile->LastIndexOf(".");
 		String^ dedriftedXYFracFile = fraclistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedXYFracFits = gcnew FITSImage(dedriftedXYFracFile, dedriftedXYFrac, false, true);
-		dedriftedXYFracFits->CopyHeader(driftsfits);
+		dedriftedXYFracFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedXYFracFits->WriteImage(::TypeCode::Int16, true);
 
 		ind = flatlistfile->LastIndexOf("_deDrift");
@@ -6669,7 +6673,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ind = flatlistfile->LastIndexOf(".");
 		String^ dedriftedFlatFile = flatlistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedFlatFits = gcnew FITSImage(dedriftedFlatFile, dedriftedFlat, false, true);
-		dedriftedFlatFits->CopyHeader(driftsfits);
+		dedriftedFlatFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedFlatFits->WriteImage(::TypeCode::Double, true);
 
 		ind = timelistfile->LastIndexOf("_deDrift");
@@ -6677,7 +6681,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ind = timelistfile->LastIndexOf(".");
 		String^ dedriftedTimeFile = timelistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedTimeFits = gcnew FITSImage(dedriftedTimeFile, dedriftedTime, false, true);
-		dedriftedTimeFits->CopyHeader(driftsfits);
+		dedriftedTimeFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedTimeFits->WriteImage(::TypeCode::UInt32, true);
 
 		ind = framelistfile->LastIndexOf("_deDrift");
@@ -6685,7 +6689,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ind = framelistfile->LastIndexOf(".");
 		String^ dedriftedFrameFile = framelistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedFrameFits = gcnew FITSImage(dedriftedFrameFile, dedriftedFrame, false, true);
-		dedriftedFrameFits->CopyHeader(driftsfits);
+		dedriftedFrameFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedFrameFits->WriteImage(::TypeCode::UInt32, true);
 
 		ind = mdMmlistfile->LastIndexOf("_deDrift");
@@ -6693,7 +6697,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ind = mdMmlistfile->LastIndexOf(".");
 		String^ dedriftedXYmdMmFile = mdMmlistfile->Insert(ind, "_deDrift");
 		FITSImage^ dedriftedXYmdMmFits = gcnew FITSImage(dedriftedXYmdMmFile, dedriftedXYmdMm, false, true);
-		dedriftedXYmdMmFits->CopyHeader(driftsfits);
+		dedriftedXYmdMmFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 		dedriftedXYmdMmFits->WriteImage(::TypeCode::Int16, true);
 
 		if (BJDexists)
@@ -6703,7 +6707,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 				ind = BJDlistfile->LastIndexOf(".");
 			String^ dedriftedBJDFile = BJDlistfile->Insert(ind, "_deDrift");
 			FITSImage^ dedriftedBJDFits = gcnew FITSImage(dedriftedBJDFile, dedriftedBJD, false, true);
-			dedriftedBJDFits->CopyHeader(driftsfits);
+			dedriftedBJDFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 			dedriftedBJDFits->WriteImage(::TypeCode::Double, true);
 		}
 
@@ -6711,7 +6715,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 		{
 			String^ dedriftedExpFile = dedriftedTimeFile->Replace("TimeList", "ExpArrayList");
 			FITSImage^ dedriftedExpFits = gcnew FITSImage(dedriftedExpFile, dedriftedExposure, false, true);
-			dedriftedExpFits->CopyHeader(driftsfits);
+			dedriftedExpFits->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 			dedriftedExpFits->WriteImage(::TypeCode::Double, true);
 
 			//if (createexposurearray)
@@ -6720,7 +6724,7 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 				if (master)
 					exposurearray = JPFITS::FITSImage::ReadImageArrayOnly(dedriftedExpFile->Replace("_deDrift.fits", ".fits"), nullptr, true);
 				FITSImage^ exp = gcnew FITSImage(dedriftedExpFile, exposurearray, false, true);
-				exp->CopyHeader(driftsfits);
+				exp->Header->CopyHeaderFrom(driftsfits->Header);// CopyHeader(driftsfits);
 				exp->WriteImage(::TypeCode::Double, true);
 			}
 		}
@@ -6853,7 +6857,7 @@ void Form1::PlotCountsPerFrameMenuItem_Click(System::Object^  sender, System::Ev
 		if (plotframes[i] == 0)
 			plotframes[i] = plotframes[i - 1] + 1;
 
-	String^ title = "Orbit: " + framefits->GetKeyValue("ORB_NUM") + "; Source: " + framefits->GetKeyValue("SOURCEID") + "; Detector:" + framefits->GetKeyValue("DETECTOR");
+	String^ title = "Orbit: " + framefits->Header->GetKeyValue("ORB_NUM") + "; Source: " + framefits->Header->GetKeyValue("SOURCEID") + "; Detector:" + framefits->Header->GetKeyValue("DETECTOR");
 
 	JPPlot^ jpplot = gcnew JPPlot();
 	jpplot->Text = title;
@@ -6938,7 +6942,7 @@ void Form1::perTimeBinMenuItem_Click(System::Object^  sender, System::EventArgs^
 		bin++;
 	}
 
-	String^ title = "Orbit: " + timefits->GetKeyValue("ORB_NUM") + "; Source: " + timefits->GetKeyValue("SOURCEID") + "; Detector:" + timefits->GetKeyValue("DETECTOR");
+	String^ title = "Orbit: " + timefits->Header->GetKeyValue("ORB_NUM") + "; Source: " + timefits->Header->GetKeyValue("SOURCEID") + "; Detector:" + timefits->Header->GetKeyValue("DETECTOR");
 
 	JPPlot^ jpplot = gcnew JPPlot();
 	jpplot->Text = title;
@@ -7188,8 +7192,8 @@ void Form1::DriftFromINTWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		FITSImage^ reffits = gcnew FITSImage(filelist[0], nullptr, true, false, false, false);
 		FITSImage^ RELfits;
 		array<double, 2>^ refimg = FITSImage::ReadImageArrayOnly(filelist[0], nullptr, true);
-		double lasttime = ::Convert::ToDouble(reffits->GetKeyValue("FRMTIME"))*1000;
-		double Nstack = ::Convert::ToDouble(reffits->GetKeyValue("NO_FRMS"));
+		double lasttime = ::Convert::ToDouble(reffits->Header->GetKeyValue("FRMTIME"))*1000;
+		double Nstack = ::Convert::ToDouble(reffits->Header->GetKeyValue("NO_FRMS"));
 		array<double,2>^ RELimg;
 		//array<double>^ shifts;
 		array<double,2>^ xyshiftslist = gcnew array<double,2>(3,filelist->Length);
@@ -7228,7 +7232,7 @@ void Form1::DriftFromINTWrkr_DoWork(System::Object^  sender, System::ComponentMo
 
 				JPMath::XCorrImageLagShifts(Href, Vref, RELimg, deBias, deBias, true, xshift, yshift, true);
 
-				currtime = ::Convert::ToDouble(RELfits->GetKeyValue("FRMTIME"))*1000;
+				currtime = ::Convert::ToDouble(RELfits->Header->GetKeyValue("FRMTIME"))*1000;
 				framereadtime = (currtime - lasttime)/Nstack;
 				t0 = lasttime + framereadtime - Nstack*framereadtime/2;
 
@@ -7350,7 +7354,7 @@ void Form1::DriftFromINTWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		else
 			driftslistfile = driftslistfile + "_XYDrift_List_SrcTrk.drift";
 		FITSImage^ driftfits = gcnew FITSImage(driftslistfile, xyshiftslist, false, true);
-		driftfits->CopyHeader(reffits);
+		driftfits->Header->CopyHeaderFrom(reffits->Header);//  CopyHeader(reffits);
 		driftfits->WriteImage(::TypeCode::Double, true);
 		UVPLOTDRIFTFILENAME = driftslistfile;
 	}
@@ -7922,28 +7926,28 @@ void Form1::RotationUVCentroidWrkr_DoWork(System::Object^  sender, System::Compo
 
 				if (horzflip)
 				{
-					IntsFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
-					FracFits->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+					IntsFits->Header->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+					FracFits->Header->AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
 				}
 				if (vertflip)
 				{
-					IntsFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
-					FracFits->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+					IntsFits->Header->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+					FracFits->Header->AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
 				}
 				if (xshift != 0)
 				{
-					IntsFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
-					FracFits->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+					IntsFits->Header->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+					FracFits->Header->AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
 				}
 				if (yshift != 0)
 				{
-					IntsFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
-					FracFits->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+					IntsFits->Header->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+					FracFits->Header->AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
 				}
 				if (rotation != 0)
 				{
-					IntsFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
-					FracFits->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
+					IntsFits->Header->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
+					FracFits->Header->AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
 				}
 
 				if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
@@ -8100,11 +8104,11 @@ void Form1::DeRotateViaWCS_Click(System::Object^  sender, System::EventArgs^  e)
 	WCS_DEROT = gcnew JPFITS::WorldCoordinateSolution();
 	WCS_DEROT->Get_WCS(IMAGESET[FILELISTINDEX]);
 	double prec = 1;//check for the image precision...
-	String^ strprec = IMAGESET[FILELISTINDEX]->GetKeyValue("IMAGPREC");
+	String^ strprec = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("IMAGPREC");
 	if (strprec != "")
 	prec = ::Convert::ToDouble(strprec);
 	double offset = 0;
-	String^ stroffset = IMAGESET[FILELISTINDEX]->GetKeyValue("PADOFSET");
+	String^ stroffset = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("PADOFSET");
 	if (stroffset != "")
 	offset = ::Convert::ToDouble(stroffset);
 	for (int j = 0; j < WCS_DEROT->Coordinate_Pixels[1]->Length; j++)
@@ -8679,8 +8683,8 @@ void Form1::RegistrationUVCentroidWrkr_DoWork(System::Object^  sender, System::C
 			array<double, 2>^ exparr = expfitsimg->Image;
 			
 			int res = 2;
-			if (expfitsimg->GetKeyIndex("EXMAPRES") != -1)
-				res = Convert::ToInt32(expfitsimg->GetKeyValue("EXMAPRES"));
+			if (expfitsimg->Header->GetKeyIndex("EXMAPRES", false) != -1)
+				res = Convert::ToInt32(expfitsimg->Header->GetKeyValue("EXMAPRES"));
 			xshift *= (double(res) / 32);
 			yshift *= (double(res) / 32);
 			xcenter *= (double(res) / 32);
@@ -8979,12 +8983,12 @@ void Form1::MergeCentroidListsWrkr_DoWork(System::Object^  sender, System::Compo
 		UVPCMODEPADOFFSET = 0;
 	int offset = UVPCMODEPADOFFSET * exparrayres;
 	FITSImage^ ff = gcnew JPFITS::FITSImage(filenames[0], nullptr, true, false, false, false);
-	int winxsz = Convert::ToInt32(ff->GetKeyValue("WIN_X_SZ"));
+	int winxsz = Convert::ToInt32(ff->Header->GetKeyValue("WIN_X_SZ"));
 	int szx = (winxsz + 1)*exparrayres + offset * 2;
-	int winysz = Convert::ToInt32(ff->GetKeyValue("WIN_Y_SZ"));
+	int winysz = Convert::ToInt32(ff->Header->GetKeyValue("WIN_Y_SZ"));
 	int szy = (winysz + 1)*exparrayres + offset * 2;
-	int ox = Convert::ToInt32(ff->GetKeyValue("WIN_XOFF"));
-	int oy = Convert::ToInt32(ff->GetKeyValue("WIN_YOFF"));
+	int ox = Convert::ToInt32(ff->Header->GetKeyValue("WIN_XOFF"));
+	int oy = Convert::ToInt32(ff->Header->GetKeyValue("WIN_YOFF"));
 
 	//create the arrays for the cenrtoid lists (time list, frame list, flat list, XYInts list, XYFrac list
 	array<double>^ newTimeList = gcnew array<double>(N_centroids); //save as unsigned __int32 at writetime
@@ -9075,13 +9079,13 @@ void Form1::MergeCentroidListsWrkr_DoWork(System::Object^  sender, System::Compo
 		expmergesetarrays[i] = JPMath::MatrixMultScalar(expmergesetarrays[i], exptimes[i], false);
 
 		//track the stuff about parity errors and missing frames
-		double npart = Convert::ToDouble(intsfits->GetKeyValue("NPARTERR"));//number of parity errors in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
-		double ncent = Convert::ToDouble(intsfits->GetKeyValue("NCENTROD"));//number of centroids in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
+		double npart = Convert::ToDouble(intsfits->Header->GetKeyValue("NPARTERR"));//number of parity errors in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
+		double ncent = Convert::ToDouble(intsfits->Header->GetKeyValue("NCENTROD"));//number of centroids in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
 		nparityerr += npart * Convert::ToDouble(intsfits->Height) / ncent;//total number of parity errors proportioned for possibly split files and clipped files
 
 		N_frames += int(framevec[framevec->Length - 1] - framevec[0] + 1);
-		double nmiss = Convert::ToDouble(intsfits->GetKeyValue("NMISSFRM"));//number of missing frames in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
-		double nfram = Convert::ToDouble(intsfits->GetKeyValue("NFRAMES"));//number of frames in original  (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
+		double nmiss = Convert::ToDouble(intsfits->Header->GetKeyValue("NMISSFRM"));//number of missing frames in original (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
+		double nfram = Convert::ToDouble(intsfits->Header->GetKeyValue("NFRAMES"));//number of frames in original  (unsplit or unclipped) file - (splitting happens in FUV, clipping happens in drift correxn)
 		nmissingframes += nmiss * (framevec[framevec->Length - 1] - framevec[0] + 1)/ nfram;//total number of missing frames proportioned for possibly split files and clipped files
 
 		//there should be no roll-overs in the time or frame lists for each set, so do soemthing to gather the total number of frames and time by gathering
@@ -9172,41 +9176,41 @@ void Form1::MergeCentroidListsWrkr_DoWork(System::Object^  sender, System::Compo
 
 	JPFITS::FITSImage^ intsfits = gcnew JPFITS::FITSImage(intsfile, mergedXYIntsList, false, true);
 	FITSImageSet::GatherHeaders(filenames, intsfits);
-	intsfits->AddKey("TIMEMULT", filenames->Length.ToString(), "Multiplier for merged list int. time", -1);
-	intsfits->SetKey("PARTREDC", Math::Round(parityredctn, 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
-	intsfits->SetKey("FRAMREDC", Math::Round(missframesredctn, 5).ToString(), "Fractional int - time reduxn due to lost frames", true, 14);
+	intsfits->Header->AddKey("TIMEMULT", filenames->Length.ToString(), "Multiplier for merged list int. time", -1);
+	intsfits->Header->SetKey("PARTREDC", Math::Round(parityredctn, 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
+	intsfits->Header->SetKey("FRAMREDC", Math::Round(missframesredctn, 5).ToString(), "Fractional int - time reduxn due to lost frames", true, 14);
 	intsfits->WriteImage(::TypeCode::Int16, true);
 
 	JPFITS::FITSImage^ fracfits = gcnew JPFITS::FITSImage(fracfile, mergedXYFracList, false, true);
-	fracfits->CopyHeader(intsfits);
+	fracfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	fracfits->WriteImage(::TypeCode::Int16, true);
 
 	JPFITS::FITSImage^ timefits = gcnew JPFITS::FITSImage(timefile, newTimeList, false, true);
-	timefits->CopyHeader(intsfits);
+	timefits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	timefits->WriteImage(::TypeCode::UInt32, true);
 
 	JPFITS::FITSImage^ framefits = gcnew JPFITS::FITSImage(framefile, newFrameList, false, true);//now has to be int32 because it won't roll over
-	framefits->CopyHeader(intsfits);
+	framefits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	framefits->WriteImage(::TypeCode::UInt32, true);
 
 	JPFITS::FITSImage^ flatfits = gcnew JPFITS::FITSImage(flatfile, mergedFlatList, false, true);
-	flatfits->CopyHeader(intsfits);
+	flatfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	flatfits->WriteImage(::TypeCode::Double, true);
 
 	FITSImage^ expfits = gcnew FITSImage(expfile->Replace("ExpArrayList", "ExpArrayImg"), expmergesetarraysSUM, false, true);
-	expfits->CopyHeader(intsfits);
+	expfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	expfits->WriteImage(expfile->Replace("ExpArrayList", "ExpArrayImg"), TypeCode::Double, true);
 
 	expfits = gcnew JPFITS::FITSImage(expfile, mergedExpList, false, true);
-	expfits->CopyHeader(intsfits);
+	expfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	expfits->WriteImage(::TypeCode::Double, true);
 
 	JPFITS::FITSImage^ BJDfits = gcnew JPFITS::FITSImage(BJDfile, mergedBJDList, false, true);
-	BJDfits->CopyHeader(intsfits);
+	BJDfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	BJDfits->WriteImage(::TypeCode::Double, true);
 
 	JPFITS::FITSImage^ mdMmfits = gcnew JPFITS::FITSImage(mdMmfile, mergedmdMmList, false, true);
-	mdMmfits->CopyHeader(intsfits);
+	mdMmfits->Header->CopyHeaderFrom(intsfits->Header);// CopyHeader(intsfits);
 	mdMmfits->WriteImage(::TypeCode::Int16, true);
 
 	e->Result = intsfile;
@@ -9356,10 +9360,10 @@ void Form1::DeSaturateROICountsMenuItem_DoubleClick(System::Object^  sender, Sys
 	JPFITS::FITSImage^ FracFits = gcnew FITSImage(fracsname, nullptr, true, true, false, true);
 	JPFITS::FITSImage^ IntsFits = gcnew FITSImage(intsname, nullptr, true, true, false, true);
 
-	String^ EXTXRNG = FracFits->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+	String^ EXTXRNG = FracFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
 	if (EXTXRNG == "")
 		EXTXRNG = "0:511";//from L2 data
-	String^ EXTYRNG = FracFits->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+	String^ EXTYRNG = FracFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
 	if (EXTYRNG == "")
 		EXTYRNG = "0:511";//from L2 data
 	int ix = EXTXRNG->IndexOf(":");
@@ -9369,22 +9373,22 @@ void Form1::DeSaturateROICountsMenuItem_DoubleClick(System::Object^  sender, Sys
 	double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix+1));//range end
 	double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy+1));
 
-	String^ xoffset = FracFits->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+	String^ xoffset = FracFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 	if (xoffset == "")
-		xoffset = FracFits->GetKeyValue("WIN_XOFF");//from L2 data
+		xoffset = FracFits->Header->GetKeyValue("WIN_XOFF");//from L2 data
 	double ox = ::Convert::ToDouble(xoffset);//x offset
-	String^ yoffset = FracFits->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+	String^ yoffset = FracFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 	if (yoffset == "")
-		yoffset = FracFits->GetKeyValue("WIN_YOFF");//from L2 data
+		yoffset = FracFits->Header->GetKeyValue("WIN_YOFF");//from L2 data
 	double oy = ::Convert::ToDouble(yoffset);//y offset
 
 	double prec = 1;//check for the image precision...
-	String^ strprec = IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("IMAGPREC");
+	String^ strprec = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("IMAGPREC");
 	if (strprec != "")
 		prec = ::Convert::ToDouble(strprec);
 
 	int offset = 0;
-	String^ stroffset = IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("PADOFSET");
+	String^ stroffset = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("PADOFSET");
 	if (stroffset != "")
 		offset = ::Convert::ToInt32(stroffset);
 
@@ -9422,9 +9426,9 @@ void Form1::DeSaturateROICountsMenuItem_DoubleClick(System::Object^  sender, Sys
 	flateff = 1 / flateff;
 	expeff = 1 / expeff;
 
-	double totaltime = Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("RDCDTIME"));
+	double totaltime = Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("RDCDTIME"));
 	double nframes = (frames[frames->Length - 1] - frames[0] + 1);//number of frames in raw EU data
-	double listframecount = (double)int(nframes * (1 - Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("FRAMREDC"))));//number of actual existing data frames (nframes adjusted for CRC missing frames)
+	double listframecount = (double)int(nframes * (1 - Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("FRAMREDC"))));//number of actual existing data frames (nframes adjusted for CRC missing frames)
 	double listframeskips = nframes - listframecount;//number of frames which were CRC skipped
 	double frames_per_sec = Math::Round(1000*(frames[frames->Length - 1] - frames[0]) / (times[times->Length - 1] - times[0]), 4);
 	
@@ -9517,10 +9521,10 @@ void Form1::ExtractROICentroidListMenuItem_Click(System::Object^  sender, System
 	JPFITS::FITSImage^ BJDFits = gcnew FITSImage(BJDSname, nullptr, true, true, false, true);
 	JPFITS::FITSImage^ mdMmFits = gcnew FITSImage(mdMmsname, nullptr, true, true, false, true);
 
-	String^ EXTXRNG = FracFits->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+	String^ EXTXRNG = FracFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
 	if (EXTXRNG == "")
 		EXTXRNG = "0:511";//from L2 data
-	String^ EXTYRNG = FracFits->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+	String^ EXTYRNG = FracFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
 	if (EXTYRNG == "")
 		EXTYRNG = "0:511";//from L2 data
 	int ix = EXTXRNG->IndexOf(":");
@@ -9530,25 +9534,25 @@ void Form1::ExtractROICentroidListMenuItem_Click(System::Object^  sender, System
 	double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix+1));//range end
 	double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy+1));
 
-	String^ xoffset = FracFits->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+	String^ xoffset = FracFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
 	if (xoffset == "")
-		xoffset = FracFits->GetKeyValue("WIN_XOFF");//from L2 data
+		xoffset = FracFits->Header->GetKeyValue("WIN_XOFF");//from L2 data
 	double ox = ::Convert::ToDouble(xoffset);//x offset
-	String^ yoffset = FracFits->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+	String^ yoffset = FracFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
 	if (yoffset == "")
-		yoffset = FracFits->GetKeyValue("WIN_YOFF");//from L2 data
+		yoffset = FracFits->Header->GetKeyValue("WIN_YOFF");//from L2 data
 	double oy = ::Convert::ToDouble(yoffset);//y offset
 
 	array<bool>^ ROItrue = gcnew array<bool>(FrameFits->Height);
 	int c = 0;
 
 	double prec = 1;
-	String^ strprec = IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("IMAGPREC");
+	String^ strprec = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("IMAGPREC");
 	if (strprec != "")
 		prec = ::Convert::ToDouble(strprec);
 	
 	int offset = 0;
-	String^ stroffset = IMAGESET[FileListDrop->SelectedIndex]->GetKeyValue("PADOFSET");
+	String^ stroffset = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("PADOFSET");
 	if (stroffset != "")
 		offset = ::Convert::ToInt32(stroffset);
 
@@ -9607,44 +9611,44 @@ void Form1::ExtractROICentroidListMenuItem_Click(System::Object^  sender, System
 
 	timesname = timesname->Substring(0, timesname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROItimeFits = gcnew JPFITS::FITSImage(timesname, ROItimelist, false, false);
-	ROItimeFits->CopyHeader(FrameFits);
-	ROItimeFits->SetKey("EXTXRNG", XSTART.ToString() + ":" +  XEND.ToString(), "Extraction X-Range", true, -1);
-	ROItimeFits->SetKey("EXTYRNG", YSTART.ToString() + ":" +  YEND.ToString(), "Extraction Y-Range", true, -1);
+	ROItimeFits->Header->CopyHeaderFrom(FrameFits->Header);// CopyHeader(FrameFits);
+	ROItimeFits->Header->SetKey("EXTXRNG", XSTART.ToString() + ":" +  XEND.ToString(), "Extraction X-Range", true, -1);
+	ROItimeFits->Header->SetKey("EXTYRNG", YSTART.ToString() + ":" +  YEND.ToString(), "Extraction Y-Range", true, -1);
 	ROItimeFits->WriteImage(::TypeCode::UInt32, false);
 
 	framesname = framesname->Substring(0, framesname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIframeFits = gcnew JPFITS::FITSImage(framesname, ROIframelist, false, false);
-	ROIframeFits->CopyHeader(ROItimeFits);
+	ROIframeFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIframeFits->WriteImage(::TypeCode::UInt32, false);
 
 	intsname = intsname->Substring(0, intsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIintsFits = gcnew JPFITS::FITSImage(intsname, ROIintslist, false, false);
-	ROIintsFits->CopyHeader(ROItimeFits);
+	ROIintsFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIintsFits->WriteImage(::TypeCode::Int16, false);
 
 	fracsname = fracsname->Substring(0, fracsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIfracFits = gcnew JPFITS::FITSImage(fracsname, ROIfraclist, false, false);
-	ROIfracFits->CopyHeader(ROItimeFits);
+	ROIfracFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIfracFits->WriteImage(::TypeCode::Int16, false);
 
 	flatsname = flatsname->Substring(0, flatsname->IndexOf(".fits")) + "_ROIx" + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIflatFits = gcnew JPFITS::FITSImage(flatsname, ROIflatlist, false, false);
-	ROIflatFits->CopyHeader(ROItimeFits);
+	ROIflatFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIflatFits->WriteImage(::TypeCode::Double, false);
 
 	expsname = expsname->Substring(0, expsname->IndexOf(".fits")) + "_ROIx" + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIexpFits = gcnew JPFITS::FITSImage(expsname, ROIexplist, false, false);
-	ROIexpFits->CopyHeader(ROItimeFits);
+	ROIexpFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIexpFits->WriteImage(::TypeCode::Double, false);
 
 	BJDSname = BJDSname->Substring(0, BJDSname->IndexOf(".fits")) + "_ROIx" "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIBJDSFits = gcnew JPFITS::FITSImage(BJDSname, ROIBJDlist, false, false);
-	ROIBJDSFits->CopyHeader(ROItimeFits);
+	ROIBJDSFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROIBJDSFits->WriteImage(::TypeCode::Double, false);
 
 	mdMmsname = mdMmsname->Substring(0, mdMmsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROImdMmFits = gcnew JPFITS::FITSImage(mdMmsname, ROImdMmlist, false, false);
-	ROImdMmFits->CopyHeader(ROItimeFits);
+	ROImdMmFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
 	ROImdMmFits->WriteImage(::TypeCode::Int16, false);
 
 	::MessageBox::Show("ROI centroid list extracted and written in image directory.","Success...");
@@ -9720,16 +9724,16 @@ void Form1::ConsolidateNUVApplyToFUV_Click(System::Object^  sender, System::Even
 	driftFileNames = driftfiles;
 
 	JPFITS::FITSImage^ driftfits = gcnew FITSImage(driftFileNames[0], nullptr, true, false, false, true);
-	String^ driftchannel = driftfits->GetKeyValue("DETECTOR");
+	String^ driftchannel = driftfits->Header->GetKeyValue("DETECTOR");
 	if (driftchannel == "")
-		driftchannel = driftfits->GetKeyValue("CHANNEL");
+		driftchannel = driftfits->Header->GetKeyValue("CHANNEL");
 
 	for (int i = 1; i < driftFileNames->Length; i++)
 	{
 		driftfits = gcnew FITSImage(driftFileNames[i], nullptr, true, false, false, false);
-		String^ channel2 = driftfits->GetKeyValue("DETECTOR");
+		String^ channel2 = driftfits->Header->GetKeyValue("DETECTOR");
 		if (channel2 == "")
-			channel2 = driftfits->GetKeyValue("CHANNEL");
+			channel2 = driftfits->Header->GetKeyValue("CHANNEL");
 
 		if (driftchannel != channel2)
 		{
@@ -9799,15 +9803,15 @@ void Form1::ConsolidateNUVApplyToFUV_Click(System::Object^  sender, System::Even
 		}
 	}
 	JPFITS::FITSImage^ fits = gcnew FITSImage(TimeListNames[0], nullptr, true, false, false, true);
-	String^ channel1 = fits->GetKeyValue("DETECTOR");
+	String^ channel1 = fits->Header->GetKeyValue("DETECTOR");
 	if (channel1 == "")
-		channel1 = fits->GetKeyValue("CHANNEL");
+		channel1 = fits->Header->GetKeyValue("CHANNEL");
 	for (int i = 1; i < TimeListNames->Length; i++)
 	{
 		fits = gcnew FITSImage(TimeListNames[i], nullptr, true, false, false, false);
-		String^ channel2 = fits->GetKeyValue("DETECTOR");
+		String^ channel2 = fits->Header->GetKeyValue("DETECTOR");
 		if (channel2 == "")
-			channel2 = fits->GetKeyValue("CHANNEL");
+			channel2 = fits->Header->GetKeyValue("CHANNEL");
 
 		if (channel1 != channel2)
 		{
@@ -9871,9 +9875,9 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 		JPFITS::FITSImage^ pathconsolidatedseries = gcnew FITSImage(pathdriftseries[0], nullptr, true, true, false, true);
 		if (i == 0)
 		{
-			driftserieschannel = pathconsolidatedseries->GetKeyValue("DETECTOR");
+			driftserieschannel = pathconsolidatedseries->Header->GetKeyValue("DETECTOR");
 			if (driftserieschannel == "")
-				driftserieschannel = pathconsolidatedseries->GetKeyValue("CHANNEL");//raw file source or GSE
+				driftserieschannel = pathconsolidatedseries->Header->GetKeyValue("CHANNEL");//raw file source or GSE
 			if (driftserieschannel == "" || driftserieschannel != "NUV" && driftserieschannel != "VIS")//although FUV COULD be used for NUV...should never need...can do if needed
 			{
 				::MessageBox::Show("Drift series channel not identifiable or FUV:  DETECTOR = " + driftserieschannel + "; Exiting.","Error");
@@ -9881,7 +9885,7 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 				return;
 			}
 			if (driftserieschannel == "NUV")
-				if (pathconsolidatedseries->GetKeyIndex("NUVTOFUV") != -1)
+				if (pathconsolidatedseries->Header->GetKeyIndex("NUVTOFUV", false) != -1)
 					nuvTOfuv = true;
 		}
 		for (int j = 1; j < pathdriftseries->Length; j++)
@@ -9991,12 +9995,12 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 	}
 
 	fits = gcnew FITSImage(TimeListNames[0], nullptr, true, false, false, false);
-	String^ applyserieschannel = fits->GetKeyValue("DETECTOR");
+	String^ applyserieschannel = fits->Header->GetKeyValue("DETECTOR");
 	if (applyserieschannel == "")
-		applyserieschannel = fits->GetKeyValue("CHANNEL");
+		applyserieschannel = fits->Header->GetKeyValue("CHANNEL");
 	if (driftserieschannel == "VIS")
 	{
-		if (applyserieschannel == "NUV" && fits->GetKeyIndex("NUVTOFUV") != -1)
+		if (applyserieschannel == "NUV" && fits->Header->GetKeyIndex("NUVTOFUV", false) != -1)
 			nuvTOfuv = true;
 
 		DriftNUVtoFUVBGWrkr->ReportProgress(0,"Transforming VIS drift series to " + applyserieschannel + " frame...");
@@ -10327,7 +10331,7 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 
 		//update BJD0
 		String^ BJD0 = fuvBJDlistdedrift[0].ToString("#.0000000");
-		fuvtimelistFITS->SetKey("BJD0", BJD0, "BJD of start of imaging", true, 14);
+		fuvtimelistFITS->Header->SetKey("BJD0", BJD0, "BJD of start of imaging", true, 14);
 
 		//now create the exposure array if required
 		bool createexposurearray = ApplyDriftCreateExpArrayChc->Checked;
@@ -10335,12 +10339,12 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 		double dres = double(res);
 		double pixres = 32 / dres;
 
-		int winxsz = Convert::ToInt32(fuvtimelistFITS->GetKeyValue("WIN_X_SZ"));
+		int winxsz = Convert::ToInt32(fuvtimelistFITS->Header->GetKeyValue("WIN_X_SZ"));
 		int szx = (winxsz + 1)*res + offset * 2;
-		int winysz = Convert::ToInt32(fuvtimelistFITS->GetKeyValue("WIN_Y_SZ"));
+		int winysz = Convert::ToInt32(fuvtimelistFITS->Header->GetKeyValue("WIN_Y_SZ"));
 		int szy = (winysz + 1)*res + offset * 2;
-		int ox = Convert::ToInt32(fuvtimelistFITS->GetKeyValue("WIN_XOFF"));
-		int oy = Convert::ToInt32(fuvtimelistFITS->GetKeyValue("WIN_YOFF"));
+		int ox = Convert::ToInt32(fuvtimelistFITS->Header->GetKeyValue("WIN_XOFF"));
+		int oy = Convert::ToInt32(fuvtimelistFITS->Header->GetKeyValue("WIN_YOFF"));
 
 		if (createexposurearray)
 		{
@@ -10502,18 +10506,18 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 					dedriftedExposure[k] = exposurearray[xpos, ypos];//applied like the flat...take the inverse at image creation time
 			}
 
-			fuvtimelistFITS->SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
-			fuvtimelistFITS->SetKey("EXMAPTIM", (fuvdriftlist[0, fuvdriftlist->GetLength(1) - 1] - fuvdriftlist[0, 0]).ToString(), "Exposure Map Time", true, 15);
+			fuvtimelistFITS->Header->SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
+			fuvtimelistFITS->Header->SetKey("EXMAPTIM", (fuvdriftlist[0, fuvdriftlist->GetLength(1) - 1] - fuvdriftlist[0, 0]).ToString(), "Exposure Map Time", true, 15);
 
 			//write it
 			String^ dedriftedExpFile = fuvtimelistName->Replace("TimeList", "ExpArrayList_deDrift");
 			FITSImage^ dedriftedExpFits = gcnew FITSImage(dedriftedExpFile, dedriftedExposure, false, false);
-			dedriftedExpFits->CopyHeader(fuvtimelistFITS);
+			dedriftedExpFits->Header->CopyHeaderFrom(fuvtimelistFITS->Header);//  CopyHeader(fuvtimelistFITS);
 			dedriftedExpFits->WriteImage(::TypeCode::Double, false);
 
 			dedriftedExpFile = fuvtimelistName->Replace("TimeList", "ExpArrayImg_deDrift");
 			FITSImage^ exp = gcnew FITSImage(dedriftedExpFile, exposurearray, false, false);
-			exp->CopyHeader(fuvtimelistFITS);
+			exp->Header->CopyHeaderFrom(fuvtimelistFITS->Header);//  CopyHeader(fuvtimelistFITS);
 			exp->WriteImage(::TypeCode::Double, false);
 		}
 		//#pragma omp parallel for//need to do this for if self-correction is run after and combining drifts for exp array...haven't been sure why values need sign inversion there or here...
@@ -10538,28 +10542,28 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 
 		FITSImage^ FITS;
 		FITS = gcnew FITSImage(fuvtimelistNamededrift, fuvtimelistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::UInt32, false);
 		FITS = gcnew FITSImage(fuvframelistNamededrift, fuvframelistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::UInt32, false);
 		FITS = gcnew FITSImage(fuvflatlistNamededrift, fuvflatlistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Double, false);
 		FITS = gcnew FITSImage(fuvBJDlistNamededrift, fuvBJDlistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Double, false);
 		FITS = gcnew FITSImage(fuvmdmmlistNamededrift, fuvmdmmlistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Int16, false);
 		FITS = gcnew FITSImage(fuvxyfraclistNamededrift, fuvxyfraclistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Int16, false);
 		FITS = gcnew FITSImage(fuvxyintslistNamededrift, fuvxyintslistdedrift, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Int16, false);
 		FITS = gcnew FITSImage(fuvdriftlistname, fuvdriftlist, false, false);
-		FITS->CopyHeader(fuvtimelistFITS);
+		FITS->Header->CopyHeaderFrom(fuvtimelistFITS->Header);// CopyHeader(fuvtimelistFITS);
 		FITS->WriteImage(::TypeCode::Double, false);
 
 		//dedrifted lists now written
@@ -10810,23 +10814,18 @@ bool Form1::CLEAN_UVITVISIMG(JPFITS::FITSImage^ VISfits, double threshold, int o
 	#pragma omp parallel for
 	for (int y = 1; y < 511; y++)
 	{
-		//make a horizontal line
-		/*array<double>^ row = gcnew array<double>(512);
-		for (int x = 0; x < 512; x++)
-			row[x] = VISfits[x, y];*/
-
 		//check if there are too many values in the line some range above the median
 		int c = 0;
 		for (int x = 0; x < 512; x++)
 		{
-			if (Math::Abs(VISfits[x, y]/* - med*/) >= threshold)
+			if (Math::Abs(VISfits[x, y]) >= threshold)
 				c++;
 
 			if (c >= occurences)//then a bad line...replace bad pixels with average of previous line and next line pixels
 			{
 				cleaned = true;
 				for (int x = 0; x < 512; x++)
-					if (Math::Abs(VISfits[x, y]/* - med*/) >= threshold)
+					if (Math::Abs(VISfits[x, y]) >= threshold)
 						VISfits[x, y] = (VISfits[x, y - 1] + VISfits[x, y + 1]) / 2;
 				break;
 			}
@@ -11120,7 +11119,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		if (UVFinalizeIncludeExpMapChck->Checked)
 		{
 			FITSImage^ expfitsimg = gcnew FITSImage(exparrayimagefile, nullptr, true, true, false, true);
-			expfitsimg->CopyHeader(image);
+			expfitsimg->Header->CopyHeaderFrom(image->Header);// CopyHeader(image);
 
 			//need to "debin" the exposure map to be same size as IMAGE
 			array<double, 2>^ debinexp = gcnew array<double, 2>(4800, 4800);
@@ -11304,17 +11303,17 @@ void Form1::PSTrackDisplayClearBtn_Click(System::Object^ sender, System::EventAr
 
 void Form1::invertWCSToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	double CRPIX2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CRPIX2"));
-	double CD1_2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CD1_2"));
-	double CD2_2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CD2_2"));
+	double CRPIX2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CRPIX2"));
+	double CD1_2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CD1_2"));
+	double CD2_2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CD2_2"));
 
 	CRPIX2 = 4800 - CRPIX2;
 	CD1_2 = -CD1_2;
 	CD2_2 = -CD2_2;
 
-	IMAGESET[FILELISTINDEX]->SetKey("CRPIX2", CRPIX2.ToString("F8"), "WCS coordinate reference value on axis 2 (deg)", true, -1);
-	IMAGESET[FILELISTINDEX]->SetKey("CD1_2", CD1_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
-	IMAGESET[FILELISTINDEX]->SetKey("CD2_2", CD2_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
+	IMAGESET[FILELISTINDEX]->Header->SetKey("CRPIX2", CRPIX2.ToString("F8"), "WCS coordinate reference value on axis 2 (deg)", true, -1);
+	IMAGESET[FILELISTINDEX]->Header->SetKey("CD1_2", CD1_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
+	IMAGESET[FILELISTINDEX]->Header->SetKey("CD2_2", CD2_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
 
 	WCSCopyToLoadedImgs->PerformClick();
 

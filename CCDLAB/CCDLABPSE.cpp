@@ -913,25 +913,25 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	/*double xposfit, yposfit;
 	try//for UVIT to get position of focused spot
 	{
-		String^ xrng = IMAGESET[FILELISTINDEX]->GetKeyValue("EXTXRNG");
+		String^ xrng = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("EXTXRNG");
 		int indx = xrng->IndexOf(":");
 		double xxrng = ::Convert::ToDouble(xrng->Substring(0,indx));
-		String^ yrng = IMAGESET[FILELISTINDEX]->GetKeyValue("EXTYRNG");
+		String^ yrng = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("EXTYRNG");
 		int indy = yrng->IndexOf(":");
 		double yyrng = ::Convert::ToDouble(yrng->Substring(0,indy));
-		double resln = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CNTDRSLN"));
+		double resln = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CNTDRSLN"));
 
 		double xxrngsub = 0.0;
 		double yyrngsub = 0.0;
 		if (SUBRANGE[0] != -1)//then it WAS loaded as a subimage so set value for image coordinate matching; [0] = xstart, [2] = ystart
 		{
-			double res = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CNTDRSLN"));
+			double res = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CNTDRSLN"));
 			xxrngsub = ((double)SUBRANGE[0])/res;
 			yyrngsub = ((double)SUBRANGE[2])/res;
 		}
 		
-		xposfit = (double(XSUBRANGE[0]) + P[1])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("XOFFSET")) + xxrng + xxrngsub + 1;
-		yposfit = (double(YSUBRANGE[0]) + P[2])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("YOFFSET")) + yyrng + yyrngsub + 1;
+		xposfit = (double(XSUBRANGE[0]) + P[1])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("XOFFSET")) + xxrng + xxrngsub + 1;
+		yposfit = (double(YSUBRANGE[0]) + P[2])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("YOFFSET")) + yyrng + yyrngsub + 1;
 	}
 	catch (...)
 	{
@@ -1649,7 +1649,7 @@ void Form1::WCSPlotSolutionPtsBtn_Click(System::Object^  sender, System::EventAr
 	while (cpexists)
 	{
 		n++;
-		if (IMAGESET[FILELISTINDEX]->GetKeyIndex("WCP1_" + n.ToString("000")) == -1)
+		if (IMAGESET[FILELISTINDEX]->Header->GetKeyIndex("WCP1_" + n.ToString("000"), false) == -1)
 			cpexists = false;
 	}
 	n--;
@@ -1668,8 +1668,8 @@ void Form1::WCSPlotSolutionPtsBtn_Click(System::Object^  sender, System::EventAr
 	array<double>^ cp2 = gcnew array<double>(n);
 	for (int i = 1; i <= n; i++)
 	{
-		cp1[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("WCP1_" + i.ToString("000")));
-		cp2[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("WCP2_" + i.ToString("000")));
+		cp1[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCP1_" + i.ToString("000")));
+		cp2[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCP2_" + i.ToString("000")));
 		MARKCOORDS[0, i - 1] = cp1[i - 1] - 1;
 		MARKCOORDS[1, i - 1] = cp2[i - 1] - 1;
 	}
@@ -2806,7 +2806,7 @@ void Form1::WCSAutoQueryCVAL1_Click(System::Object^ sender, System::EventArgs^ e
 	AutoWCSMenuItem->DropDown->AutoClose = false;
 	WCSAutoQueryBtn->DropDown->AutoClose = false;
 
-	WCSAutoCVALList^ list = gcnew WCSAutoCVALList(IMAGESET[FILELISTINDEX]->HeaderKeys);
+	WCSAutoCVALList^ list = gcnew WCSAutoCVALList(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
 	list->Text = "Select the CVALn";
 	list->TopMost = true;
 	list->ShowDialog();
@@ -2836,8 +2836,8 @@ void Form1::WCSAutoQueryBtn_DoubleClick(System::Object^ sender, System::EventArg
 	String^ catalogue = (String^)AstroQueryCatalogueNameDrop->SelectedItem;
 	catalogue = catalogue->Substring(0, catalogue->IndexOf("(") - 1);
 
-	String^ cval1 = IMAGESET[FILELISTINDEX]->GetKeyValue(WCSAutoQueryCVAL1->Text);
-	String^ cval2 = IMAGESET[FILELISTINDEX]->GetKeyValue(WCSAutoQueryCVAL2->Text);
+	String^ cval1 = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(WCSAutoQueryCVAL1->Text);
+	String^ cval2 = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(WCSAutoQueryCVAL2->Text);
 	try
 	{
 		Convert::ToDouble(cval1);

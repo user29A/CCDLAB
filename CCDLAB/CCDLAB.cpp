@@ -771,14 +771,12 @@ void Form1::HeaderKeyTxt_KeyDown(System::Object^  sender, System::Windows::Forms
 		CLIPBRDHEADERCOMS = gcnew array<String^>(lb->SelectedIndices->Count);
 		CLIPBRDHEADERINDS = gcnew array<int>(lb->SelectedIndices->Count);
 
-		array<String^>^ header = IMAGESET[FILELISTINDEX]->Header;
-
-		for (int i = 0; i < HeaderKeyTxt->SelectedIndices->Count; i++)
+		for (int i = 0; i < HeaderTxt->SelectedIndices->Count; i++)
 		{
-			str += header[lb->SelectedIndices[i]] + "\n";
-			CLIPBRDHEADERKEYS[i] = IMAGESET[FILELISTINDEX]->GetKeyName(lb->SelectedIndices[i]);
-			CLIPBRDHEADERVALS[i] = IMAGESET[FILELISTINDEX]->GetKeyValue(lb->SelectedIndices[i]);
-			CLIPBRDHEADERCOMS[i] = IMAGESET[FILELISTINDEX]->GetKeyComment(lb->SelectedIndices[i]);
+			str += IMAGESET[FILELISTINDEX]->Header->HeaderLine[lb->SelectedIndices[i]] + "\r\n";
+			CLIPBRDHEADERKEYS[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyName(lb->SelectedIndices[i]);
+			CLIPBRDHEADERVALS[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(lb->SelectedIndices[i]);
+			CLIPBRDHEADERCOMS[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyComment(lb->SelectedIndices[i]);
 			CLIPBRDHEADERINDS[i] = lb->SelectedIndices[i];
 		}
 
@@ -792,53 +790,64 @@ void Form1::HeaderKeyTxt_KeyDown(System::Object^  sender, System::Windows::Forms
 		for (int i = 0; i < CLIPBRDHEADERKEYS->Length; i++)
 		{
 			//first check to see if the key exists
-			int ind = IMAGESET[FILELISTINDEX]->GetKeyIndex(CLIPBRDHEADERKEYS[i]);
+			int ind = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(CLIPBRDHEADERKEYS[i], false);
 			//if it does then set the key
 			if (ind != -1)
 			{
-				IMAGESET[FILELISTINDEX]->SetKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], false, 0);
+				IMAGESET[FILELISTINDEX]->Header->SetKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], false, 0);
 				CLIPBRDHEADERINDS[i] = ind;
 			}
 			else
 			{
-				IMAGESET[FILELISTINDEX]->AddKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], CLIPBRDHEADERINDS[i]);
-				CLIPBRDHEADERINDS[i] = IMAGESET[FILELISTINDEX]->GetKeyIndex(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i]);
+				IMAGESET[FILELISTINDEX]->Header->AddKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], CLIPBRDHEADERINDS[i]);
+				CLIPBRDHEADERINDS[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i]);
 			}
 		}
 
 		FileTxtsUpD();
-		HeaderKeyTxt->SelectedIndices->Clear();
-		HeaderKeyValTxt->SelectedIndices->Clear();
-		HeaderKeyComTxt->SelectedIndices->Clear();
+		HeaderTxt->SelectedIndices->Clear();
+
 		for (int i = 0; i < CLIPBRDHEADERKEYS->Length; i++)
-		{
-			HeaderKeyTxt->SelectedIndex = CLIPBRDHEADERINDS[i];
-			HeaderKeyValTxt->SelectedIndex = CLIPBRDHEADERINDS[i];
-			HeaderKeyComTxt->SelectedIndex = CLIPBRDHEADERINDS[i];
-		}
+			HeaderTxt->SelectedIndex = CLIPBRDHEADERINDS[i];
+	}
+
+	if (e->Control && e->KeyCode == Keys::A)//select all
+	{
+		e->SuppressKeyPress = true;
+
+		for (int i = 0; i < HeaderTxt->Items->Count; i++)
+			HeaderTxt->SelectedIndex = i;
 	}
 
 	if (e->KeyCode == Keys::Delete)
 	{
 		e->SuppressKeyPress = true;
-		if (MessageBox::Show("Remove the selected header lines?", "Warning...", MessageBoxButtons::YesNo) == ::DialogResult::No)
-			return;
+		/*if (MessageBox::Show("Remove the selected header lines?", "Warning...", MessageBoxButtons::YesNo) == ::DialogResult::No)
+			return;*/
 
 		int ind0 = lb->SelectedIndices[0];
 
 		for (int i = lb->SelectedIndices->Count - 1; i >= 0; i--)
-			IMAGESET[FILELISTINDEX]->RemoveKey(lb->SelectedIndices[i]);
+		{
+			if (!FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->GetKeyName(lb->SelectedIndices[i])))
+			{
+				if (MessageBox::Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction: " + IMAGESET[FILELISTINDEX]->Header->GetKeyName(lb->SelectedIndices[i]), MessageBoxButtons::OKCancel) == ::DialogResult::Cancel)
+					return;
+			}
+			else
+				IMAGESET[FILELISTINDEX]->Header->RemoveKey(lb->SelectedIndices[i]);
+		}
 
 		FileTxtsUpD();
-		HeaderKeyTxt->SelectedIndex = ind0;
-		HeaderKeyValTxt->SelectedIndex = ind0;
-		HeaderKeyComTxt->SelectedIndex = ind0;
+		HeaderTxt->SelectedIndex = ind0;
 	}
 }
 
 void Form1::HeaderKeyTxt_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
 	ListBox^ lb = (ListBox^)sender;
+	if (lb->SelectedIndices->Count == 0)
+		HeaderCntxt->Close();
 
 	if (e->Button == ::MouseButtons::Left)
 	{
@@ -847,28 +856,14 @@ void Form1::HeaderKeyTxt_MouseUp(System::Object^  sender, System::Windows::Forms
 			inds[i] = lb->SelectedIndices[i];
 		int topi = lb->TopIndex;
 
-		HeaderKeyTxt->BeginUpdate();
-		HeaderKeyValTxt->BeginUpdate();
-		HeaderKeyComTxt->BeginUpdate();
-
-		HeaderKeyTxt->SelectedIndices->Clear();
-		HeaderKeyValTxt->SelectedIndices->Clear();
-		HeaderKeyComTxt->SelectedIndices->Clear();
+		HeaderTxt->BeginUpdate();
+		HeaderTxt->SelectedIndices->Clear();
 
 		for (int i = 0; i < inds->Length; i++)
-		{
-			HeaderKeyTxt->SelectedIndex = inds[i];
-			HeaderKeyValTxt->SelectedIndex = inds[i];
-			HeaderKeyComTxt->SelectedIndex = inds[i];
-		}
+			HeaderTxt->SelectedIndex = inds[i];
 
-		HeaderKeyTxt->TopIndex = topi;
-		HeaderKeyValTxt->TopIndex = topi;
-		HeaderKeyComTxt->TopIndex = topi;
-
-		HeaderKeyTxt->EndUpdate();
-		HeaderKeyValTxt->EndUpdate();
-		HeaderKeyComTxt->EndUpdate();
+		HeaderTxt->TopIndex = topi;
+		HeaderTxt->EndUpdate();
 	}
 
 	if (e->Button == ::MouseButtons::XButton1)
@@ -898,10 +893,10 @@ void Form1::HCPlotListValues_Click(System::Object^  sender, System::EventArgs^  
 		sr2->Close();
 		fs2->Close();
 
-		int headinds = HeaderKeyTxt->SelectedIndices->Count;
+		int headinds = HeaderTxt->SelectedIndices->Count;
 		array<String^>^ keys = gcnew array<String^>(headinds);
 		for (int i = 0; i < headinds; i++)
-			keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+			keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 		PlotKeyList(keys, filenames);
 	}
@@ -909,11 +904,11 @@ void Form1::HCPlotListValues_Click(System::Object^  sender, System::EventArgs^  
 
 void Form1::HCPlotKeyValues_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	int headinds = HeaderKeyTxt->SelectedIndices->Count;
+	int headinds = HeaderTxt->SelectedIndices->Count;
 	array<String^>^ keys = gcnew array<String^>(headinds);
 	
 	for (int i = 0; i < headinds; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+		keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 	PlotKeyList(keys, IMAGESET->FullFileNames);
 }
@@ -936,7 +931,7 @@ void Form1::PlotKeyList(array<String^>^ keys, array<String^>^ filenames)
 		{
 			try
 			{
-				allkeyvalues[i,j] = ::Convert::ToDouble(f->GetKeyValue(keys[j]));
+				allkeyvalues[i,j] = ::Convert::ToDouble(f->Header->GetKeyValue(keys[j]));
 			}
 			catch (System::FormatException^)
 			{
@@ -962,17 +957,17 @@ void Form1::PlotKeyList(array<String^>^ keys, array<String^>^ filenames)
 
 		JPPlot^ jpplot = gcnew JPPlot();
 		jpplot->Text = keys[j];
-		jpplot->PlotLine(xdata,ydata,"Image Number",keys[j] + ": " + f->GetKeyComment(keys[j]),keys[j], Charting::SeriesChartType::Line, keys[j]);
+		jpplot->PlotLine(xdata,ydata,"Image Number",keys[j] + ": " + f->Header->GetKeyComment(keys[j]),keys[j], Charting::SeriesChartType::Line, keys[j]);
 	}
 }
 
 void Form1::HCCopyKeyValue_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	int headinds = HeaderKeyTxt->SelectedIndices->Count;
+	int headinds = HeaderTxt->SelectedIndices->Count;
 	array<String^>^ keys = gcnew array<String^>(headinds);
 	
 	for (int i = 0; i < headinds; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+		keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 	CopyKeyList(keys, IMAGESET->FullFileNames);
 }
@@ -998,10 +993,10 @@ void Form1::HCCopyListValue_Click(System::Object^  sender, System::EventArgs^  e
 		sr2->Close();
 		fs2->Close();
 
-		int headinds = HeaderKeyTxt->SelectedIndices->Count;
+		int headinds = HeaderTxt->SelectedIndices->Count;
 		array<String^>^ keys = gcnew array<String^>(headinds);
 		for (int i = 0; i < headinds; i++)
-			keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+			keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 		CopyKeyList(keys, filenames);
 	}
@@ -1018,9 +1013,9 @@ void Form1::CopyKeyList(array<String^>^ keys, array<String^>^ filenames)
 		f = gcnew FITSImage(filenames[j],nullptr,true,false,false, false);
 
 		for (int i = 0; i < keys->Length - 1; i++)
-			list += f->GetKeyValue(keys[i]) + "	";//tab delimit;
+			list += f->Header->GetKeyValue(keys[i]) + "	";//tab delimit;
 
-		list += f->GetKeyValue(keys[keys->Length-1]);
+		list += f->Header->GetKeyValue(keys[keys->Length-1]);
 
 		if (j < filenames->Length - 1)
 			list += Environment::NewLine;
@@ -1032,11 +1027,11 @@ void Form1::CopyKeyList(array<String^>^ keys, array<String^>^ filenames)
 
 void Form1::HCExtractKeyValue_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int headinds = HeaderKeyTxt->SelectedIndices->Count;
+	int headinds = HeaderTxt->SelectedIndices->Count;
 	array<String^>^ keys = gcnew array<String^>(headinds);
 	
 	for (int i = 0; i < headinds; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+		keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 	ExtractKeyList(keys, IMAGESET->FullFileNames);
 }
@@ -1062,10 +1057,10 @@ void Form1::HCExtractListValues_Click(System::Object^  sender, System::EventArgs
 		sr2->Close();
 		fs2->Close();
 
-		int headinds = HeaderKeyTxt->SelectedIndices->Count;
+		int headinds = HeaderTxt->SelectedIndices->Count;
 		array<String^>^ keys = gcnew array<String^>(headinds);
 		for (int i = 0; i < headinds; i++)
-			keys[i] = IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[i]];
+			keys[i] = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]];
 
 		ExtractKeyList(keys, filenames);
 	}
@@ -1099,7 +1094,7 @@ void Form1::ExtractKeyList(array<String^>^ keys, array<String^>^ filenames)
 			list[0,j] = String::Concat(f->FileName,"	");//tab delimit
 			for (int i = 1; i < keys->Length+1; i++)
 			{
-				list[i,j] = String::Concat(f->GetKeyValue(keys[i-1]),"	");//tab delimit;
+				list[i,j] = String::Concat(f->Header->GetKeyValue(keys[i-1]),"	");//tab delimit;
 			}
 		}
 		ProgressBar->Value = 0;
@@ -1152,33 +1147,50 @@ void Form1::AutoRegBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::HCEdit_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int ind = HeaderKeyTxt->SelectedIndex;
+	int ind = HeaderTxt->SelectedIndex;
 	if (ind >= 0)
 	{
-		bool valid = FITSImage::ValidKeyEdit(IMAGESET[FILELISTINDEX]->HeaderKeys[ind]);
+		bool valid = FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[ind]);
 		//ValidKeyChck();
 		if (valid == true)
 		{
 			EditKeyDlg^ ekd = gcnew EditKeyDlg();
-			ekd->KeyNameTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeys[ind];
-			ekd->KeyValueTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeyValues[ind];
-			ekd->KeyCommentTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeyComments[ind];
+			if (IMAGESET[FILELISTINDEX]->Header->HeaderLineIsComment[ind])
+			{
+				ekd->CommentKeyLineTxt->Visible = true;
+				ekd->CommentKeyLineTxt->BringToFront();
+				ekd->CommentKeyLineTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind];
+				ekd->label1->Text = "Comment Line";
+				ekd->label2->Visible = false;
+				ekd->label3->Visible = false;
+			}
+			else
+			{
+				ekd->KeyNameTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[ind];
+				ekd->KeyValueTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[ind];
+				ekd->KeyCommentTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind];
+			}
+
 			ekd->ShowDialog();
+
 			if (ekd->DialogResult == System::Windows::Forms::DialogResult::OK)
 			{
-				IMAGESET[FILELISTINDEX]->HeaderKeys[ind] = ekd->KeyNameTxt->Text;
-				IMAGESET[FILELISTINDEX]->HeaderKeyValues[ind] = ekd->KeyValueTxt->Text;
-				IMAGESET[FILELISTINDEX]->HeaderKeyComments[ind] = ekd->KeyCommentTxt->Text;
+				if (IMAGESET[FILELISTINDEX]->Header->HeaderLineIsComment[ind])
+					IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind] = ekd->CommentKeyLineTxt->Text;
+				else
+				{
+					IMAGESET[FILELISTINDEX]->Header->HeaderKeys[ind] = ekd->KeyNameTxt->Text;
+					IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[ind] = ekd->KeyValueTxt->Text;
+					IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind] = ekd->KeyCommentTxt->Text;
+				}
 
-				HeaderKeyTxt->Items->Clear();
-				HeaderKeyValTxt->Items->Clear();
-				HeaderKeyComTxt->Items->Clear();
-				HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-				HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-				HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
-				HeaderKeyTxt->SelectedIndex = ind;
-				HeaderKeyValTxt->SelectedIndex = ind;
-				HeaderKeyComTxt->SelectedIndex = ind;
+				int topi = HeaderTxt->TopIndex;
+				HeaderTxt->BeginUpdate();
+				HeaderTxt->Items->Clear();
+				HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
+				HeaderTxt->SelectedIndex = ind;
+				HeaderTxt->TopIndex = topi;
+				HeaderTxt->EndUpdate();
 			}
 		}
 		else
@@ -1190,10 +1202,10 @@ void Form1::HCEdit_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::HCEditAll_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	int ind = HeaderKeyTxt->SelectedIndex;
+	int ind = HeaderTxt->SelectedIndex;
 	if (ind < 0)
 		return;
-	bool valid = FITSImage::ValidKeyEdit(IMAGESET[FILELISTINDEX]->HeaderKeys[ind]);
+	bool valid = FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[ind]);
 	if (!valid)
 	{
 		::MessageBox::Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction...");
@@ -1201,9 +1213,9 @@ void Form1::HCEditAll_Click(System::Object^  sender, System::EventArgs^  e)
 	}
 
 	EditKeyDlg^ ekd = gcnew EditKeyDlg();
-	ekd->KeyNameTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeys[ind];
-	ekd->KeyValueTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeyValues[ind];
-	ekd->KeyCommentTxt->Text = IMAGESET[FILELISTINDEX]->HeaderKeyComments[ind];
+	ekd->KeyNameTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeys[ind];
+	ekd->KeyValueTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[ind];
+	ekd->KeyCommentTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind];
 	ekd->ShowDialog();
 
 	if (ekd->DialogResult == System::Windows::Forms::DialogResult::Cancel)
@@ -1214,48 +1226,48 @@ void Form1::HCEditAll_Click(System::Object^  sender, System::EventArgs^  e)
 	{
 		ProgressBar->Value++;
 		ProgressBar->Refresh();
-		IMAGESET[j]->HeaderKeys[ind] = ekd->KeyNameTxt->Text;
-		IMAGESET[j]->HeaderKeyValues[ind] = ekd->KeyValueTxt->Text;
-		IMAGESET[j]->HeaderKeyComments[ind] = ekd->KeyCommentTxt->Text;
+		IMAGESET[j]->Header->HeaderKeys[ind] = ekd->KeyNameTxt->Text;
+		IMAGESET[j]->Header->HeaderKeyValues[ind] = ekd->KeyValueTxt->Text;
+		IMAGESET[j]->Header->HeaderKeyComments[ind] = ekd->KeyCommentTxt->Text;
 	}
 	ProgressBar->Value = 0;
 
-	HeaderKeyTxt->Items->Clear();
-	HeaderKeyValTxt->Items->Clear();
-	HeaderKeyComTxt->Items->Clear();
-	HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-	HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-	HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
-	HeaderKeyTxt->SelectedIndex = ind;
-	HeaderKeyValTxt->SelectedIndex = ind;
-	HeaderKeyComTxt->SelectedIndex = ind;
+	int topi = HeaderTxt->TopIndex;
+	HeaderTxt->BeginUpdate();
+	HeaderTxt->Items->Clear();
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
+	HeaderTxt->SelectedIndex = ind;
+	HeaderTxt->TopIndex = topi;
+	HeaderTxt->EndUpdate();
 }
 
 void Form1::HCInsertCurrent_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	EditKeyDlg^ ekd = gcnew EditKeyDlg();
-	ekd->ShowDialog();
-	if (ekd->DialogResult == System::Windows::Forms::DialogResult::OK)
+	/*bool valid = FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndex]);
+	if (!valid)
 	{
-		bool valid = ValidKeyChck(ekd->KeyNameTxt->Text);
-		valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->HeaderKeys);
-		if (valid == true)
-		{
-			IMAGESET[FILELISTINDEX]->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
-			HeaderKeyTxt->Items->Clear();
-			HeaderKeyValTxt->Items->Clear();
-			HeaderKeyComTxt->Items->Clear();
-			HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-			HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-			HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
-			HeaderKeyTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
-			HeaderKeyValTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
-			HeaderKeyComTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
-		}
-		else
-		{
-			::MessageBox::Show("Sorry, but this is Either a Restricted Key or it Already Exists!  Can Not Insert.","FITS Restriction...");
-		}
+		::MessageBox::Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction...");
+		return;
+	}*/
+
+	EditKeyDlg^ ekd = gcnew EditKeyDlg();
+	ekd->CommentKeyLineChck->Visible = true;
+	if (ekd->ShowDialog() == ::DialogResult::Cancel)
+		return;
+
+	bool valid = ValidKeyChck(ekd->KeyNameTxt->Text);
+	valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
+
+	if (valid == true)
+	{
+		IMAGESET[FILELISTINDEX]->Header->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
+		HeaderTxt->Items->Clear();
+		HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
+		HeaderTxt->SelectedIndex = HeaderTxt->Items->Count-2;
+	}
+	else
+	{
+		::MessageBox::Show("Sorry, but this is Either a Restricted Key or it Already Exists!  Can Not Insert.","FITS Restriction...");
 	}
 }
 
@@ -1266,7 +1278,7 @@ void Form1::HCInsertBatch_Click(System::Object^  sender, System::EventArgs^  e)
 	if (ekd->DialogResult == System::Windows::Forms::DialogResult::OK)
 	{
 		bool valid = ValidKeyChck(ekd->KeyNameTxt->Text);
-		valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->HeaderKeys);
+		valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
 		if (valid == true)
 		{
 			ProgressBar->Maximum = IMAGESET->Count;
@@ -1274,19 +1286,13 @@ void Form1::HCInsertBatch_Click(System::Object^  sender, System::EventArgs^  e)
 			{
 				ProgressBar->Value++;
 				ProgressBar->Refresh();
-				IMAGESET[j]->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
+				IMAGESET[j]->Header->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
 			}
 			ProgressBar->Value = 0;
 
-			HeaderKeyTxt->Items->Clear();
-			HeaderKeyValTxt->Items->Clear();
-			HeaderKeyComTxt->Items->Clear();
-			HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-			HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-			HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
-			HeaderKeyTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
-			HeaderKeyValTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
-			HeaderKeyComTxt->SelectedIndex = HeaderKeyTxt->Items->Count-2;
+			HeaderTxt->Items->Clear();
+			HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
+			HeaderTxt->SelectedIndex = HeaderTxt->Items->Count-2;
 		}
 		else
 		{
@@ -1297,53 +1303,45 @@ void Form1::HCInsertBatch_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::HCInsertSelectedToOthers_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	for (int j = 0; j < HeaderKeyTxt->SelectedIndices->Count; j++)
+	for (int j = 0; j < HeaderTxt->SelectedIndices->Count; j++)
 		for (int i = 0; i < IMAGESET->Count; i++)
 		{
 			if (i == FILELISTINDEX)
 				continue;
 
-			IMAGESET[i]->SetKey(IMAGESET[FILELISTINDEX]->HeaderKeys[HeaderKeyTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->HeaderKeyValues[HeaderKeyTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->HeaderKeyComments[HeaderKeyTxt->SelectedIndices[j]], true, HeaderKeyTxt->SelectedIndices[j]);
+			IMAGESET[i]->Header->SetKey(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[HeaderTxt->SelectedIndices[j]], true, HeaderTxt->SelectedIndices[j]);
 		}
 }
 
 void Form1::HCRemoveCurrent_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int nkeys = HeaderKeyTxt->SelectedIndices->Count;
+	int nkeys = HeaderTxt->SelectedIndices->Count;
 	array<String^>^ keys = gcnew array<String^>(nkeys);
 	for (int i = 0; i < nkeys; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->GetKeyName(HeaderKeyTxt->SelectedIndices[i]);
+		keys[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyName(HeaderTxt->SelectedIndices[i]);
 
 	for (int i = 0; i < nkeys; i++)
 		if (ValidKeyChck(keys[i]))
-			IMAGESET[FILELISTINDEX]->RemoveKey(keys[i]);
+			IMAGESET[FILELISTINDEX]->Header->RemoveKey(keys[i]);
 
-	HeaderKeyTxt->Items->Clear();
-	HeaderKeyValTxt->Items->Clear();
-	HeaderKeyComTxt->Items->Clear();
-	HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-	HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-	HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
+	HeaderTxt->Items->Clear();
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
 }
 
 void Form1::HCRemoveBatch_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int nkeys = HeaderKeyTxt->SelectedIndices->Count;
+	int nkeys = HeaderTxt->SelectedIndices->Count;
 	array<String^>^ keys = gcnew array<String^>(nkeys);
 	for (int i = 0; i < nkeys; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->GetKeyName(HeaderKeyTxt->SelectedIndices[i]);
+		keys[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyName(HeaderTxt->SelectedIndices[i]);
 
 	for (int j = 0; j < IMAGESET->Count;  j++)
 		for (int i = 0; i < nkeys; i++)
 			if (ValidKeyChck(keys[i]))
-				IMAGESET[j]->RemoveKey(keys[i]);
+				IMAGESET[j]->Header->RemoveKey(keys[i]);
 
-	HeaderKeyTxt->Items->Clear();
-	HeaderKeyValTxt->Items->Clear();
-	HeaderKeyComTxt->Items->Clear();
-	HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-	HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-	HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
+	HeaderTxt->Items->Clear();
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
 }
 
 void Form1::ManRegBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -1505,7 +1503,7 @@ void Form1::ManRegWrkr_DoWork(System::Object^  sender, System::ComponentModel::D
 			if (DO_UVITDRIFTFILES)
 			{
 				img = SPAREFITSImageSet[i];
-				UVITMANREGFILELIST_TIMES[i] = ::Convert::ToDouble(img->GetKeyValue("FRMTIME")) * 1000;
+				UVITMANREGFILELIST_TIMES[i] = ::Convert::ToDouble(img->Header->GetKeyValue("FRMTIME")) * 1000;
 			}
 			else
 				img = IMAGESET[i];//loaded images
@@ -2609,7 +2607,7 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 		if (filenames->Length == 1)
 		{
 			FITSImage^ check = gcnew FITSImage(filenames[0], nullptr, true, false, false, false);
-			if (Convert::ToInt32(check->GetKeyValue("NAXIS")) == 0)
+			if (Convert::ToInt32(check->Header->GetKeyValue("NAXIS")) == 0)
 			{
 				JPFITS::FitsExtensionTableViewer^ view = gcnew FitsExtensionTableViewer(ofd->FileName);
 				view->BringToFront();
@@ -2929,7 +2927,7 @@ void Form1::RecentFilesLoadSingle_Click(System::Object^ sender, System::Windows:
 void Form1::AddToImageSet(array<String^>^ fullpathlist)
 {
 	FITSImage^ tblcheck = gcnew FITSImage(fullpathlist[0], nullptr, true, false, false, false);
-	if (Convert::ToInt32(tblcheck->GetKeyValue("NAXIS")) == 0)
+	if (Convert::ToInt32(tblcheck->Header->GetKeyValue("NAXIS")) == 0)
 	{
 		JPFITS::FitsExtensionTableViewer^ view = gcnew FitsExtensionTableViewer(fullpathlist[0]);
 		view->TopMost = true;
@@ -3192,53 +3190,44 @@ void Form1::StatTxtsUpD()
 
 void Form1::FileTxtsUpD()
 {
+	
 	DirectoryLabel->Text = IMAGESET[FILELISTINDEX]->FullFileName;
-	FileDirectoryTxt->Text = ".." + Directory::GetParent(Directory::GetParent(IMAGESET[FILELISTINDEX]->FilePath)->FullName)->Name + "\\" + Directory::GetParent(IMAGESET[FILELISTINDEX]->FullFileName)->Name;
+	try
+	{
+		FileDirectoryTxt->Text = ".." + Directory::GetParent(Directory::GetParent(IMAGESET[FILELISTINDEX]->FilePath)->FullName)->Name + "\\" + Directory::GetParent(IMAGESET[FILELISTINDEX]->FullFileName)->Name;
+	}
+	catch (...) {}
 	FileDirectoryTxt->Tag = IMAGESET[FILELISTINDEX]->FilePath;
 	Tooltip->SetToolTip(FileDirectoryTxt, IMAGESET[FILELISTINDEX]->FilePath);
 	FileNameTxt->Text = IMAGESET[FILELISTINDEX]->FileName;
-	InfoTxt1->Text = IMAGESET[FILELISTINDEX]->GetKeyValue(InfoStatic1->Text->Substring(0, InfoStatic1->Text->IndexOf(':')));
-	InfoTxt2->Text = IMAGESET[FILELISTINDEX]->GetKeyValue(InfoStatic2->Text->Substring(0, InfoStatic2->Text->IndexOf(':')));
-	InfoTxt3->Text = IMAGESET[FILELISTINDEX]->GetKeyValue(InfoStatic3->Text->Substring(0, InfoStatic3->Text->IndexOf(':')));
-	InfoTxt4->Text = IMAGESET[FILELISTINDEX]->GetKeyValue(InfoStatic4->Text->Substring(0, InfoStatic4->Text->IndexOf(':')));
-	InfoTxt5->Text = IMAGESET[FILELISTINDEX]->GetKeyValue(InfoStatic5->Text->Substring(0, InfoStatic5->Text->IndexOf(':')));
+	InfoTxt1->Text = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(InfoStatic1->Text->Substring(0, InfoStatic1->Text->IndexOf(':')));
+	InfoTxt2->Text = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(InfoStatic2->Text->Substring(0, InfoStatic2->Text->IndexOf(':')));
+	InfoTxt3->Text = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(InfoStatic3->Text->Substring(0, InfoStatic3->Text->IndexOf(':')));
+	InfoTxt4->Text = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(InfoStatic4->Text->Substring(0, InfoStatic4->Text->IndexOf(':')));
+	InfoTxt5->Text = IMAGESET[FILELISTINDEX]->Header->GetKeyValue(InfoStatic5->Text->Substring(0, InfoStatic5->Text->IndexOf(':')));
 
 	if (ViewHeaderBtn->Checked)
 	{
-		int ind = HeaderKeyTxt->TopIndex;
-		String^ key = IMAGESET[OLD_INDEX]->GetKeyName(ind);
-		int c = HeaderKeyTxt->SelectedIndices->Count;
+		int ind = HeaderTxt->TopIndex;
+		String^ key = IMAGESET[OLD_INDEX]->Header->GetKeyName(ind);
+		int c = HeaderTxt->SelectedIndices->Count;
 		array<String^>^ keys = gcnew array<String^>(c);
 		for (int i = 0; i < c; i++)
-			keys[i] = (String^)HeaderKeyTxt->Items[HeaderKeyTxt->SelectedIndices[i]];
+			keys[i] = (String^)HeaderTxt->Items[HeaderTxt->SelectedIndices[i]];
 
-		HeaderKeyTxt->BeginUpdate();
-		HeaderKeyValTxt->BeginUpdate();
-		HeaderKeyComTxt->BeginUpdate();
-
-		HeaderKeyTxt->Items->Clear();
-		HeaderKeyValTxt->Items->Clear();
-		HeaderKeyComTxt->Items->Clear();
-		HeaderKeyTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeys);
-		HeaderKeyValTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyValues);
-		HeaderKeyComTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->HeaderKeyComments);
-
-		ind = IMAGESET[FILELISTINDEX]->GetKeyIndex(key);
-		HeaderKeyTxt->TopIndex = ind;
-		HeaderKeyValTxt->TopIndex = ind;
-		HeaderKeyComTxt->TopIndex = ind;
+		HeaderTxt->BeginUpdate();
+		HeaderTxt->Items->Clear();
+		HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
+		ind = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(key, false);
+		HeaderTxt->TopIndex = ind;
 
 		for (int i = 0; i < c; i++)
 		{
-			int ind = IMAGESET[FILELISTINDEX]->GetKeyIndex(keys[i]);
-			HeaderKeyTxt->SelectedIndex = ind;
-			HeaderKeyValTxt->SelectedIndex = ind;
-			HeaderKeyComTxt->SelectedIndex = ind;
+			int ind = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(keys[i], false);
+			HeaderTxt->SelectedIndex = ind;
 		}
 
-		HeaderKeyTxt->EndUpdate();
-		HeaderKeyValTxt->EndUpdate();
-		HeaderKeyComTxt->EndUpdate();
+		HeaderTxt->EndUpdate();
 	}
 }
 
@@ -3247,18 +3236,13 @@ void Form1::ViewHeaderBtn_CheckedChanged(System::Object^  sender, System::EventA
 	if (ViewHeaderBtn->Checked == true)
 	{
 		FileTxtsUpD();
-		HeaderKeyTxt->BringToFront();
-		HeaderKeyValTxt->BringToFront();
-		HeaderKeyComTxt->BringToFront();
-		HeaderKeyTxt->Visible = true;
-		HeaderKeyValTxt->Visible = true;
-		HeaderKeyComTxt->Visible = true;
+		HeaderTxt->BringToFront();
+		HeaderTxt->Visible = true;
 	}
 	else
 	{
-		HeaderKeyTxt->Visible = false;
-		HeaderKeyValTxt->Visible = false;
-		HeaderKeyComTxt->Visible = false;
+		HeaderTxt->Visible = false;
+		ImageWindow->Refresh();
 	}
 }
 
@@ -4493,7 +4477,7 @@ void Form1::KeyValNormBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	for (int i = 0; i < IMAGESET->Count; i++)
 	{
-		int jj = IMAGESET[i]->GetKeyIndex(key);
+		int jj = IMAGESET[i]->Header->GetKeyIndex(key, false);
 		if (jj == -1)
 		{
 			::MessageBox::Show("Key doesn't exist at file: " + (i+1).ToString(),"Error...");
@@ -4501,7 +4485,7 @@ void Form1::KeyValNormBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		}
 		try
 		{
-			double val = ::Convert::ToDouble(IMAGESET[i]->GetKeyValue(key));
+			double val = ::Convert::ToDouble(IMAGESET[i]->Header->GetKeyValue(key));
 		}
 		catch (...)
 		{
@@ -4687,20 +4671,20 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 				IMAGESET[IMAGESET->Count-1]->CopyHeader(IMAGESET[i]);
 				FileListDrop->Items->Add(fname);*/
 				IMAGESET[inds[i]]->SetImage(subarray, true, true);
-				IMAGESET[inds[i]]->AddKey("XCROPSTT", XSUBRANGE[0].ToString(),"Cropped image x-start index (0-based)",-1);
-				IMAGESET[inds[i]]->AddKey("XCROPEND",(XSUBRANGE[w - 1]).ToString(),"Cropped image x-end index (0-based)",-1);
-				IMAGESET[inds[i]]->AddKey("YCROPSTT", YSUBRANGE[0].ToString(),"Cropped image y-start index (0-based)",-1);
-				IMAGESET[inds[i]]->AddKey("YCROPEND",(YSUBRANGE[h - 1]).ToString(),"Cropped image y-end index (0-based)",-1);
+				IMAGESET[inds[i]]->Header->AddKey("XCROPSTT", XSUBRANGE[0].ToString(),"Cropped image x-start index (0-based)",-1);
+				IMAGESET[inds[i]]->Header->AddKey("XCROPEND",(XSUBRANGE[w - 1]).ToString(),"Cropped image x-end index (0-based)",-1);
+				IMAGESET[inds[i]]->Header->AddKey("YCROPSTT", YSUBRANGE[0].ToString(),"Cropped image y-start index (0-based)",-1);
+				IMAGESET[inds[i]]->Header->AddKey("YCROPEND",(YSUBRANGE[h - 1]).ToString(),"Cropped image y-end index (0-based)",-1);
 				//IMAGESET[inds[i]]->FileName = fname;
 				//FileListDrop->Items[inds[i]] = fname;
 
-				if (IMAGESET[inds[i]]->GetKeyValue("CRPIX1") != "")//then the key exists and has a value...must adjust CRPIX1&2 to the new pixel axes placements
+				if (IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX1") != "")//then the key exists and has a value...must adjust CRPIX1&2 to the new pixel axes placements
 				{
-					double crpix1 = ::Convert::ToDouble(IMAGESET[inds[i]]->GetKeyValue("CRPIX1")) - XSUBRANGE[0];
-					double crpix2 = ::Convert::ToDouble(IMAGESET[inds[i]]->GetKeyValue("CRPIX2")) - YSUBRANGE[0];
+					double crpix1 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX1")) - XSUBRANGE[0];
+					double crpix2 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX2")) - YSUBRANGE[0];
 
-					IMAGESET[inds[i]]->SetKey("CRPIX1",crpix1.ToString(),false,0);
-					IMAGESET[inds[i]]->SetKey("CRPIX2",crpix2.ToString(),false,0);
+					IMAGESET[inds[i]]->Header->SetKey("CRPIX1",crpix1.ToString(),false,0);
+					IMAGESET[inds[i]]->Header->SetKey("CRPIX2",crpix2.ToString(),false,0);
 				}
 
 
@@ -4893,7 +4877,7 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 				String^ filename = IMAGESET[inds[i]]->FullFileName;
 				filename = filename->Substring(0,filename->LastIndexOf(".")) + "_MEDFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
 				FITSImage^ f = gcnew FITSImage(filename, JPMath::MedianFilter(IMAGESET[inds[i]]->Image, (size - 1) / 2, true), true, true);
-				f->CopyHeader(IMAGESET[inds[i]]);
+				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);//  CopyHeader(IMAGESET[inds[i]]);
 				IMAGESET->Add(f);
 				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count-1]->FileName);
 			}
@@ -4920,7 +4904,7 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 				String^ filename = IMAGESET[inds[i]]->FullFileName;
 				filename = filename->Substring(0,filename->LastIndexOf(".")) + "_GAUSSFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
 				FITSImage^ f = gcnew FITSImage(filename, JPMath::MatrixConvolveMatrix(IMAGESET[inds[i]]->Image, g, true), true, true);
-				f->CopyHeader(IMAGESET[inds[i]]);
+				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);//  CopyHeader(IMAGESET[inds[i]]);
 				IMAGESET->Add(f);
 				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count-1]->FileName);
 			}
@@ -5150,10 +5134,10 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 						return;
 					ImageOpsWrkr->ReportProgress(i+1);
 
-					double val = ::Convert::ToDouble(IMAGESET[inds[i]]->GetKeyValue(key));
+					double val = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue(key));
 
 					IMAGESET[inds[i]]->SetImage(JPMath::MatrixDivScalar(IMAGESET[inds[i]]->Image, val, true), true, true);
-					IMAGESET[inds[i]]->AddKey("KEYNORM","true","Image Normalized to: " + key,-1);
+					IMAGESET[inds[i]]->Header->AddKey("KEYNORM","true","Image Normalized to: " + key,-1);
 				}
 			}
 			catch (Exception ^e)
@@ -5320,21 +5304,15 @@ void Form1::InfoStatic1_MouseDoubleClick(System::Object^  sender, System::Window
 {
 	Label^ keylabel = (Label^)sender;
 	String^ key = keylabel->Text->Substring(0, keylabel->Text->Length - 1);
-	int keyindex = IMAGESET[FILELISTINDEX]->GetKeyIndex(key);
+	int keyindex = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(key, false);
 	if (keyindex == -1)
 	{
-		HeaderKeyTxt->ClearSelected();
-		HeaderKeyValTxt->ClearSelected();
-		HeaderKeyComTxt->ClearSelected();
+		HeaderTxt->ClearSelected();
 		return;
 	}
 	ViewHeaderBtn->Checked = true;
-	HeaderKeyTxt->ClearSelected();
-	HeaderKeyValTxt->ClearSelected();
-	HeaderKeyComTxt->ClearSelected();
-	HeaderKeyTxt->SelectedIndex = keyindex;
-	HeaderKeyValTxt->SelectedIndex = keyindex;
-	HeaderKeyComTxt->SelectedIndex = keyindex;
+	HeaderTxt->ClearSelected();
+	HeaderTxt->SelectedIndex = keyindex;
 }
 
 void Form1::InfoStatic1_MouseEnter(System::Object^  sender, System::EventArgs^  e)
@@ -5345,9 +5323,9 @@ void Form1::InfoStatic1_MouseEnter(System::Object^  sender, System::EventArgs^  
 
 	InfoCntxt->SuspendLayout();
 	InfoCntxt->Items->Clear();
-	for (int i = 0; i < HeaderKeyTxt->Items->Count; i++)
+	for (int i = 0; i < HeaderTxt->Items->Count; i++)
 	{
-		InfoCntxt->Items->Add(String::Concat(HeaderKeyTxt->Items[i]->ToString(),":   ",HeaderKeyValTxt->Items[i]->ToString(),":   ",HeaderKeyComTxt->Items[i]->ToString()));
+		InfoCntxt->Items->Add(String::Concat(HeaderTxt->Items[i]->ToString(),":   ", HeaderTxt->Items[i]->ToString(),":   ", HeaderTxt->Items[i]->ToString()));
 		InfoCntxt->Items[i]->Click += gcnew System::EventHandler(this, &Form1::InfoCntxt_ItemClicked);
 	}
 	InfoCntxt->ResumeLayout();
@@ -5970,7 +5948,7 @@ void Form1::EMCopyHeader_Click(System::Object^  sender, System::EventArgs^  e)
 	for (int i = 0; i < ofd->FileNames->Length; i++)
 	{
 		dest = gcnew FITSImage(ofd->FileNames[i], nullptr, true, true, false, true);
-		dest->CopyHeader(source);
+		dest->Header->CopyHeaderFrom(source->Header);            // CopyHeader(source);
 		dest->WriteImage(::TypeCode::Double, true);
 	}
 
@@ -6150,10 +6128,10 @@ void Form1::SubImgRadialPlotMenuBtn_Click(System::Object^  sender, System::Event
 	if (RAD_PLOT->IsDisposed)
 		RAD_PLOT = gcnew JPPlot();
 
-	if (IMAGESET[FILELISTINDEX]->GetKeyValue("CDELT1") != "" && IMAGESET[FILELISTINDEX]->GetKeyValue("CDELT2") != "")
+	if (IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CDELT1") != "" && IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CDELT2") != "")
 	{
-		double cdelt1 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CDELT1"));
-		double cdelt2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->GetKeyValue("CDELT2"));
+		double cdelt1 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CDELT1"));
+		double cdelt2 = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CDELT2"));
 		double cdelt = (cdelt1 + cdelt2) / 2;
 		RAD_PLOT->PixelScaleTxtBox->Text = cdelt.ToString();
 	}

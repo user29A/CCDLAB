@@ -60,14 +60,24 @@ namespace CCDLAB {
 			}
 		}
 	public: System::Windows::Forms::TextBox^  KeyNameTxt;
-	private: System::Windows::Forms::Label^  label1;
-	private: System::Windows::Forms::Label^  label2;
+		public: System::Windows::Forms::Label^  label1;
+		public: System::Windows::Forms::Label^  label2;
+
+
 	public: System::Windows::Forms::TextBox^  KeyValueTxt;
 	public: System::Windows::Forms::TextBox^  KeyCommentTxt;
+		public: System::Windows::Forms::Label^  label3;
 
-	private: System::Windows::Forms::Label^  label3;
+
 	private: System::Windows::Forms::Button^  OKBtn;
 	private: System::Windows::Forms::Button^  CancelBtn;
+		public: System::Windows::Forms::TextBox^  CommentKeyLineTxt;
+		public: System::Windows::Forms::CheckBox^  CommentKeyLineChck;
+
+		public:
+		private:
+
+		private:
 
 	private: 
 
@@ -101,23 +111,27 @@ namespace CCDLAB {
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->OKBtn = (gcnew System::Windows::Forms::Button());
 			this->CancelBtn = (gcnew System::Windows::Forms::Button());
+			this->CommentKeyLineTxt = (gcnew System::Windows::Forms::TextBox());
+			this->CommentKeyLineChck = (gcnew System::Windows::Forms::CheckBox());
 			this->SuspendLayout();
 			// 
 			// KeyNameTxt
 			// 
 			this->KeyNameTxt->CharacterCasing = System::Windows::Forms::CharacterCasing::Upper;
-			this->KeyNameTxt->Location = System::Drawing::Point(14, 28);
+			this->KeyNameTxt->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->KeyNameTxt->Location = System::Drawing::Point(6, 28);
 			this->KeyNameTxt->MaxLength = 8;
 			this->KeyNameTxt->Name = L"KeyNameTxt";
-			this->KeyNameTxt->Size = System::Drawing::Size(71, 20);
+			this->KeyNameTxt->Size = System::Drawing::Size(65, 21);
 			this->KeyNameTxt->TabIndex = 0;
 			// 
 			// label1
 			// 
 			this->label1->AutoSize = true;
-			this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point, 
+			this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label1->Location = System::Drawing::Point(11, 12);
+			this->label1->Location = System::Drawing::Point(3, 12);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(56, 13);
 			this->label1->TabIndex = 88;
@@ -126,9 +140,9 @@ namespace CCDLAB {
 			// label2
 			// 
 			this->label2->AutoSize = true;
-			this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point, 
+			this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label2->Location = System::Drawing::Point(88, 12);
+			this->label2->Location = System::Drawing::Point(69, 12);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(55, 13);
 			this->label2->TabIndex = 89;
@@ -136,27 +150,31 @@ namespace CCDLAB {
 			// 
 			// KeyValueTxt
 			// 
-			this->KeyValueTxt->Location = System::Drawing::Point(91, 28);
+			this->KeyValueTxt->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->KeyValueTxt->Location = System::Drawing::Point(72, 28);
 			this->KeyValueTxt->MaxLength = 18;
 			this->KeyValueTxt->Name = L"KeyValueTxt";
-			this->KeyValueTxt->Size = System::Drawing::Size(169, 20);
+			this->KeyValueTxt->Size = System::Drawing::Size(136, 21);
 			this->KeyValueTxt->TabIndex = 1;
 			this->KeyValueTxt->TextAlign = System::Windows::Forms::HorizontalAlignment::Right;
 			// 
 			// KeyCommentTxt
 			// 
-			this->KeyCommentTxt->Location = System::Drawing::Point(266, 28);
+			this->KeyCommentTxt->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->KeyCommentTxt->Location = System::Drawing::Point(209, 28);
 			this->KeyCommentTxt->MaxLength = 48;
 			this->KeyCommentTxt->Name = L"KeyCommentTxt";
-			this->KeyCommentTxt->Size = System::Drawing::Size(289, 20);
+			this->KeyCommentTxt->Size = System::Drawing::Size(368, 21);
 			this->KeyCommentTxt->TabIndex = 2;
 			// 
 			// label3
 			// 
 			this->label3->AutoSize = true;
-			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point, 
+			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Underline, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->label3->Location = System::Drawing::Point(263, 12);
+			this->label3->Location = System::Drawing::Point(206, 12);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(72, 13);
 			this->label3->TabIndex = 90;
@@ -182,13 +200,37 @@ namespace CCDLAB {
 			this->CancelBtn->Text = L"Cancel";
 			this->CancelBtn->UseVisualStyleBackColor = true;
 			// 
+			// CommentKeyLineTxt
+			// 
+			this->CommentKeyLineTxt->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->CommentKeyLineTxt->Location = System::Drawing::Point(6, 28);
+			this->CommentKeyLineTxt->MaxLength = 80;
+			this->CommentKeyLineTxt->Name = L"CommentKeyLineTxt";
+			this->CommentKeyLineTxt->Size = System::Drawing::Size(571, 21);
+			this->CommentKeyLineTxt->TabIndex = 91;
+			this->CommentKeyLineTxt->Visible = false;
+			// 
+			// CommentKeyLineChck
+			// 
+			this->CommentKeyLineChck->AutoSize = true;
+			this->CommentKeyLineChck->Location = System::Drawing::Point(6, 55);
+			this->CommentKeyLineChck->Name = L"CommentKeyLineChck";
+			this->CommentKeyLineChck->Size = System::Drawing::Size(129, 17);
+			this->CommentKeyLineChck->TabIndex = 92;
+			this->CommentKeyLineChck->Text = L"Line is Comment Form";
+			this->CommentKeyLineChck->UseVisualStyleBackColor = true;
+			this->CommentKeyLineChck->Visible = false;
+			this->CommentKeyLineChck->CheckedChanged += gcnew System::EventHandler(this, &EditKeyDlg::CommentKeyLineChck_CheckedChanged);
+			// 
 			// EditKeyDlg
 			// 
 			this->AcceptButton = this->OKBtn;
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
 			this->CancelButton = this->CancelBtn;
-			this->ClientSize = System::Drawing::Size(567, 97);
+			this->ClientSize = System::Drawing::Size(581, 97);
 			this->ControlBox = false;
+			this->Controls->Add(this->CommentKeyLineChck);
 			this->Controls->Add(this->CancelBtn);
 			this->Controls->Add(this->OKBtn);
 			this->Controls->Add(this->label3);
@@ -197,6 +239,7 @@ namespace CCDLAB {
 			this->Controls->Add(this->KeyValueTxt);
 			this->Controls->Add(this->label1);
 			this->Controls->Add(this->KeyNameTxt);
+			this->Controls->Add(this->CommentKeyLineTxt);
 			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedToolWindow;
 			this->Name = L"EditKeyDlg";
 			this->RightToLeftLayout = true;
@@ -211,5 +254,24 @@ namespace CCDLAB {
 #pragma endregion
 	private: System::Void EditKeyDlg_Load(System::Object^  sender, System::EventArgs^  e) {
 			 }
+	private: System::Void CommentKeyLineChck_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+	{
+		if (CommentKeyLineChck->Checked)
+		{
+			this->CommentKeyLineTxt->Visible = true;
+			this->CommentKeyLineTxt->BringToFront();
+			this->label1->Text = "Comment Line";
+			this->label2->Visible = false;
+			this->label3->Visible = false;
+		}
+		else
+		{
+			this->CommentKeyLineTxt->Visible = false;
+			this->CommentKeyLineTxt->SendToBack();
+			this->label1->Text = "Key Name";
+			this->label2->Visible = true;
+			this->label3->Visible = true;
+		}
+	}
 };
 }

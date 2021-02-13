@@ -1263,7 +1263,7 @@ void CCDLAB::GSEExtractImg::ExtractImgWrkr_DoWork(System::Object^  sender, Syste
 					//fullfile = String::Concat(filepath,IMFRCNT.ToString("0000000"),"_",channn,".fits");
 					fits->FullFileName = fullfile;
 					fits->SetImage(fitsdum, false, true);
-					fits->RemoveAllKeys();
+					fits->Header->RemoveAllKeys(fitsdum);
 					AddImageInfoKeys(fits);
 				}
 				if (Every_N_Count != 0)
@@ -1296,12 +1296,12 @@ void CCDLAB::GSEExtractImg::ExtractImgWrkr_DoWork(System::Object^  sender, Syste
 					fits->SetImage(d2im, StatsOnly, true);
 					if (StatsOnly)
 					{
-						fits->AddKey("MIN",fits->Min.ToString(),"For Quick Extraction Only",-1);
-						fits->AddKey("MAX",fits->Max.ToString(),"For Quick Extraction Only",-1);
-						fits->AddKey("MEAN",fits->Mean.ToString(),"For Quick Extraction Only",-1);
-						fits->AddKey("MEDIAN",fits->Median.ToString(),"For Quick Extraction Only",-1);
-						fits->AddKey("STDV",fits->Std.ToString(),"For Quick Extraction Only",-1);
-						fits->AddKey("SUM",fits->Sum.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("MIN",fits->Min.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("MAX",fits->Max.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("MEAN",fits->Mean.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("MEDIAN",fits->Median.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("STDV",fits->Std.ToString(),"For Quick Extraction Only",-1);
+						fits->Header->AddKey("SUM",fits->Sum.ToString(),"For Quick Extraction Only",-1);
 						fits->SetImage(fitsdum, false, true);//don't record the actual image in this mode (time saver)
 					}
 
@@ -2305,33 +2305,33 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 		//all of this will also need to appear identically for integrate mode extraxtion
 		///also will need to apply it into the sub-range checkchanged fcn to de-transform back into read-out coords for when extracting data
 		//i.e., if looking at transformed images, and want to extract a subrange, then that subrange needs transformed back into readout coords
-		if (img->GetKeyValue("CHANNEL") == "VIS")
+		if (img->Header->GetKeyValue("CHANNEL") == "VIS")
 		{
 			img->RotateCW(true);
 			img->FlipHorizontal();
 
-			int xoffset = ::Convert::ToInt32(img->GetKeyValue("XOFFSET"));
-			int yoffset = ::Convert::ToInt32(img->GetKeyValue("YOFFSET"));
-			int xsize = ::Convert::ToInt32(img->GetKeyValue("XSIZE"));
-			int ysize = ::Convert::ToInt32(img->GetKeyValue("YSIZE"));
+			int xoffset = ::Convert::ToInt32(img->Header->GetKeyValue("XOFFSET"));
+			int yoffset = ::Convert::ToInt32(img->Header->GetKeyValue("YOFFSET"));
+			int xsize = ::Convert::ToInt32(img->Header->GetKeyValue("XSIZE"));
+			int ysize = ::Convert::ToInt32(img->Header->GetKeyValue("YSIZE"));
 			//rot'n
-			img->SetKey("XOFFSET",(511 - yoffset - ysize).ToString(),false,-1);
-			img->SetKey("YOFFSET",xoffset.ToString(),false,-1);
-			img->SetKey("XSIZE",ysize.ToString(),false,-1);
-			img->SetKey("YSIZE",xsize.ToString(),false,-1);
-			xoffset = ::Convert::ToInt32(img->GetKeyValue("XOFFSET"));
-			yoffset = ::Convert::ToInt32(img->GetKeyValue("YOFFSET"));
-			xsize = ::Convert::ToInt32(img->GetKeyValue("XSIZE"));
-			ysize = ::Convert::ToInt32(img->GetKeyValue("YSIZE"));
+			img->Header->SetKey("XOFFSET",(511 - yoffset - ysize).ToString(),false,-1);
+			img->Header->SetKey("YOFFSET",xoffset.ToString(),false,-1);
+			img->Header->SetKey("XSIZE",ysize.ToString(),false,-1);
+			img->Header->SetKey("YSIZE",xsize.ToString(),false,-1);
+			xoffset = ::Convert::ToInt32(img->Header->GetKeyValue("XOFFSET"));
+			yoffset = ::Convert::ToInt32(img->Header->GetKeyValue("YOFFSET"));
+			xsize = ::Convert::ToInt32(img->Header->GetKeyValue("XSIZE"));
+			ysize = ::Convert::ToInt32(img->Header->GetKeyValue("YSIZE"));
 			//Horz flip
-			img->SetKey("XOFFSET",(511 - xoffset - xsize).ToString(),false,-1);//no change in size or in y coords
+			img->Header->SetKey("XOFFSET",(511 - xoffset - xsize).ToString(),false,-1);//no change in size or in y coords
 		}
-		if (img->GetKeyValue("CHANNEL") == "NUV")
+		if (img->Header->GetKeyValue("CHANNEL") == "NUV")
 		{
 			img->RotateCW(false);
 			//img->FlipVertical();
 		}
-		//if (fits->GetKeyValue("CHANNEL") == "FUV")
+		//if (fits->Header->GetKeyValue("CHANNEL") == "FUV")
 		//{
 		//	fits->RotateCW(true);
 		//}
@@ -2357,8 +2357,8 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 
 		String^ imphotname = String::Concat(fullfilename->Substring(0,fullfilename->LastIndexOf(".")),"_PerImageCounts",fullfilename->Substring(fullfilename->LastIndexOf(".")));
 		FITSImage^ imphot = gcnew FITSImage(imphotname,(array<unsigned __int32,2>^)result[3],false, true);
-		imphot->AddKey("ROW1","Image Frame Time","Milliseconds",-1);
-		imphot->AddKey("ROW2","Total Count","In Single Frame",-1);
+		imphot->Header->AddKey("ROW1","Image Frame Time","Milliseconds",-1);
+		imphot->Header->AddKey("ROW2","Total Count","In Single Frame",-1);
 		AddImageInfoKeys(imphot);
 		imphot->WriteImage(TypeCode::UInt32, true);
 		delete imphot, result;
@@ -2372,9 +2372,9 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 			double parody_rate = double(tot_parevents)/double(tot_events);
 			String^ fitsparityname = String::Concat(fullfilename->Substring(0,fullfilename->LastIndexOf(".")),"_Parity",fullfilename->Substring(fullfilename->LastIndexOf(".")));
 			FITSImage^ parity_fits = gcnew FITSImage(fitsparityname,Form1::CCDLABPATH + "templeton_parity.tmp",TypeCode::UInt32,4,tot_parevents);
-			parity_fits->AddKey("PRTYRATE",Math::Round(parody_rate*100,4).ToString(),"Percent Rate of Parity Errors per Centroid",-1);
-			parity_fits->AddKey("FILEINF0","Parity Errors","[EventNum DataFlag WordNumber DataValue]",-1);
-			parity_fits->AddKey("FILEINF1","DataFlag INFO","1,2,or,3=xword,yword,cornerword",-1);
+			parity_fits->Header->AddKey("PRTYRATE",Math::Round(parody_rate*100,4).ToString(),"Percent Rate of Parity Errors per Centroid",-1);
+			parity_fits->Header->AddKey("FILEINF0","Parity Errors","[EventNum DataFlag WordNumber DataValue]",-1);
+			parity_fits->Header->AddKey("FILEINF1","DataFlag INFO","1,2,or,3=xword,yword,cornerword",-1);
 			AddImageInfoKeys(parity_fits);
 			parity_fits->WriteFileFromDiskBuffer(true);
 			delete parity_fits;
@@ -2396,7 +2396,7 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 		FITSImage^ time_fits = gcnew FITSImage(fitstimename, Form1::CCDLABPATH + "templeton_time.tmp", TypeCode::UInt32, 1, tot_events);
 		time_fits->FileName = time_fits->FileName->Replace("_TimeList", "_" + FILENAMETIME.ToString("0000000000000") + "_TimeList");
 		fitstimename = time_fits->FullFileName;
-		time_fits->AddKey("FILEINFO", "Time List", "Centroid Image Time (millisec)", -1);
+		time_fits->Header->AddKey("FILEINFO", "Time List", "Centroid Image Time (millisec)", -1);
 		AddImageInfoKeys(time_fits);
 		time_fits->WriteFileFromDiskBuffer(true);
 		delete time_fits;
@@ -2404,7 +2404,7 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 		String^ fitsframename = fitstimename->Replace("TimeList", "FrameList");//String::Concat(fullfilename->Substring(0, fullfilename->LastIndexOf(".")), "_FrameList", fullfilename->Substring(fullfilename->LastIndexOf(".")));
 		FitsResultsWriteWrkr->ReportProgress(-1,String::Concat("Please wait a moment while I write: ",fitsframename->Substring(1 + fitsframename->LastIndexOf("\\"))));
 		FITSImage^ frame_fits = gcnew FITSImage(fitsframename,Form1::CCDLABPATH + "templeton_frame.tmp",TypeCode::UInt32,1,tot_events);
-		frame_fits->AddKey("FILEINFO","Frame List","Frame Count Number",-1);
+		frame_fits->Header->AddKey("FILEINFO","Frame List","Frame Count Number",-1);
 		AddImageInfoKeys(frame_fits);
 		frame_fits->WriteFileFromDiskBuffer(true);
 		delete frame_fits;
@@ -2416,7 +2416,7 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 			xyintslistname = xyintslistname->Replace("XYInts_List","XYInts_List_deFPN");
 		FitsResultsWriteWrkr->ReportProgress(-1,String::Concat("Please wait a moment while I write: ",xyintslistname->Substring(1 + xyintslistname->LastIndexOf("\\"))));
 		FITSImage^ xy_ints_fits = gcnew FITSImage(xyintslistname,Form1::CCDLABPATH + "templeton_cent_ixy.tmp",TypeCode::Int16,2,tot_events);
-		xy_ints_fits->AddKey("FILEINFO","Centroid List","Centroid [X Y] Integers (*32)",-1);
+		xy_ints_fits->Header->AddKey("FILEINFO","Centroid List","Centroid [X Y] Integers (*32)",-1);
 		AddImageInfoKeys(xy_ints_fits);
 		xy_ints_fits->WriteFileFromDiskBuffer(true);
 		delete xy_ints_fits;
@@ -2428,7 +2428,7 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 			xyfraclistname = xyfraclistname->Replace("XYFrac_List","XYFrac_List_deFPN");
 		FitsResultsWriteWrkr->ReportProgress(-1, String::Concat("Please wait a moment while I write: ", xyfraclistname->Substring(1 + xyfraclistname->LastIndexOf("\\"))));
 		FITSImage^ xy_frac_fits = gcnew FITSImage(xyfraclistname, Form1::CCDLABPATH + "templeton_cent_fxy.tmp", TypeCode::Byte, 2, tot_events);
-		xy_frac_fits->AddKey("FILEINFO", "Centroid List", "Centroid [X Y] Fractions (*32)", -1);
+		xy_frac_fits->Header->AddKey("FILEINFO", "Centroid List", "Centroid [X Y] Fractions (*32)", -1);
 		AddImageInfoKeys(xy_frac_fits);
 		xy_frac_fits->WriteFileFromDiskBuffer(true);
 		delete xy_frac_fits;
@@ -2436,7 +2436,7 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_DoWork(System::Object^  sender,
 		String^ xymdmmlistname = fitstimename->Replace("TimeList", "XYmdMm_List");//String::Concat(fullfilename->Substring(0,img->FullFileName->LastIndexOf(".")),"_XYmdMm_List",fullfilename->Substring(img->FullFileName->LastIndexOf(".")));
 		FitsResultsWriteWrkr->ReportProgress(-1,String::Concat("Please wait a moment while I write: ",xymdmmlistname->Substring(1 + xymdmmlistname->LastIndexOf("\\"))));
 		FITSImage^ xy_mdmm_fits = gcnew FITSImage(xymdmmlistname,Form1::CCDLABPATH + "templeton_cent_mxy.tmp",TypeCode::UInt16,2,tot_events);
-		xy_mdmm_fits->AddKey("FILEINFO","Centroid List","Centroid [Max  Max-min]",-1);
+		xy_mdmm_fits->Header->AddKey("FILEINFO","Centroid List","Centroid [Max  Max-min]",-1);
 		AddImageInfoKeys(xy_mdmm_fits);
 		xy_mdmm_fits->WriteFileFromDiskBuffer(true);
 		delete xy_mdmm_fits;
@@ -2478,73 +2478,73 @@ void CCDLAB::GSEExtractImg::FitsResultsWriteWrkr_RunWorkerCompleted(System::Obje
 
 void CCDLAB::GSEExtractImg::AddImageInfoKeys(JPFITS::FITSImage^ fit)
 {
-	fit->AddKey("SRCFILE",FILELIST[0]->Substring(2,18),"Source Data *.img File Name",-1);
-	fit->AddKey("TOTTIME",TOTTIME.ToString(),"Total Imaging Time (seconds)",-1);
-	fit->AddKey("TOTFRAMS",TOTFRAMS.ToString(),"Total Number of Frames",-1);
-	fit->AddKey("FRAMPSEC",Math::Round(FRAMPSEC,4).ToString(),"Frames per Second",-1);
-	fit->AddKey("GLOBRATE",Math::Round(GLOBRATE,1).ToString(),"Global Count Rate (c/f)",-1);
-	fit->AddKey("SPOTRATE",Math::Round(SPOTRATE,1).ToString(),"Max Spot Count Rate (f/c)",-1);
-	fit->AddKey("RATEPSEC",Math::Round(RATEPSEC,2).ToString(),"Global Count Rate per Second",-1);
-	fit->AddKey("EXTRDATE",System::DateTime::Now.ToString(),"*.raw File Extraction Date",-1);
-	fit->AddKey("CNTDRSLN",CentroidResolutionUpD->Value.ToString(),"Centroid Resolution; Fractional Pixel",-1);
-	fit->AddKey("IMFRCNT",IMFRCNT.ToString(),"Image Frame Count",-1);
-	fit->AddKey("FRMTIME",(double(IMTIME)/1000.0).ToString(),"Image Frame Time (sec)",-1);
-	fit->AddKey("DETECTOR",CHANNEL,"UVIT Channel",-1);
-	fit->AddKey("MODE",MODE,"Data Collection Mode",-1);
-	fit->AddKey("SOURCE",SOURCE,"Data Source",-1);
-	fit->AddKey("ALGRITHM",ALGRTHM,"Centroiding Algorithm",-1);
-	fit->AddKey("GAPTIME",/*Math::Round(*/ROWGAPT/*,3)*/.ToString(),"Row Gap Time (0-511)",-1);
-	fit->AddKey("GAIN",GAIN.ToString(),"Gain (1,2,4,8)",-1);
-	fit->AddKey("NO_FRMS",STACKING.ToString(),"Stacking (1,2,4,8,16)",-1);
-	fit->AddKey("NORMLZN",NORMLZN.ToString(),"Normalization (1,2,4,8,16)",-1);
-	fit->AddKey("RSETBIAS",Math::Round(RSETBIAS,3).ToString(),"Reset Bias (V); Using DN~1.95mV",-1);
-	fit->AddKey("XOFFSET",XOFFSET.ToString(),"Zero-Based X Off-Set",-1);
-	fit->AddKey("XSIZE",XSIZE.ToString(),"Zero-Based X Size: #Columns - 1",-1);
-	fit->AddKey("YOFFSET",YOFFSET.ToString(),"Zero-Based Y Off-Set",-1);
-	fit->AddKey("YSIZE",YSIZE.ToString(),"Zero-Based Y Size: #Rows - 1",-1);
+	fit->Header->AddKey("SRCFILE",FILELIST[0]->Substring(2,18),"Source Data *.img File Name",-1);
+	fit->Header->AddKey("TOTTIME",TOTTIME.ToString(),"Total Imaging Time (seconds)",-1);
+	fit->Header->AddKey("TOTFRAMS",TOTFRAMS.ToString(),"Total Number of Frames",-1);
+	fit->Header->AddKey("FRAMPSEC",Math::Round(FRAMPSEC,4).ToString(),"Frames per Second",-1);
+	fit->Header->AddKey("GLOBRATE",Math::Round(GLOBRATE,1).ToString(),"Global Count Rate (c/f)",-1);
+	fit->Header->AddKey("SPOTRATE",Math::Round(SPOTRATE,1).ToString(),"Max Spot Count Rate (f/c)",-1);
+	fit->Header->AddKey("RATEPSEC",Math::Round(RATEPSEC,2).ToString(),"Global Count Rate per Second",-1);
+	fit->Header->AddKey("EXTRDATE",System::DateTime::Now.ToString(),"*.raw File Extraction Date",-1);
+	fit->Header->AddKey("CNTDRSLN",CentroidResolutionUpD->Value.ToString(),"Centroid Resolution; Fractional Pixel",-1);
+	fit->Header->AddKey("IMFRCNT",IMFRCNT.ToString(),"Image Frame Count",-1);
+	fit->Header->AddKey("FRMTIME",(double(IMTIME)/1000.0).ToString(),"Image Frame Time (sec)",-1);
+	fit->Header->AddKey("DETECTOR",CHANNEL,"UVIT Channel",-1);
+	fit->Header->AddKey("MODE",MODE,"Data Collection Mode",-1);
+	fit->Header->AddKey("SOURCE",SOURCE,"Data Source",-1);
+	fit->Header->AddKey("ALGRITHM",ALGRTHM,"Centroiding Algorithm",-1);
+	fit->Header->AddKey("GAPTIME",/*Math::Round(*/ROWGAPT/*,3)*/.ToString(),"Row Gap Time (0-511)",-1);
+	fit->Header->AddKey("GAIN",GAIN.ToString(),"Gain (1,2,4,8)",-1);
+	fit->Header->AddKey("NO_FRMS",STACKING.ToString(),"Stacking (1,2,4,8,16)",-1);
+	fit->Header->AddKey("NORMLZN",NORMLZN.ToString(),"Normalization (1,2,4,8,16)",-1);
+	fit->Header->AddKey("RSETBIAS",Math::Round(RSETBIAS,3).ToString(),"Reset Bias (V); Using DN~1.95mV",-1);
+	fit->Header->AddKey("XOFFSET",XOFFSET.ToString(),"Zero-Based X Off-Set",-1);
+	fit->Header->AddKey("XSIZE",XSIZE.ToString(),"Zero-Based X Size: #Columns - 1",-1);
+	fit->Header->AddKey("YOFFSET",YOFFSET.ToString(),"Zero-Based Y Off-Set",-1);
+	fit->Header->AddKey("YSIZE",YSIZE.ToString(),"Zero-Based Y Size: #Rows - 1",-1);
 	if (SubImChck->Checked)
 	{
-		fit->AddKey("EXTXRNG",String::Concat(::Convert::ToString(GetReg("CCDLAB", "XStart")),":",::Convert::ToString(GetReg("CCDLAB", "XEnd"))),"Extracted X-Range: Zero-Based",-1);
-		fit->AddKey("EXTYRNG",String::Concat(::Convert::ToString(GetReg("CCDLAB", "YStart")),":",::Convert::ToString(GetReg("CCDLAB", "YEnd"))),"Extracted Y-Range: Zero-Based",-1);
+		fit->Header->AddKey("EXTXRNG",String::Concat(::Convert::ToString(GetReg("CCDLAB", "XStart")),":",::Convert::ToString(GetReg("CCDLAB", "XEnd"))),"Extracted X-Range: Zero-Based",-1);
+		fit->Header->AddKey("EXTYRNG",String::Concat(::Convert::ToString(GetReg("CCDLAB", "YStart")),":",::Convert::ToString(GetReg("CCDLAB", "YEnd"))),"Extracted Y-Range: Zero-Based",-1);
 	}
 	else
 	{
-		fit->AddKey("EXTXRNG","0:511","Extracted X-Range: Zero-Based",-1);
-		fit->AddKey("EXTYRNG","0:511","Extracted Y-Range: Zero-Based",-1);
+		fit->Header->AddKey("EXTXRNG","0:511","Extracted X-Range: Zero-Based",-1);
+		fit->Header->AddKey("EXTYRNG","0:511","Extracted Y-Range: Zero-Based",-1);
 	}
-	fit->AddKey("RAMPTIME",Math::Round(RAMPTIME,5).ToString(),"Ramp Time (sec); Using DN~0.1msec",-1);
-	fit->AddKey("RAMPTTOT",RAMPTTOT.ToString(),"Total Ramp Time (s)",-1);
-	fit->AddKey("PIXTHRSH",PIXTHRSH.ToString(),"Pixel Threshold",-1);
-	fit->AddKey("ENGTHRSH",ENGTHRSH.ToString(),"Energy Threshold (*32 value)",-1);
-	fit->AddKey("BODL",BODL.ToString(),"Bright Object Length (pixels)",-1);
-	fit->AddKey("BODH",BODH.ToString(),"Bright Object Height (counts)",-1);
-	fit->AddKey("BODF",BODF.ToString(),"Bright Object Frames (frames)",-1);
-	fit->AddKey("AND_CMD",ANDVOLTS_CMD.ToString(),"ANODE Command Voltage; Using DN~1.95V",-1);
-	fit->AddKey("MCP_CMD",MCPVOLTS_CMD.ToString(),"MCP Command Voltage; Using DN~0.98V",-1);
-	fit->AddKey("CAT_CMD",PCVOLTS_CMD.ToString(),"CATHODE Command Voltage; Using DN~-0.20V",-1);
-	fit->AddKey("AND_TEL",ANDVOLTS_TEL.ToString(),"ANODE Telemetry Voltage; Using DN~9.4172V",-1);
-	fit->AddKey("MCP_TEL",MCPVOLTS_TEL.ToString(),"MCP Telemetry Voltage; Using DN~4.7086V",-1);
-	fit->AddKey("CAT_TEL",CATVOLTS_TEL.ToString(),"CATHODE Telemetry Voltage; Using DN~-0.4709V",-1);
-	fit->AddKey("HVU_TEL",HVUCURRENT_TEL.ToString(),"HVU Telemetry Current; Using DN~0.04709uA",-1);
-	fit->AddKey("REA+5V",REAp5V.ToString(),"REA+5V; Using DN~2.93mV",-1);
-	fit->AddKey("REA3p3V",REAp3p3V.ToString(),"REA+3.3V; Using DN~2.93mV",-1);
-	fit->AddKey("REA+12V",REAp12V.ToString(),"REA+12V; Using DN~16.1mV",-1);
-	fit->AddKey("REA-12V",REAm12V.ToString(),"REA-12V; Using DN~16.1mV",-1);
-	fit->AddKey("HVU+30V",HVUp30V.ToString(),"HVU+30V; Using DN~16.1mV",-1);
-	fit->AddKey("HVU+15V",HVUp15V.ToString(),"HVU+15V; Using DN~16.1mV",-1);
-	fit->AddKey("HVU-15V",HVUm15V.ToString(),"HVU-15V; Using DN~16.1mV",-1);
-	fit->AddKey("CPU+12V",CPUp12V.ToString(),"CPU+12V; Using DN~16.1mV",-1);
-	fit->AddKey("CPU-12V",CPUm12V.ToString(),"CPU-12V; Using DN~16.1mV",-1);
-	fit->AddKey("ZEROVREF",ZEROVREF.ToString(),"Zero Volt Ref.; Using DN~1.46mV",-1);
-	fit->AddKey("REA+5VC",REAp5VCUR.ToString(),"REA+5V Current; Using DN~3.08mA",-1);
-	fit->AddKey("REA3p3VC",REAp3p3VCUR.ToString(),"REA+3.3V Current; Using DN~2.93mA",-1);
-	fit->AddKey("REA+12VC",REAp12VCUR.ToString(),"REA+12V Current; Using DN~0.185mA",-1);
-	fit->AddKey("REA-12VC",REAm12VCUR.ToString(),"REA-12V Current; Using DN~0.185mA",-1);
-	fit->AddKey("HVU+30VC",HVUp15VCUR.ToString(),"HVU+30V Current; Using DN~0.432mA",-1);
-	fit->AddKey("HVU+15VC",HVUp15VCUR.ToString(),"HVU+15V Current; Using DN~0.185mA",-1);
-	fit->AddKey("HVU-15VC",HVUm15VCUR.ToString(),"HVU-15V Current; Using DN~0.185mA",-1);
-	fit->AddKey("CPU+12VC",CPUp12VCUR.ToString(),"CPU+12V Current; Using DN~0.185mA",-1);
-	fit->AddKey("CPU-12VC",CPUm12VCUR.ToString(),"CPU-12V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("RAMPTIME",Math::Round(RAMPTIME,5).ToString(),"Ramp Time (sec); Using DN~0.1msec",-1);
+	fit->Header->AddKey("RAMPTTOT",RAMPTTOT.ToString(),"Total Ramp Time (s)",-1);
+	fit->Header->AddKey("PIXTHRSH",PIXTHRSH.ToString(),"Pixel Threshold",-1);
+	fit->Header->AddKey("ENGTHRSH",ENGTHRSH.ToString(),"Energy Threshold (*32 value)",-1);
+	fit->Header->AddKey("BODL",BODL.ToString(),"Bright Object Length (pixels)",-1);
+	fit->Header->AddKey("BODH",BODH.ToString(),"Bright Object Height (counts)",-1);
+	fit->Header->AddKey("BODF",BODF.ToString(),"Bright Object Frames (frames)",-1);
+	fit->Header->AddKey("AND_CMD",ANDVOLTS_CMD.ToString(),"ANODE Command Voltage; Using DN~1.95V",-1);
+	fit->Header->AddKey("MCP_CMD",MCPVOLTS_CMD.ToString(),"MCP Command Voltage; Using DN~0.98V",-1);
+	fit->Header->AddKey("CAT_CMD",PCVOLTS_CMD.ToString(),"CATHODE Command Voltage; Using DN~-0.20V",-1);
+	fit->Header->AddKey("AND_TEL",ANDVOLTS_TEL.ToString(),"ANODE Telemetry Voltage; Using DN~9.4172V",-1);
+	fit->Header->AddKey("MCP_TEL",MCPVOLTS_TEL.ToString(),"MCP Telemetry Voltage; Using DN~4.7086V",-1);
+	fit->Header->AddKey("CAT_TEL",CATVOLTS_TEL.ToString(),"CATHODE Telemetry Voltage; Using DN~-0.4709V",-1);
+	fit->Header->AddKey("HVU_TEL",HVUCURRENT_TEL.ToString(),"HVU Telemetry Current; Using DN~0.04709uA",-1);
+	fit->Header->AddKey("REA+5V",REAp5V.ToString(),"REA+5V; Using DN~2.93mV",-1);
+	fit->Header->AddKey("REA3p3V",REAp3p3V.ToString(),"REA+3.3V; Using DN~2.93mV",-1);
+	fit->Header->AddKey("REA+12V",REAp12V.ToString(),"REA+12V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("REA-12V",REAm12V.ToString(),"REA-12V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("HVU+30V",HVUp30V.ToString(),"HVU+30V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("HVU+15V",HVUp15V.ToString(),"HVU+15V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("HVU-15V",HVUm15V.ToString(),"HVU-15V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("CPU+12V",CPUp12V.ToString(),"CPU+12V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("CPU-12V",CPUm12V.ToString(),"CPU-12V; Using DN~16.1mV",-1);
+	fit->Header->AddKey("ZEROVREF",ZEROVREF.ToString(),"Zero Volt Ref.; Using DN~1.46mV",-1);
+	fit->Header->AddKey("REA+5VC",REAp5VCUR.ToString(),"REA+5V Current; Using DN~3.08mA",-1);
+	fit->Header->AddKey("REA3p3VC",REAp3p3VCUR.ToString(),"REA+3.3V Current; Using DN~2.93mA",-1);
+	fit->Header->AddKey("REA+12VC",REAp12VCUR.ToString(),"REA+12V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("REA-12VC",REAm12VCUR.ToString(),"REA-12V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("HVU+30VC",HVUp15VCUR.ToString(),"HVU+30V Current; Using DN~0.432mA",-1);
+	fit->Header->AddKey("HVU+15VC",HVUp15VCUR.ToString(),"HVU+15V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("HVU-15VC",HVUm15VCUR.ToString(),"HVU-15V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("CPU+12VC",CPUp12VCUR.ToString(),"CPU+12V Current; Using DN~0.185mA",-1);
+	fit->Header->AddKey("CPU-12VC",CPUm12VCUR.ToString(),"CPU-12V Current; Using DN~0.185mA",-1);
 }
 
 inline void CCDLAB::GSEExtractImg::UpDateTELVolts(array<unsigned char>^ arr, int Seg_Num)//assuming arr starts at a synch
@@ -2822,7 +2822,7 @@ void CCDLAB::GSEExtractImg::xDecs_Click(System::Object^  sender, System::EventAr
 		array<double>^ X = FITSImage::ReadImageVectorOnly(filename, rx, true);
 		array<double>^ Y = FITSImage::ReadImageVectorOnly(filename, ry, true);
 
-		String^ algorithm = fits->GetKeyValue("ALGRITHM");
+		String^ algorithm = fits->Header->GetKeyValue("ALGRITHM");
 
 		JPPlot^ Xhist = gcnew JPPlot();
 		array<double,2>^ hist = JPMath::Histogram_IntegerStep(X,1);
@@ -2865,7 +2865,7 @@ void CCDLAB::GSEExtractImg::xInts_Click(System::Object^  sender, System::EventAr
 		array<double>^ X = (array<double>^)FITSImage::ReadImageVectorOnly(filename, rx, true);
 		array<double>^ Y = (array<double>^)FITSImage::ReadImageVectorOnly(filename, ry, true);
 
-		String^ algorithm = fits->GetKeyValue("ALGRITHM");
+		String^ algorithm = fits->Header->GetKeyValue("ALGRITHM");
 
 		JPPlot^ Xhist = gcnew JPPlot();
 		array<double,2>^ hist = JPMath::Histogram_IntegerStep(X,1);
@@ -2910,7 +2910,7 @@ void CCDLAB::GSEExtractImg::max_Click(System::Object^  sender, System::EventArgs
 			for (int i = 0; i < h; i++)
 				a1[i + j*h] = a[j,i];
 
-		String^ algorithm = fits->GetKeyValue("ALGRITHM");
+		String^ algorithm = fits->Header->GetKeyValue("ALGRITHM");
 		JPPlot^ jpplot = gcnew JPPlot();
 		array<double,2>^ hist = JPMath::Histogram_IntegerStep(a1,1);
 		int L = hist->GetLength(0);
@@ -3738,11 +3738,11 @@ void CCDLAB::GSEExtractImg::OBTvsUVITClocksMenuItem_Click(System::Object^  sende
 		return;
 
 	FITSImage^ f = gcnew FITSImage(sfd->FileName, result, false, true);
-	f->AddKey("COL1","OBT TIME","",-1);
-	f->AddKey("COL2","FRAME COUNT","",-1);
-	f->AddKey("COL3","FRAME TIME","",-1);
-	f->AddKey("COL4","TICK TIME","",-1);
-	f->AddKey("COL5","TICK COUNT","",-1);
+	f->Header->AddKey("COL1","OBT TIME","",-1);
+	f->Header->AddKey("COL2","FRAME COUNT","",-1);
+	f->Header->AddKey("COL3","FRAME TIME","",-1);
+	f->Header->AddKey("COL4","TICK TIME","",-1);
+	f->Header->AddKey("COL5","TICK COUNT","",-1);
 
 	f->WriteImage(::TypeCode::Double, true);
 
@@ -3834,7 +3834,7 @@ void CCDLAB::GSEExtractImg::FixBadTimeListsMenuItem_Click(System::Object^  sende
 			times[j] = (frames[j] - startframe)*timeperframe + starttime;
 
 		FITSImage^ newtimefits = gcnew FITSImage(ofd->FileNames[i], times, false, true);
-		newtimefits->CopyHeader(oldtimefits);
+		newtimefits->Header->CopyHeaderFrom(oldtimefits->Header);// CopyHeader(oldtimefits);
 		newtimefits->WriteImage(::TypeCode::UInt32, true);
 	}
 

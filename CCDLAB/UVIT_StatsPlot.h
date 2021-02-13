@@ -989,24 +989,24 @@ private: System::Void PlotWrkr_DoWork(System::Object^  sender, System::Component
 
 
 		f = gcnew FITSImage(FileList[i], nullptr, true, false, false, false);
-		min[i] = ::Convert::ToDouble(f->GetKeyValue("MIN"));
-		max[i] = ::Convert::ToDouble(f->GetKeyValue("MAX"));
-		mean[i] = ::Convert::ToDouble(f->GetKeyValue("MEAN"));
-		median[i] = ::Convert::ToDouble(f->GetKeyValue("MEDIAN"));
-		stdv[i] = ::Convert::ToDouble(f->GetKeyValue("STDV"));
+		min[i] = ::Convert::ToDouble(f->Header->GetKeyValue("MIN"));
+		max[i] = ::Convert::ToDouble(f->Header->GetKeyValue("MAX"));
+		mean[i] = ::Convert::ToDouble(f->Header->GetKeyValue("MEAN"));
+		median[i] = ::Convert::ToDouble(f->Header->GetKeyValue("MEDIAN"));
+		stdv[i] = ::Convert::ToDouble(f->Header->GetKeyValue("STDV"));
 
 		if (i == 0)
 		{
-			time_start = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;//minutes
-			num_start = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+			time_start = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;//minutes
+			num_start = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		}
 		if (i == NFiles-1)
 		{
-			time_end = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;//minutes
-			num_end = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+			time_end = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;//minutes
+			num_end = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		}
-		time_cur = ::Convert::ToDouble(f->GetKeyValue("IMFRTIME"))/60;
-		num_cur = ::Convert::ToDouble(f->GetKeyValue("IMFRCNT"));//frame number
+		time_cur = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRTIME"))/60;
+		num_cur = ::Convert::ToDouble(f->Header->GetKeyValue("IMFRCNT"));//frame number
 		if (IND == 0)
 			tick[i] = time_cur;
 		else
