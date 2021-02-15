@@ -2657,7 +2657,6 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 
 				if (UVITAUTOREGISTER)
 				{
-					//MessageBox::Show("here");
 					ProgressBar->Value = UVREGISTRATIONFILESINDEX + 1;
 					ProgressBar->Refresh();
 
@@ -2705,6 +2704,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 				{
 					DRIFTFROMPCPSTRACK = false;
 					UVDRIFTBATCH = false;
+					UVDRIFTAUTORUN = false;
 					WAITBAR->Hide();
 					WAITBAR->Close();
 					Form1::Enabled = true;
@@ -4690,7 +4690,9 @@ void Form1::DiscardL1DuplicateWrkr_RunWorkerCompleted(System::Object^  sender, S
 		BatchScanDirectoryBtn->PerformClick();
 		BatchFileParallelChck->Checked = true;
 		UVITBATCHMESG = "Subtracting Median from " + BATCHLIST->Length + " VIS Images...";
+		FILESAVEPREC = TypeCode::Int32;
 		BatchComputeBtn_Click(sender, e);
+		FILESAVEPREC = TypeCode::Double;
 		UVITBATCHMESG = "";
 		if (UVITBATCHOP_CANCELLED)
 		{
@@ -5611,17 +5613,20 @@ void Form1::DriftFromPCPSTrackBGWrkr_RunWorkerCompleted(System::Object^ sender, 
 {
 	if (WAITBAR->DialogResult != ::DialogResult::Cancel)
 	{
-		/*MARKCOORDS = nullptr;
-		MARKCOORDRECTS = nullptr;
-		ImageWindow->Refresh();
-		SubImageWindow->Refresh();*/
+		if (PointSrcROIAutoRunChck->Checked)
+		{
+			MARKCOORDS = nullptr;
+			MARKCOORDRECTS = nullptr;
+			ImageWindow->Refresh();
+			SubImageWindow->Refresh();
+		}
 
 		WAITBAR->Text = "Applying...";
 		WAITBAR->TextMsg->Text = "Applying drift to centroid list...";
 		WAITBAR->CancelBtn->Enabled = false;
 		WAITBAR->Refresh();
-		UVAPPLYDRIFTNOW = true;
-		PCModeDriftSelfCorrectionMenuItem->PerformClick();
+		UVAPPLYDRIFTNOW = true;		
+		PCModeDriftSelfCorrectionMenuItem->PerformClick();//ApplyDriftListMentuItem_Click(sender, e);
 	}
 	else
 	{
@@ -8235,6 +8240,10 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 {
 	if (!UVREGISTRATION)
 	{
+		ProgressBar->Value = 0;
+		ProgressBar->Refresh();
+		ProgressBar->Maximum = 2;
+
 		UVITMenu->HideDropDown();
 		GeneralUVRegistrationMenuItem->HideDropDown();
 
@@ -8368,10 +8377,9 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 		UVREGISTRATION_ANCHOR_INDEX = Int32::MaxValue;
 		UVREGISTRATION_ROTATION_INDEX = Int32::MaxValue;
 
-		ProgressBar->Value = 0;
-		ProgressBar->Maximum = 2;
 		ProgressBar->Value = 1;
 		ProgressBar->Refresh();
+
 		ConvertListToImgMenu_Click(sender,e);
 
 		return;
@@ -8396,7 +8404,11 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 		if (UVITAUTOREGISTER)
 			res = ::DialogResult::Yes;
 		else
+		{
+			ProgressBar->Value = 0;
+			ProgressBar->Refresh();
 			res = MessageBox::Show("Continue to image " + (UVREGISTRATIONFILESINDEX + 2).ToString() + " of " + (UVREGISTRATIONFILES->Length).ToString() + "?", "Centroid List Registration...", ::MessageBoxButtons::YesNoCancel);
+		}
 		
 		if (res == ::DialogResult::Cancel)//stop registration
 		{
@@ -8443,16 +8455,13 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 		for (int i = 0; i < delfiles->Length; i++)
 			::File::Delete(delfiles[i]);
 
-		//MessageBox::Show(res.ToString());
 		if (!UVITAUTOREGISTER)
 		{
-			ProgressBar->Value = 0;
-			ProgressBar->Maximum = 2;
 			ProgressBar->Value = 1;
 			ProgressBar->Refresh();
 		}
-		ConvertListToImgMenu_Click(sender, e);
-		
+
+		ConvertListToImgMenu_Click(sender, e);		
 		return;
 	}
 

@@ -1159,7 +1159,7 @@ void Form1::HCEdit_Click(System::Object^  sender, System::EventArgs^  e)
 			{
 				ekd->CommentKeyLineTxt->Visible = true;
 				ekd->CommentKeyLineTxt->BringToFront();
-				ekd->CommentKeyLineTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind];
+				ekd->CommentKeyLineTxt->Text = IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[ind]->Trim();
 				ekd->label1->Text = "Comment Line";
 				ekd->label2->Visible = false;
 				ekd->label3->Visible = false;
@@ -1243,105 +1243,92 @@ void Form1::HCEditAll_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::HCInsertCurrent_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	/*bool valid = FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndex]);
-	if (!valid)
-	{
-		::MessageBox::Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction...");
-		return;
-	}*/
+	int index = HeaderTxt->SelectedIndex;
 
 	EditKeyDlg^ ekd = gcnew EditKeyDlg();
 	ekd->CommentKeyLineChck->Visible = true;
 	if (ekd->ShowDialog() == ::DialogResult::Cancel)
 		return;
+	bool iscommentline = ekd->CommentKeyLineChck->Checked;
 
-	bool valid = ValidKeyChck(ekd->KeyNameTxt->Text);
-	valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
-
-	if (valid == true)
-	{
-		IMAGESET[FILELISTINDEX]->Header->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
-		HeaderTxt->Items->Clear();
-		HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
-		HeaderTxt->SelectedIndex = HeaderTxt->Items->Count-2;
-	}
+	if (iscommentline)
+		IMAGESET[FILELISTINDEX]->Header->AddCommentKeyLine(ekd->CommentKeyLineTxt->Text, index);
 	else
 	{
-		::MessageBox::Show("Sorry, but this is Either a Restricted Key or it Already Exists!  Can Not Insert.","FITS Restriction...");
+		if (!FITSImageHeader::VALIDKEYEDIT(ekd->KeyNameTxt->Text) || IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(ekd->KeyNameTxt->Text, false) != -1)
+		{
+			::MessageBox::Show("Sorry, but this is either a restricted key or it already exists! Can Not Insert.", "FITS Restriction...");
+			return;
+		}
+
+		IMAGESET[FILELISTINDEX]->Header->AddKey(ekd->KeyNameTxt->Text, ekd->KeyValueTxt->Text, ekd->KeyCommentTxt->Text, index);
 	}
+
+	HeaderTxt->Items->Clear();
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
+	HeaderTxt->SelectedIndex = index;
 }
 
 void Form1::HCInsertBatch_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	EditKeyDlg^ ekd = gcnew EditKeyDlg();
-	ekd->ShowDialog();
-	if (ekd->DialogResult == System::Windows::Forms::DialogResult::OK)
-	{
-		bool valid = ValidKeyChck(ekd->KeyNameTxt->Text);
-		valid = ValidKeyChck(ekd->KeyNameTxt->Text,IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
-		if (valid == true)
-		{
-			ProgressBar->Maximum = IMAGESET->Count;
-			for (int j = 0; j < IMAGESET->Count; j++)
-			{
-				ProgressBar->Value++;
-				ProgressBar->Refresh();
-				IMAGESET[j]->Header->SetKey(ekd->KeyNameTxt->Text,ekd->KeyValueTxt->Text,ekd->KeyCommentTxt->Text, true, -1);
-			}
-			ProgressBar->Value = 0;
+	int index = HeaderTxt->SelectedIndex;
 
-			HeaderTxt->Items->Clear();
-			HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
-			HeaderTxt->SelectedIndex = HeaderTxt->Items->Count-2;
-		}
+	EditKeyDlg^ ekd = gcnew EditKeyDlg();
+	ekd->CommentKeyLineChck->Visible = true;
+	if (ekd->ShowDialog() == ::DialogResult::Cancel)
+		return;
+	bool iscommentline = ekd->CommentKeyLineChck->Checked;
+	
+	ProgressBar->Maximum = IMAGESET->Count;
+	for (int j = 0; j < IMAGESET->Count; j++)
+	{
+		ProgressBar->Value++;
+		ProgressBar->Refresh();
+
+		if (iscommentline)
+			IMAGESET[j]->Header->AddCommentKeyLine(ekd->CommentKeyLineTxt->Text, index);
 		else
 		{
-			::MessageBox::Show("Sorry, but this is Either a Restricted Key or it Already Exists!  Can Not Insert.","FITS Restriction...");
+			if (!FITSImageHeader::VALIDKEYEDIT(ekd->KeyNameTxt->Text) || IMAGESET[j]->Header->GetKeyIndex(ekd->KeyNameTxt->Text, false) != -1)
+			{
+				::MessageBox::Show("Sorry, but this is either a restricted key or it already exists! Can Not Insert for image " + (j + 1) + ".", "FITS Restriction...");
+				continue;
+			}
+
+			IMAGESET[j]->Header->AddKey(ekd->KeyNameTxt->Text, ekd->KeyValueTxt->Text, ekd->KeyCommentTxt->Text, index);
 		}
+		
 	}
+	ProgressBar->Value = 0;
+
+	HeaderTxt->Items->Clear();
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
+	HeaderTxt->SelectedIndex = index;
 }
 
 void Form1::HCInsertSelectedToOthers_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	for (int j = 0; j < HeaderTxt->SelectedIndices->Count; j++)
 		for (int i = 0; i < IMAGESET->Count; i++)
-		{
 			if (i == FILELISTINDEX)
 				continue;
-
-			IMAGESET[i]->Header->SetKey(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[HeaderTxt->SelectedIndices[j]], true, HeaderTxt->SelectedIndices[j]);
-		}
+			else
+				IMAGESET[i]->Header->SetKey(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyValues[HeaderTxt->SelectedIndices[j]], IMAGESET[FILELISTINDEX]->Header->HeaderKeyComments[HeaderTxt->SelectedIndices[j]], true, HeaderTxt->SelectedIndices[j]);
 }
 
 void Form1::HCRemoveCurrent_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int nkeys = HeaderTxt->SelectedIndices->Count;
-	array<String^>^ keys = gcnew array<String^>(nkeys);
-	for (int i = 0; i < nkeys; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyName(HeaderTxt->SelectedIndices[i]);
-
-	for (int i = 0; i < nkeys; i++)
-		if (ValidKeyChck(keys[i]))
-			IMAGESET[FILELISTINDEX]->Header->RemoveKey(keys[i]);
+	for (int i = HeaderTxt->SelectedIndices->Count - 1; i >= 0; i--)
+		if (FITSImageHeader::VALIDKEYEDIT(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[HeaderTxt->SelectedIndices[i]]))
+			IMAGESET[FILELISTINDEX]->Header->RemoveKey(HeaderTxt->SelectedIndices[i]);
 
 	HeaderTxt->Items->Clear();
-	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
+	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->GetFormattedHeaderBlock(false, true));
 }
 
 void Form1::HCRemoveBatch_Click(System::Object^  sender, System::EventArgs^  e) 
 {
-	int nkeys = HeaderTxt->SelectedIndices->Count;
-	array<String^>^ keys = gcnew array<String^>(nkeys);
-	for (int i = 0; i < nkeys; i++)
-		keys[i] = IMAGESET[FILELISTINDEX]->Header->GetKeyName(HeaderTxt->SelectedIndices[i]);
-
-	for (int j = 0; j < IMAGESET->Count;  j++)
-		for (int i = 0; i < nkeys; i++)
-			if (ValidKeyChck(keys[i]))
-				IMAGESET[j]->Header->RemoveKey(keys[i]);
-
-	HeaderTxt->Items->Clear();
-	HeaderTxt->Items->AddRange(IMAGESET[FILELISTINDEX]->Header->HeaderKeys);
+	
 }
 
 void Form1::ManRegBtn_Click(System::Object^  sender, System::EventArgs^  e)

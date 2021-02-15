@@ -45,7 +45,7 @@ void Form1::SubImageWindow_Paint(System::Object^  sender, System::Windows::Forms
 				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush,(float)((float(FNDCOORDS[i,0])-float(XSUBRANGE[0])+0.5)*subxsc-3.0),(float)((float(FNDCOORDS[i,1])-float(YSUBRANGE[0])+0.5)*subysc-3.0),7.0,7.0);
 	}
 
-	if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSES[PSESINDEX] != nullptr)
+	if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSESRECTS[PSESINDEX] != nullptr)
 	{
 		IMAGEWINDOWPEN->Width = 2;
 		int rem = 0;
@@ -146,7 +146,7 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			e->Graphics->DrawRectangles(IMAGEWINDOWPEN,MANREGCOORDRECTS);
 		}
 
-		if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSES[PSESINDEX] != nullptr)
+		if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSESRECTS[PSESINDEX] != nullptr)
 		{
 			IMAGEWINDOWPEN->Width = 2;
 			int rem = 0;
@@ -293,8 +293,9 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			e->Graphics->FillPolygon(IMAGEWINDOWBRUSH, ROI_PATH_POINTS);
 		}
 	}
-	catch(...)
+	catch(Exception^ e)
 	{
+		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
 	}
 }
 
