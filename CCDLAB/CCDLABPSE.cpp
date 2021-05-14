@@ -256,14 +256,14 @@ void Form1::ROI_PATH_FILLREGION()
 			ymax = (int)ROI_PATH_COORDS[1, i];
 	}
 
-	if (pts->Length > 100)
+	if (pts->Length > 200)
 	{
-		double skip = double(pts->Length) / 100;
+		double skip = double(pts->Length) / 200;
 
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 200; i++)
 			pts[i] = pts[int(double(i) * skip)];
 
-		Array::Resize(pts, 100);
+		Array::Resize(pts, 200);
 	}
 	pts[pts->Length - 1] = pts[0];
 
@@ -389,6 +389,7 @@ void Form1::PSEEllipticalROI_CheckedChanged(System::Object^  sender, System::Eve
 		SubImageSlideY->Value = this->SUBIMAGEY0OLD + 1;
 		HalfWidthXUpD->Value = this->SUBIMAGE_HWX;
 		HalfWidthYUpD->Value = this->SUBIMAGE_HWY;
+		ROI_REGION = nullptr;
 	}
 }
 
@@ -415,11 +416,12 @@ void Form1::PSEDropContextSave_Click(System::Object^  sender, System::EventArgs^
 
 	for (int i = 0; i < PSEDrop->Items->Count; i++)
 	{
-		if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
+		if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX]->Header, gcnew array<String^>(2) { "TAN", "TAN" }))
 		{
-			WCS = gcnew JPFITS::WorldCoordinateSolution();
-			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-			PSES[i]->Generate_Source_RADec_Coords(WCS);
+			if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
+				IMAGESET[FILELISTINDEX]->WCS = gcnew WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+			
+			PSES[i]->Generate_Source_RADec_Coords(IMAGESET[FILELISTINDEX]->WCS);
 		}
 		array<String^, 2>^ table = PSES[i]->Source_Table;
 
@@ -809,6 +811,16 @@ void Form1::SetParametersChck_CheckedChanged(System::Object^  sender, System::Ev
 	}
 }
 
+void Form1::PSEFitStatsTypeDrop_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
+{
+	SetReg("CCDLAB", "PSEFitStatsTypeDrop", PSEFitStatsTypeDrop->SelectedIndex);
+}
+
+void Form1::ROIFitStatsTypeDrop_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e)
+{
+	SetReg("CCDLAB", "ROIFitStatsTypeDrop", ROIFitStatsTypeDrop->SelectedIndex);
+}
+
 void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	//SUBIMAGE is the ROI
@@ -864,17 +876,16 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	array<double>^ P_err;
 	array<double>^ PLB;
 	array<double>^ PUB;
-	array<double,2>^ fit_resid = gcnew array<double, 2>(SUBIMAGE->GetLength(0), SUBIMAGE->GetLength(1));
+	array<double,2>^ fit_resid = gcnew array<double, 2>(SUBIMAGE->GetLength(0), SUBIMAGE->GetLength(1));	
 	
 	if (ROIFitFcnDrop->SelectedIndex == 0)//Circular Gaussian //G(x,y|p) = p(0)*exp(-((x-p(1))^2 + (y - p(2))^2)/(2*p(3)^2)) + p(4)
-		P = gcnew array<double>(5){ JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 4, JPMath::Min(SUBIMAGE, false) };
+		P = gcnew array<double>(5);// { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 4, JPMath::Min(SUBIMAGE, false) };
 	if (ROIFitFcnDrop->SelectedIndex == 1)//Elliptical Gaussian  //G(x,y|p) = p(0)*exp(-((x-p(1))*cos(p(3)) + (y-p(2))*sin(p(3)))^2 / (2*p(4)^2) - (-(x-p(1))*sin(p(3)) + (y-p(2))*cos(p(3))).^2 / (2*p(5)^2) ) + p(6)
-		P = gcnew array<double>(7) { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 0, 4, 4, JPMath::Min(SUBIMAGE, false) };
+		P = gcnew array<double>(7);// { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 0, 4, 4, JPMath::Min(SUBIMAGE, false) };
 	if (ROIFitFcnDrop->SelectedIndex == 2)//Circular Moffat  //M(x,y|p) = p(0) * ( 1 + { (x-p(1))^2 + (y-p(2))^2 } / p(3)^2 ) ^ (-p(4)) + p(5)
-		P = gcnew array<double>(6) { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 4, 4, JPMath::Min(SUBIMAGE, false) };
+		P = gcnew array<double>(6);// { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 4, 4, JPMath::Min(SUBIMAGE, false) };
 	if (ROIFitFcnDrop->SelectedIndex == 3)//Elliptical Moffat  //M(x,y|p) = p(0) * ( 1 + { ((x-p(1))*cos(p(3)) + (y-p(2))*sin(p(3)))^2 } / p(4)^2 + { (-(x-p(1))*sin(p(3)) + (y-p(2))*cos(p(3)))^2 } / p(5)^2 ) ^ (-p(6)) + p(7)
-		P = gcnew array<double>(8) { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 0, 4, 4, 4, JPMath::Min(SUBIMAGE, false) };
-
+		P = gcnew array<double>(8);// { JPMath::Max(SUBIMAGE, false) - JPMath::Min(SUBIMAGE, false), (double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], 0, 4, 4, 4, JPMath::Min(SUBIMAGE, false) };
 	P_err = gcnew array<double>(P->Length);
 
 	if (SetParametersChck->Checked)
@@ -892,12 +903,35 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 				PUB[i] = ::Convert::ToDouble(FPW->PUBTXTARRAY[i]->Text);
 			}
 		}
-	}
+	}	
 
+	String^ fitmsg = "";
 	if (ROIFitFcnDrop->SelectedIndex == 0 || ROIFitFcnDrop->SelectedIndex == 1)//Gaussian
-		JPMath::Fit_Gaussian2d(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
+	{
+		//JPMath::Fit_Gaussian2d(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
+
+		if (ROIFitStatsTypeDrop->SelectedIndex == 0)
+			JPMath::Fit_PointSource("Gaussian", "ls", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 1)
+			JPMath::Fit_PointSource("Gaussian", "chisq", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 2)
+			JPMath::Fit_PointSource("Gaussian", "robust", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 3)
+			JPMath::Fit_PointSource("Gaussian", "cstat", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+	}
 	if (ROIFitFcnDrop->SelectedIndex == 2 || ROIFitFcnDrop->SelectedIndex == 3)//Moffat
-		JPMath::Fit_Moffat2d(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
+	{
+		//JPMath::Fit_Moffat2d(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
+
+		if (ROIFitStatsTypeDrop->SelectedIndex == 0)
+			JPMath::Fit_PointSource("Moffat", "ls", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 1)
+			JPMath::Fit_PointSource("Moffat", "chisq", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 2)
+			JPMath::Fit_PointSource("Moffat", "robust", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 3)
+			JPMath::Fit_PointSource("Moffat", "cstat", XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid, fitmsg);
+	}
 
 	double chisq_norm = 0;
 	for (int i = 0; i < SUBIMAGE->GetLength(0); i++)
@@ -909,35 +943,6 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 				chisq_norm += fit_resid[i, j] * fit_resid[i, j] / Math::Abs(SUBIMAGE[i, j] - P[P->Length - 1]);
 		}
 	chisq_norm /= (SUBIMAGE->Length - P->Length);
-
-	/*double xposfit, yposfit;
-	try//for UVIT to get position of focused spot
-	{
-		String^ xrng = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("EXTXRNG");
-		int indx = xrng->IndexOf(":");
-		double xxrng = ::Convert::ToDouble(xrng->Substring(0,indx));
-		String^ yrng = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("EXTYRNG");
-		int indy = yrng->IndexOf(":");
-		double yyrng = ::Convert::ToDouble(yrng->Substring(0,indy));
-		double resln = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CNTDRSLN"));
-
-		double xxrngsub = 0.0;
-		double yyrngsub = 0.0;
-		if (SUBRANGE[0] != -1)//then it WAS loaded as a subimage so set value for image coordinate matching; [0] = xstart, [2] = ystart
-		{
-			double res = ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("CNTDRSLN"));
-			xxrngsub = ((double)SUBRANGE[0])/res;
-			yyrngsub = ((double)SUBRANGE[2])/res;
-		}
-		
-		xposfit = (double(XSUBRANGE[0]) + P[1])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("XOFFSET")) + xxrng + xxrngsub + 1;
-		yposfit = (double(YSUBRANGE[0]) + P[2])/resln + ::Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("YOFFSET")) + yyrng + yyrngsub + 1;
-	}
-	catch (...)
-	{
-		xposfit = P[1] + XSUBRANGE[SUBIMAGE_HWX];
-		yposfit = P[2] + YSUBRANGE[SUBIMAGE_HWY];
-	}*/
 
 	PSEFitResultListBox->Items->Clear();
 	PSEFitResultListBox->Items->Add("Amplitude:     " + Math::Round(P[0], 4) + " +- " + Math::Round(P_err[0], 4));
@@ -980,6 +985,7 @@ void Form1::ROIFitBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		PSEFitResultListBox->Items->Add("Volume:         " + Math::Round(Math::PI * P[4] * P[5] * P[0] / (P[6] - 1), 4));
 	}
 	PSEFitResultListBox->Items->Add("Chi^2/dof:     " + Math::Round(chisq_norm, 4));
+	PSEFitResultListBox->Items->Add(fitmsg);
 	PSEFitResultListBox->Visible = true;
 	PSEFitResultListBox->Refresh();
 
@@ -1009,11 +1015,7 @@ void Form1::ROICompoundFit()
 
 	int count = MARKCOORDS->GetLength(1), func;
 	String^ funcstr;
-	array<double, 2>^ P;
-	array<double, 2>^ P_err;
-	array<double, 2>^ PLB;
-	array<double, 2>^ PUB;
-	array<double, 2>^ fit_resid = gcnew array<double, 2>(SUBIMAGE->GetLength(0), SUBIMAGE->GetLength(1));
+	
 	if (ROIFitFcnDrop->SelectedIndex == 0)//Circular Gaussian: G(x,y|P) = P(0)*exP(-((x-P(1))^2 + (y - P(2))^2)/(2*P(3)^2)) + P(4)
 	{
 		func = 5;
@@ -1035,11 +1037,13 @@ void Form1::ROICompoundFit()
 		funcstr = "Elliptical Moffat: M(x,y|P) = P(0) * ( 1 + { ((x-P(1))*cos(P(3)) + (y-P(2))*sin(P(3)))^2 } / P(4)^2 + { (-(x-P(1))*sin(P(3)) + (y-P(2))*cos(P(3)))^2 } / P(5)^2 ) ^ (-P(6)) + P(7)";
 	}
 
-	P = gcnew array<double, 2>(func, count);
-	PLB = gcnew array<double, 2>(func, count);
-	PUB = gcnew array<double, 2>(func, count);
-	P_err = gcnew array<double, 2>(func, count);
+	array<double, 2>^ P = gcnew array<double, 2>(func, count);
+	array<double, 2>^ PLB = gcnew array<double, 2>(func, count);
+	array<double, 2>^ PUB = gcnew array<double, 2>(func, count);
+	array<double, 2>^ P_err = gcnew array<double, 2>(func, count);
+	array<double, 2>^ fit_resid = gcnew array<double, 2>(SUBIMAGE->GetLength(0), SUBIMAGE->GetLength(1));
 
+	#pragma region OldCompoundSetParams
 	for (int i = 0; i < count; i++)
 	{
 		P[0, i] = IMAGESET[FILELISTINDEX]->Image[(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]] - SUBIMAGEMIN;
@@ -1170,11 +1174,43 @@ void Form1::ROICompoundFit()
 				}
 			}
 		}
-		
-	if (ROIFitFcnDrop->SelectedIndex <= 1)
+	#pragma endregion
+
+	array<double>^ xpos = gcnew array<double>(MARKCOORDS->GetLength(1));
+	array<double>^ ypos = gcnew array<double>(MARKCOORDS->GetLength(1));
+	for (int i = 0; i < xpos->Length; i++)
+	{
+		xpos[i] = MARKCOORDS[0, i];
+		ypos[i] = MARKCOORDS[1, i];
+	}
+
+	String^ fitmsg = "";
+	if (ROIFitFcnDrop->SelectedIndex <= 1)//Gaussian
+	{
 		JPMath::Fit_Gaussian2d_Compound(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
-	else
+
+		/*if (ROIFitStatsTypeDrop->SelectedIndex == 0)
+			JPMath::Fit_PointSource_Compound("Gaussian", "ls", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 1)
+			JPMath::Fit_PointSource_Compound("Gaussian", "chisq", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 2)
+			JPMath::Fit_PointSource_Compound("Gaussian", "robust", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 3)
+			JPMath::Fit_PointSource_Compound("Gaussian", "cstat", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);*/
+	}
+	else//Moffat
+	{
 		JPMath::Fit_Moffat2d_Compound(XSUBRANGE, YSUBRANGE, SUBIMAGE, P, PLB, PUB, P_err, fit_resid);
+
+		/*if (ROIFitStatsTypeDrop->SelectedIndex == 0)
+			JPMath::Fit_PointSource_Compound("Moffat", "ls", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 1)
+			JPMath::Fit_PointSource_Compound("Moffat", "chisq", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 2)
+			JPMath::Fit_PointSource_Compound("Moffat", "robust", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);
+		else if (ROIFitStatsTypeDrop->SelectedIndex == 3)
+			JPMath::Fit_PointSource_Compound("Moffat", "cstat", XSUBRANGE, YSUBRANGE, SUBIMAGE, xpos, ypos, 1.0, P, P_err, fit_resid, fitmsg);*/
+	}
 
 	double chisq_norm = 0;
 	for (int i = 0; i < SUBIMAGE->GetLength(0); i++)
@@ -1245,7 +1281,7 @@ void Form1::ROICompoundFit()
 		}
 	}
 
-	v->Text = funcstr + "; ChiSqNorm: " + chisq_norm.ToString();
+	v->Text = funcstr + "; ChiSqNorm: " + Math::Round(chisq_norm, 3) + "; " + fitmsg;
 	v->Show(this);
 
 	if (view)
@@ -1292,16 +1328,16 @@ void Form1::COGBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	if (FIRSTLOAD)
 		return;
 
-	Form1::Enabled = false;
-
 	if ((int)COGIgnoreNPtsUpD->Value > (int)HalfWidthXUpD->Value + 1)
 		COGIgnoreNPtsUpD->Value = (int)HalfWidthXUpD->Value + 1;
 	array<double, 1>^ npts;
 	array<double, 1>^ cog;
-	String ^ text;
+	String ^ text = "Source Signal" + ",	" + "Background (per pixel)" + ",	" + "Index";
 	array<double,1>^ RFitBatchIntercept;
-	array<double,1>^ RFitBatchInterceptX;
-	double bg, sig;
+	array<double, 1>^ RFitBatchSlope;
+	array<double,1>^ RFitBatchIndex;
+	double bg, signal;
+	PSEFitResultListBox->Items->Clear();
 
 	array<int>^ inds;
 	if (COGBatchChck->Checked)
@@ -1309,33 +1345,34 @@ void Form1::COGBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		inds = gcnew array<int>(IMAGESET->Count);
 		for (int i = 0; i < IMAGESET->Count; i++)
 			inds[i] = i;
-
-		RFitBatchIntercept = gcnew array<double>(IMAGESET->Count);
-		RFitBatchInterceptX = gcnew array<double>(IMAGESET->Count);
 	}
 	else
 	{
 		inds = gcnew array<int>(1);
 		inds[0] = FILELISTINDEX;
 	}
+	RFitBatchIntercept = gcnew array<double>(inds->Length);
+	RFitBatchSlope = gcnew array<double>(inds->Length);
+	RFitBatchIndex = gcnew array<double>(inds->Length);
 
 	for (int k = 0; k < inds->Length; k++)
 	{
-		cog = JPMath::COG(SUBIMAGE, (int)COGIgnoreNPtsUpD->Value, npts, bg, sig);
+		array<double, 2>^ subimg = IMAGESET[inds[k]]->GetSubImage(XSUBRANGE[SUBIMAGE_HWX], YSUBRANGE[SUBIMAGE_HWY], SUBIMAGE_HWX, SUBIMAGE_HWY);
+		cog = JPMath::COG(subimg, (int)COGIgnoreNPtsUpD->Value, npts, bg, signal);
 
-		if (COGBatchChck->Checked)
-		{
-			RFitBatchIntercept[k] = sig;
-			RFitBatchInterceptX[k] = k+1;
-		}
+		RFitBatchIntercept[k] = signal;
+		RFitBatchSlope[k] = bg;
+		RFitBatchIndex[k] = inds[k];
 
-		if (k == 0)
-			text += sig.ToString();
-		else
-			text += "\r\n" + sig.ToString();
+		PSEFitResultListBox->Items->Add("Image " + inds[k] + ":");
+		PSEFitResultListBox->Items->Add("Source Signal: " + signal);
+		PSEFitResultListBox->Items->Add("Background (per pixel): " + bg);
+
+		text += "\r\n" + signal + ",	" + bg + ",	" + inds[k];
 	}
 	::Clipboard::SetText(text);
-	Form1::Enabled = true;
+	PSEFitResultListBox->Items->Add(("(copied to clipboard as table)"));
+	PSEFitResultListBox->Visible = true;
 
 	if (COGViewChck->Checked)
 	{
@@ -1344,10 +1381,10 @@ void Form1::COGBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 		if (!COGBatchChck->Checked)
 		{
-			String^ title = "y = a + b*x : a = " + sig.ToString() + ", b = " + bg.ToString();
+			String^ title = "y = a + b*x : a = " + signal.ToString() + ", b = " + bg.ToString();
 			COG_PLOT->PlotLine(npts,cog,"N Pixels","Counts",title,::Charting::SeriesChartType::Point, "COG");
 
-			array<double>^ yline = gcnew array<double>(2) { sig, sig + bg * npts[npts->Length - 1] };
+			array<double>^ yline = gcnew array<double>(2) { signal, signal + bg * npts[npts->Length - 1] };
 			array<double>^ xline = gcnew array<double>(2){0,npts[npts->Length-1]};
 			COG_PLOT->AddLine(xline,yline,::Charting::SeriesChartType::Line, "COG Fit");
 
@@ -1358,9 +1395,8 @@ void Form1::COGBtn_Click(System::Object^  sender, System::EventArgs^  e)
 			BackgroundCountsPixelFrameTxt->Text = bg.ToString("#.0000");
 		}
 		else
-		{
-			COG_PLOT->PlotLine(RFitBatchInterceptX,RFitBatchIntercept,"Frame #","Source Count","Source Counts vs. Frame #",::Charting::SeriesChartType::Point, "COG");
-		}
+			COG_PLOT->PlotLine(RFitBatchIndex,RFitBatchIntercept,"Frame #","Source Count","Source Counts vs. Frame #",::Charting::SeriesChartType::Point, "COG");
+
 		COG_PLOT->Text = "Curve of Growth Photometry";
 	}
 }
@@ -1373,7 +1409,7 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		return;
 	}
 
-	if (PSELoadSrcDrop->SelectedIndex == 0 && !WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
+	if (/*PSELoadSrcDrop->SelectedIndex == 0 && !WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" })*/IMAGESET[FILELISTINDEX]->WCS->Exists())
 	{
 		MessageBox::Show("CD matrix for WCS not found in current image header. Can not transform [RA, Dec] to [x, y]...", "Error...");
 		return;
@@ -1466,13 +1502,12 @@ void Form1::PSELoadSrcBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 			if (PSELoadSrcDrop->SelectedIndex == 0)//RA, Dec
 			{
-				WCS = gcnew JPFITS::WorldCoordinateSolution();
-				WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+				//WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
 				array<double>^ Xcoords = gcnew array<double>(Nsrc);
 				array<double>^ Ycoords = gcnew array<double>(Nsrc);
-				WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixels(c1, c2, "TAN", Xcoords, Ycoords, true);
 				PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(Xcoords, Ycoords);
-				PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
+				PSES[PSESINDEX]->Generate_Source_RADec_Coords(IMAGESET[FILELISTINDEX]->WCS);
 			}
 			if (PSELoadSrcDrop->SelectedIndex == 1)//X, Y
 				PSES[PSESINDEX] = gcnew JPFITS::SourceExtractor(c1, c2);
@@ -1566,11 +1601,12 @@ void Form1::PSETableViewBtn_Click(System::Object^  sender, System::EventArgs^  e
 	if (PSES == nullptr)
 		return;
 
-	if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX], gcnew array<String^>(2) { "TAN", "TAN" }))
+	if (WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX]->Header, gcnew array<String^>(2) { "TAN", "TAN" }))
 	{
-		WCS = gcnew JPFITS::WorldCoordinateSolution();
-		WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-		PSES[PSESINDEX]->Generate_Source_RADec_Coords(WCS);
+		if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
+			IMAGESET[FILELISTINDEX]->WCS = gcnew WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+
+		PSES[PSESINDEX]->Generate_Source_RADec_Coords(IMAGESET[FILELISTINDEX]->WCS);
 	}
 	array<String^, 2>^ table = PSES[PSESINDEX]->Source_Table;
 
@@ -1590,7 +1626,7 @@ void Form1::PSETableViewBtn_Click(System::Object^  sender, System::EventArgs^  e
 				if (strvalue == "0")
 					PSETABLEVIEWER->PSETable[i, j]->Value = 0.0;
 				else
-					PSETABLEVIEWER->PSETable[i, j]->Value = /*Convert::ToDouble(*/Convert::ToDouble(strvalue)/*.ToString("#.########"))*/;
+					PSETABLEVIEWER->PSETable[i, j]->Value = Convert::ToDouble(strvalue);
 			else
 				PSETABLEVIEWER->PSETable[i, j]->Value = strvalue;
 		}
@@ -1695,11 +1731,11 @@ void Form1::WCSLoadSimbadAscii_Click(System::Object^  sender, System::EventArgs^
 
 	GET_CATALOGUE_NPTS((String^)WCSAutoCatalogueTxt->Tag, WCSAutoCatalogueExtensionTxt->Text, WCSAutoCatalogueCVAL1->Text, WCSAutoCatalogueCVAL2->Text, WCSAutoCatalogueMag->Text, Convert::ToInt32(WCSLoadListNPtsTxt->Text));
 
-	WCS = gcnew JPFITS::WorldCoordinateSolution();
-	WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+	//WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+	//WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
 	array<double>^ cp1 = gcnew array<double>(WCS_RA->Length);
 	array<double>^ cp2 = gcnew array<double>(WCS_RA->Length);
-	WCS->Get_Pixels(WCS_RA, WCS_DEC, "TAN", cp1, cp2, true);
+	IMAGESET[FILELISTINDEX]->WCS->Get_Pixels(WCS_RA, WCS_DEC, "TAN", cp1, cp2, true);
 
 	MARKCOORDS = gcnew array<double, 2>(2, WCS_RA->Length);
 	for (int i = 0; i < WCS_RA->Length; i++)
@@ -1874,12 +1910,12 @@ void Form1::WCSSolveList_Click(System::Object^  sender, System::EventArgs^  e)
 	if (IMAGESET->Count == 0)
 		return;
 
-	WCS = gcnew JPFITS::WorldCoordinateSolution();
-	WCS->Solve_WCS("TAN", PSES[PSESINDEX]->Centroids_X, PSES[PSESINDEX]->Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]);
+	//WCS = gcnew JPFITS::WorldCoordinateSolution();
+	IMAGESET[FILELISTINDEX]->WCS->Solve_WCS("TAN", PSES[PSESINDEX]->Centroids_X, PSES[PSESINDEX]->Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]->Header);
 	FileTxtsUpD();
 	array<double>^ x = gcnew array<double>(MARKCOORDRECTS->Length);
 	array<double>^ y = gcnew array<double>(MARKCOORDRECTS->Length);
-	WCS->Get_Pixels(WCS_RA, WCS_DEC, "TAN", x, y, true);
+	IMAGESET[FILELISTINDEX]->WCS->Get_Pixels(WCS_RA, WCS_DEC, "TAN", x, y, true);
 
 	MARKCOORDS = gcnew array<double, 2>(2, x->Length);
 	for (int i = 0; i < x->Length; i++)
@@ -2046,17 +2082,17 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	array<double>^ ra;
 	array<double>^ dec;
 	array<double>^ mag;
-	try
+	//try
 	{
 		JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable(catfilename, catExtension);
 		ra = bt->GetTTYPEEntry(catCVAL1);
 		dec = bt->GetTTYPEEntry(catCVAL2);
 		mag = bt->GetTTYPEEntry(catMag);
 	}
-	catch (Exception^ e)
+	/*catch (Exception^ e)
 	{
 		MessageBox::Show(e->Message);
-	}
+	}*/
 
 	/*array<double>^ ra = JPFITS::FITSBinTable::GetExtensionEntry(catfilename, catExtension, catCVAL1);
 	array<double>^ dec = JPFITS::FITSBinTable::GetExtensionEntry(catfilename, catExtension, catCVAL2);
@@ -2289,6 +2325,8 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 		array<double>^ Xintrmdt_triplet = gcnew array<double>(3);
 		array<double>^ Yintrmdt_triplet = gcnew array<double>(3);
 		array<double>^ P0 = gcnew array<double>(4);
+		array<double>^ PLB = plb;
+		array<double>^ PUB = pub;
 		//double minlength0 = scale_lb * (PSEtriangles[i]->SideLength[0] - kern_diam);//redundant as per below
 		//double maxlength0 = scale_ub * (PSEtriangles[i]->SideLength[0] + kern_diam);//redundant as per below
 		//double minlength1 = scale_lb * (PSEtriangles[i]->SideLength[1] - kern_diam);//redundant as per below
@@ -2328,6 +2366,13 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 				if (theta > rotat_ub || theta < rotat_lb)
 					continue;
 			}
+			else
+			{
+				double theta = Math::Atan2(PSEtriangles[i]->FieldVector->X * CATtriangles_intrmdt[j]->FieldVector->Y - PSEtriangles[i]->FieldVector->Y * CATtriangles_intrmdt[j]->FieldVector->X, PSEtriangles[i]->FieldVector->X * CATtriangles_intrmdt[j]->FieldVector->X + PSEtriangles[i]->FieldVector->Y * CATtriangles_intrmdt[j]->FieldVector->Y);
+
+				PLB[1] = theta - 2;
+				PUB[1] = theta + 2;
+			}
 
 			Xintrmdt_triplet[0] = CATtriangles_intrmdt[j]->Vertex[0]->X;
 			Yintrmdt_triplet[0] = CATtriangles_intrmdt[j]->Vertex[0]->Y;
@@ -2342,7 +2387,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 			P0[1] = rotat_init;
 			P0[2] = crpix1_init;
 			P0[3] = crpix2_init;
-			JPMath::Fit_WCSTransform2d(Xintrmdt_triplet, Yintrmdt_triplet, xpix_triplet, ypix_triplet, P0, plb, pub, psc);
+			JPMath::Fit_WCSTransform2d(Xintrmdt_triplet, Yintrmdt_triplet, xpix_triplet, ypix_triplet, P0, PLB, PUB, psc);
 
 			int N_pt_matches = 0;
 			for (int k = 0; k < 3; k++)
@@ -2361,9 +2406,9 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 			if (N_pt_matches != 3)//not a possible solution
 				continue;
 
-			//if (!solution)
+			if (!solution)
 			{
-				//#pragma omp critical
+				#pragma omp critical
 				{
 					if (!solution)
 					{
@@ -2396,7 +2441,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 							int x_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / P0[0] * (Math::Cos(-P0[1]) * x_int - Math::Sin(-P0[1]) * y_int) + P0[2]));
 							int y_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / P0[0] * (Math::Sin(-P0[1]) * x_int + Math::Cos(-P0[1]) * y_int) + P0[3]));
 
-							if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix])
+							if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix] && PSES[PSESINDEX]->SourceIndexMap[x_pix, y_pix] < PSES[PSESINDEX]->N_Sources)
 								N_pt_matches++;
 						}
 
@@ -2444,6 +2489,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 	array<double>^ xpix_matches = gcnew array<double>(total_pt_matches);
 	array<double>^ ypix_matches = gcnew array<double>(total_pt_matches);
 	c = 0;
+
 	for (int k = 0; k < CATpts_intrmdt->Length; k++)
 	{
 		double x_intrmdt = CATpts_intrmdt[k]->X;
@@ -2452,7 +2498,7 @@ void Form1::WCSAutoBGWrkr_DoWork(System::Object^  sender, System::ComponentModel
 		int x_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Width - 1 - (1 / p00 * (Math::Cos(-p01) * x_intrmdt - Math::Sin(-p01) * y_intrmdt) + p02));
 		int y_pix = (int)Math::Round((double)IMAGESET[FILELISTINDEX]->Height - 1 - (1 / p00 * (Math::Sin(-p01) * x_intrmdt + Math::Cos(-p01) * y_intrmdt) + p03));
 
-		if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix])
+		if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX]->Width && y_pix < IMAGESET[FILELISTINDEX]->Height && PSES[PSESINDEX]->SourceBooleanMap[x_pix, y_pix] && PSES[PSESINDEX]->SourceIndexMap[x_pix, y_pix] < PSES[PSESINDEX]->N_Sources)
 		{
 			int index = PSES[PSESINDEX]->SourceIndexMap[x_pix, y_pix];
 			xpix_matches[c] = PSES[PSESINDEX]->Centroids_X[index];
@@ -3113,12 +3159,6 @@ void Form1::WCSAutoYAxisParityChck_Click(System::Object^  sender, System::EventA
 
 	WCSMenu->ShowDropDown();
 	AutoWCSMenuItem->ShowDropDown();
-}
-
-void Form1::WCSClearAllChck_Click(System::Object^ sender, System::EventArgs^ e)
-{
-	WCSMenu->ShowDropDown();
-	WCSClearMenuBtn->ShowDropDown();
 }
 
 void Form1::GET_CATALOGUE_NPTS(String^ filename, String^ catExtension, String^ catCVAL1, String^ catCVAL2, String^ catMag, int N_bright)

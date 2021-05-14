@@ -211,23 +211,29 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			e->Graphics->DrawPolygon(IMAGEWINDOWPEN, RADIALLINEBOXPOINTS);
 		}
 
-		if (SHOW_WCSCOORDS && WCS != nullptr)//plot grid lines of constant RA & dec
+		if (SHOW_WCSCOORDS)//plot grid lines of constant RA & dec
 		{
-			double xt, yt, xb, yb, xl, yl, xr, yr;
-			double width = (double)IMAGESET[FILELISTINDEX]->Width * WCS->CDELTn[1] / 7200;
-			double height = (double)IMAGESET[FILELISTINDEX]->Height * WCS->CDELTn[2] / 7200;
-			WCS->Get_Pixel(WCS->CRVALn[1] + width, WCS->CRVALn[2], "TAN", xl, yl, true);
-			WCS->Get_Pixel(WCS->CRVALn[1] - width, WCS->CRVALn[2], "TAN", xr, yr, true);
-			WCS->Get_Pixel(WCS->CRVALn[1], WCS->CRVALn[2] + height, "TAN", xt, yt, true);
-			WCS->Get_Pixel(WCS->CRVALn[1], WCS->CRVALn[2] - height, "TAN", xb, yb, true);
-			IMAGEWINDOWPEN->Color = Color::Red;
-			Drawing2D::LinearGradientBrush^ lgb = gcnew Drawing2D::LinearGradientBrush(Drawing::Point(int((float(xb) + 0.5f) * xsc), int((float(yb) + 0.5f) * ysc)), Drawing::Point(int((float(xt) + 0.5f) * xsc), int((float(yt) + 0.5f) * ysc)), Drawing::Color::Red, Drawing::Color::Blue);
-			Drawing::Pen^ pn = gcnew Drawing::Pen(lgb);
-			pn->Width = 2;
-			e->Graphics->DrawLine(pn, (float(xb) + 0.5f) * xsc, (float(yb) + 0.5f) * ysc, (float(xt) + 0.5f) * xsc, (float(yt) + 0.5f) * ysc);
-			IMAGEWINDOWPEN->Width = 2;
-			e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xr) + 0.5f) * xsc, (float(yr) + 0.5f) * ysc, (float(xl) + 0.5f) * xsc, (float(yl) + 0.5f) * ysc);
-			IMAGEWINDOWPEN->Width = 1;
+			if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
+				IMAGESET[FILELISTINDEX]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+			if (IMAGESET[FILELISTINDEX]->WCS->Exists())
+			{
+				double xt, yt, xb, yb, xl, yl, xr, yr;
+				double width = (double)IMAGESET[FILELISTINDEX]->Width * IMAGESET[FILELISTINDEX]->WCS->CDELTn[1] / 7200;
+				double height = (double)IMAGESET[FILELISTINDEX]->Height * IMAGESET[FILELISTINDEX]->WCS->CDELTn[2] / 7200;
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] + width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xl, yl, true);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] - width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xr, yr, true);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] + height, "TAN", xt, yt, true);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] - height, "TAN", xb, yb, true);
+
+				IMAGEWINDOWPEN->Color = Color::Red;
+				Drawing2D::LinearGradientBrush^ lgb = gcnew Drawing2D::LinearGradientBrush(Drawing::Point(int((float(xb) + 0.5f) * xsc), int((float(yb) + 0.5f) * ysc)), Drawing::Point(int((float(xt) + 0.5f) * xsc), int((float(yt) + 0.5f) * ysc)), Drawing::Color::Red, Drawing::Color::Blue);
+				Drawing::Pen^ pn = gcnew Drawing::Pen(lgb);
+				pn->Width = 2;
+				e->Graphics->DrawLine(pn, (float(xb) + 0.5f) * xsc, (float(yb) + 0.5f) * ysc, (float(xt) + 0.5f) * xsc, (float(yt) + 0.5f) * ysc);
+				IMAGEWINDOWPEN->Width = 2;
+				e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xr) + 0.5f) * xsc, (float(yr) + 0.5f) * ysc, (float(xl) + 0.5f) * xsc, (float(yl) + 0.5f) * ysc);
+				IMAGEWINDOWPEN->Width = 1;
+			}
 		}
 
 		if (POLYPOINTS != nullptr)
@@ -287,7 +293,9 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 				IMAGEWINDOWPEN->Width = 2;
 			else
 				IMAGEWINDOWPEN->Width = 1;
-			e->Graphics->DrawPolygon(IMAGEWINDOWPEN, ROI_PATH_POINTS);
+
+			if (ROI_PATH_POINTS->Length > 1)
+				e->Graphics->DrawPolygon(IMAGEWINDOWPEN, ROI_PATH_POINTS);
 
 			IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(25, 255, 0, 0));
 			e->Graphics->FillPolygon(IMAGEWINDOWBRUSH, ROI_PATH_POINTS);
@@ -413,7 +421,7 @@ inline void Form1::ImageWindow_MouseMove(System::Object ^sender, System::Windows
 					double a, d;
 					String^ asx;
 					String^ dsx;
-					WCS->Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", a, d, asx, dsx);
+					IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", a, d, asx, dsx);
 					XPOS_CURSOR_RADEG = a;
 					YPOS_CURSOR_DECDEG = d;
 					XPOS_CURSOR_RAHMS = asx;
@@ -1010,6 +1018,11 @@ void Form1::SubImageSlideY_Scroll(System::Object^  sender, System::Windows::Form
 		RADIALLINE_PLOTUpD();
 }
 
+void Form1::MainTab_MouseEnter(System::Object^  sender, System::EventArgs^  e)
+{
+	MainTab->BringToFront();
+}
+
 void Form1::PSEFitResultListBox_MouseEnter(System::Object^  sender, System::EventArgs^  e)
 {
 	SubImageWindow->SendToBack();
@@ -1018,16 +1031,21 @@ void Form1::PSEFitResultListBox_MouseEnter(System::Object^  sender, System::Even
 	SubImageSlideY->SendToBack();
 }
 
-void Form1::SubImagePanel_MouseHover(System::Object^  sender, System::EventArgs^  e)
-{
-	SubImageWindow->Focus();
-	SubImagePanel->BringToFront();
-}
-
 void Form1::FileInfoPanel_MouseHover(System::Object^  sender, System::EventArgs^  e)
 {
-	SubImageWindow->Focus();
+	//SubImageWindow->Focus();
 	FileInfoPanel->BringToFront();
+}
+
+void Form1::FileInfoPanel_Enter(System::Object^  sender, System::EventArgs^  e)
+{
+	FileInfoPanel->BringToFront();
+}
+
+void Form1::SubImagePanel_MouseHover(System::Object^  sender, System::EventArgs^  e)
+{
+	//SubImageWindow->Focus();
+	//SubImagePanel->BringToFront();
 }
 
 void Form1::SubImageWindow_MouseEnter(System::Object ^  sender, System::EventArgs ^  e)
@@ -1167,7 +1185,7 @@ void Form1::SubImageWindow_MouseMove(System::Object ^sender, System::Windows::Fo
 		YPOS_CURSOR = YSUBRANGE[0] + int(Math::Floor((ypos/(imheight))*double(h))) - 0;
 		double val = IMAGESET[FILELISTINDEX]->Image[int(XPOS_CURSOR),int(YPOS_CURSOR)];
 		XYImageValueTxt->Text = val.ToString("n5");
-		if (!SHOW_WCSCOORDS || WCS == nullptr)
+		if (!SHOW_WCSCOORDS || !IMAGESET[FILELISTINDEX]->WCS->Exists())
 		{
 			XPositionTxt->Text = (XPOS_CURSOR+1).ToString();
 			YPositionTxt->Text = (YPOS_CURSOR+1).ToString();
@@ -1177,7 +1195,7 @@ void Form1::SubImageWindow_MouseMove(System::Object ^sender, System::Windows::Fo
 			double a, d;
 			String^ asx;
 			String^ dsx;
-			WCS->Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", a, d, asx, dsx);
+			IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", a, d, asx, dsx);
 			XPOS_CURSOR_RADEG = a;
 			YPOS_CURSOR_DECDEG = d;
 			XPOS_CURSOR_RAHMS = asx;
@@ -2017,7 +2035,7 @@ void Form1::SubImCntxtCopyCentroidCoord_Click(System::Object^  sender, System::E
 		double a, d;
 		String^ asx;
 		String^ dsx;
-		WCS->Get_Coordinate(xcent, ycent, true, "TAN", a, d, asx, dsx);
+		IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate(xcent, ycent, true, "TAN", a, d, asx, dsx);
 		XPOS_CURSOR_RADEG = a;
 		YPOS_CURSOR_DECDEG = d;
 		XPOS_CURSOR_RAHMS = asx;
@@ -2155,10 +2173,8 @@ void Form1::SubImCntxtGoToRATxt_KeyDown(System::Object^  sender, System::Windows
 			return;
 		}
 
-		WCS = gcnew JPFITS::WorldCoordinateSolution();
-		WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
 		double xpix, ypix;
-		WCS->Get_Pixel(RA, Dec, "TAN", xpix, ypix, true);
+		IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(RA, Dec, "TAN", xpix, ypix, true);
 
 		SubImageSlideX->Value = (int)xpix + 1;
 		SubImageSlideY->Value = (int)ypix + 1;

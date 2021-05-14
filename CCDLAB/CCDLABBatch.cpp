@@ -795,7 +795,7 @@ void Form1::BatchViewNextBtn_Click(System::Object^  sender, System::EventArgs^  
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 
 void Form1::BatchViewLastBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -811,7 +811,7 @@ void Form1::BatchViewLastBtn_Click(System::Object^  sender, System::EventArgs^  
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 
 void Form1::BatchGoToBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -824,6 +824,6 @@ void Form1::BatchGoToBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 

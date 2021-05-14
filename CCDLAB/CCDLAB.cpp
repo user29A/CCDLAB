@@ -152,6 +152,9 @@ void Form1::Form1_Load(System::Object ^  sender, System::EventArgs ^  e)
 	IMSTDLIM[0] = -1;
 	IMSTDLIM[1] =  2;
 
+	PSEFitStatsTypeDrop->SelectedIndex = Convert::ToInt32(GetReg("CCDLAB", "PSEFitStatsTypeDrop"));
+	ROIFitStatsTypeDrop->SelectedIndex = Convert::ToInt32(GetReg("CCDLAB", "ROIFitStatsTypeDrop"));
+
 	try
 	{
 		InfoStatic1->Text = (String^)GetReg("CCDLAB", "InfoStatic1");
@@ -208,7 +211,7 @@ void Form1::Form1_Load(System::Object ^  sender, System::EventArgs ^  e)
 		String^ dir = AUTOLOADIMAGESFILES[0]->Substring(0,ind);
 		SetReg("CCDLAB", "OpenFilesPath",dir);
 
-		AddToImageSet(AUTOLOADIMAGESFILES);
+		AddToImageSet(AUTOLOADIMAGESFILES, true);
 		AUTOLOADIMAGESFILES = gcnew array<String^>(0);
 	}
 
@@ -216,7 +219,18 @@ void Form1::Form1_Load(System::Object ^  sender, System::EventArgs ^  e)
 	HalfWidthYUpD->Value = ::Convert::ToInt32(GetReg("CCDLAB", "SubImageHWY"));*/
 	SubImageSizeTxt->Text = "Size: " + ((int)HalfWidthXUpD->Value * 2 + 1).ToString() + " x " + ((int)HalfWidthYUpD->Value * 2 + 1).ToString();
 	
-	RecentFilesUpD();
+	try
+	{
+		RecentFilesUpD();
+	}
+	catch (...)
+	{
+		//CCDLABPATH = "C:\\Program Files\\Astrowerks\\CCDLABx64\\";
+		array<String^>^ files = Directory::GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
+		for (int i = 0; i < files->Length; i++)
+			File::Delete(files[i]);
+		RecentFilesUpD();
+	}
 
 	TBZipCopyChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "TBZipCopyChck"));
 	TBZipMoveChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "TBZipMoveChck"));
@@ -957,7 +971,7 @@ void Form1::PlotKeyList(array<String^>^ keys, array<String^>^ filenames)
 
 		JPPlot^ jpplot = gcnew JPPlot();
 		jpplot->Text = keys[j];
-		jpplot->PlotLine(xdata,ydata,"Image Number",keys[j] + ": " + f->Header->GetKeyComment(keys[j]),keys[j], Charting::SeriesChartType::Line, keys[j]);
+		jpplot->PlotLine(xdata, ydata, "Image Number", keys[j] + ": " + f->Header->GetKeyComment(keys[j]), keys[j], Charting::SeriesChartType::Line, keys[j]);
 	}
 }
 
@@ -1551,21 +1565,22 @@ void Form1::ManRegWrkr_DoWork(System::Object^  sender, System::ComponentModel::D
 			}
 
 			//check for point source tracks which are going divergent and remove them from the tracking arrays...if there are more than a few tracks
-			if (NSrc >= 4 && DO_UVITDRIFTFILES)
+			if (NSrc >= 3 && DO_UVITDRIFTFILES)
 			{
 				array<double>^ currdrifts = gcnew array<double>(NSrc);
 				for (int j = 0; j < NSrc; j++)
 					currdrifts[j] = Math::Sqrt((MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0]) * (MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0]) + (MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0]) * (MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0]));
 				double currdriftmed = JPMath::Median(currdrifts);
 				int divergingindex = -1;
+				double divergpix = 0.5;
 				for (int j = 0; j < NSrc; j++)
-					if (Math::Abs(currdrifts[j] - currdriftmed) > 0.5)
+					if (Math::Abs(currdrifts[j] - currdriftmed) > divergpix)
 					{
 						ntrackdivergingimgs++;
 						divergingindex = j;//assume this is constant...or if changes will be picked up again anyway
 						break;
 					}
-				if (ntrackdivergingimgs > 13)//then remove the bad one divergingindex
+				if (ntrackdivergingimgs > 5)//then remove the bad one divergingindex
 				{
 					ntracksremoved++;
 					WAITBAR->Text = "Point Source (" + (MANREGCOORDS->GetLength(0) - 1) + ") Drift Tracking Directory " + (UVITMANREGDIRLISTINDEX + 1).ToString() + " of " + UVITMANREGDIRLIST->Length.ToString() + " (Removed " + ntracksremoved + " sources)";
@@ -1640,7 +1655,7 @@ void Form1::ManRegWrkr_DoWork(System::Object^  sender, System::ComponentModel::D
 			ImageWindow->Refresh();
 
 			array<String^>^ ref = gcnew array<String^>(1) { UVITMANREGFILELIST[i] };
-			AddToImageSet(ref);
+			AddToImageSet(ref, false);
 			MainTab->SelectedIndex = 0;
 			ImageBatchRedxnPnl->Enabled = true;
 			ContrastWideRad->PerformClick();
@@ -2455,7 +2470,7 @@ void Form1::FindFiles()
 		}
 	case (System::Windows::Forms::DialogResult::Ignore)://for ADDING to existing IMAGESET
 		{
-			AddToImageSet(selectfiles);
+			AddToImageSet(selectfiles, true);
 			break;
 		}
 	default://ie no files selected at all
@@ -2517,7 +2532,7 @@ void Form1::ViewFoundList()
 			}
 		case (System::Windows::Forms::DialogResult::Ignore)://for ADDING to existing IMAGESET
 			{
-				AddToImageSet(selectfiles);
+				AddToImageSet(selectfiles, true);
 				break;
 			}
 		default://ie no files selected at all
@@ -2565,7 +2580,6 @@ void Form1::SingleOutBtn_Click(System::Object^ sender, System::EventArgs^ e)
 	AUTOLOADIMAGES = true;
 	AUTOLOADIMAGESFILES = gcnew array<String^>(1) { "SingleOut" };
 	FMLoad_Click(sender, e);
-	//FMLoad->PerformClick();
 }
 
 void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
@@ -2631,7 +2645,10 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 			return;
 	}
 	else
+	{
 		FILELISTINDEX = 0;
+		AUTOLOADIMAGES = false;
+	}
 
 	FileListDrop->Items->Clear();
 	FileListDrop->Items->AddRange(IMAGESET->FileNames);
@@ -2652,7 +2669,6 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 		BatchCorrectionChck->Checked = true;
 		BatchCorrectionChck->Enabled = true;
 		ImageBatchRedxnPnl->Enabled = true;
-		EMBatch->Enabled = true;
 		HCInsertBatch->Enabled = true;
 		HCRemoveBatch->Enabled = true;
 		HCEditAll->Enabled = true;
@@ -2666,7 +2682,6 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 		BatchCorrectionChck->Checked = false;
 		BatchCorrectionChck->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCEditAll->Enabled = false;
@@ -2684,7 +2699,6 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 	TBSaveOver->Enabled = true;
 	FMSave->Enabled = true;
 	FMSaveBatch->Enabled = true;
-	EMFile->Enabled = true;
 	ViewHeaderBtn->Enabled = true;
 	SubImageSlideX->Enabled = true;
 	SubImageSlideY->Enabled = true;
@@ -2911,7 +2925,7 @@ void Form1::RecentFilesLoadSingle_Click(System::Object^ sender, System::Windows:
 	}
 }
 
-void Form1::AddToImageSet(array<String^>^ fullpathlist)
+void Form1::AddToImageSet(array<String^>^ fullpathlist, bool updateRecent)
 {
 	FITSImage^ tblcheck = gcnew FITSImage(fullpathlist[0], nullptr, true, false, false, false);
 	if (Convert::ToInt32(tblcheck->Header->GetKeyValue("NAXIS")) == 0)
@@ -2963,7 +2977,6 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist)
 		BatchCorrectionChck->Checked = true;
 		BatchCorrectionChck->Enabled = true;
 		ImageBatchRedxnPnl->Enabled = true;
-		EMBatch->Enabled = true;
 		HCInsertBatch->Enabled = true;
 		HCRemoveBatch->Enabled = true;
 	}
@@ -2976,7 +2989,6 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist)
 		BatchCorrectionChck->Checked = false;
 		BatchCorrectionChck->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 	}
@@ -2993,7 +3005,6 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist)
 	TBSaveOver->Enabled = true;
 	FMSave->Enabled = true;
 	FMSaveBatch->Enabled = true;
-	EMFile->Enabled = true;
 	ViewHeaderBtn->Enabled = true;
 	SubImageSlideX->Enabled = true;
 	SubImageSlideY->Enabled = true;
@@ -3013,8 +3024,9 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist)
 	BatchMinimumChck->Checked = false;
 
 	FileListDrop->SelectedIndex = c;
-
-	RecentFilesUpD();
+	
+	if(updateRecent)
+		RecentFilesUpD();
 
 	System::GC::Collect();
 
@@ -3035,6 +3047,9 @@ void Form1::ImageUpD(array<double,2>^ image)
 	bool invert = InvertContrastChck->Checked;
 	SetContrast();
 	IMAGEBMP = JPBitMap::ArrayToBmp(image, scaling, colour, invert, DIMCLIM, ImageWindow->Size.Width, ImageWindow->Size.Height, OPTIMGVIEWINVERTY);
+
+	//IMAGEBMP = JPBitMap::ArrayTo16bppGSBmp(image, scaling, colour, invert, DIMCLIM, ImageWindow->Size.Width, ImageWindow->Size.Height, OPTIMGVIEWINVERTY);
+
 	ImageWindow->Refresh();
 }
 
@@ -3096,18 +3111,18 @@ inline void Form1::SubImageStatsUpD()
 
 	SubImageXTxt->Text = (XSUBRANGE[SUBIMAGE_HWX] + 1).ToString();
 	SubImageYTxt->Text = (YSUBRANGE[SUBIMAGE_HWY] + 1).ToString();
-	if (WCS != nullptr)
+	if (IMAGESET[FILELISTINDEX]->WCS->Exists())
 	{
 		double cval1, cval2;
 		String^ sx1;
 		String^ sx2;
-		WCS->Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", cval1, cval2, sx1, sx2);
+		IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", cval1, cval2, sx1, sx2);
 		sx1 = sx1->Replace(" ", "");
 		sx2 = sx2->Replace(" ", "");
 		if (sx1->Contains("."))
-			sx1 = sx1->Substring(0, sx1->LastIndexOf(".")) + "s";
+			sx1 = sx1->Substring(0, sx1->LastIndexOf(".") + 2);
 		if (sx2->Contains("."))
-			sx2 = sx2->Substring(0, sx2->LastIndexOf(".")) + "''";
+			sx2 = sx2->Substring(0, sx2->LastIndexOf(".") + 2);
 		SubImageRATxt->Text = sx1;
 		SubImageDecTxt->Text = sx2;
 	}
@@ -3766,23 +3781,6 @@ void Form1::FileListDrop_SelectedIndexChanged(System::Object ^sender, System::Ev
 		COLplotUpD(false);
 	if (PLOTRADIALLINE)
 		RADIALLINE_PLOTUpD();
-
-	if (SHOW_WCSCOORDS)
-	{
-		try
-		{
-			WCS = gcnew JPFITS::WorldCoordinateSolution();
-			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-			ImageWindow->Refresh();
-			SubImageWindow->Refresh();
-		}
-		catch (...)
-		{
-			WCS = nullptr;
-			ImageWindow->Refresh();
-			SubImageWindow->Refresh();
-		}
-	}
 }
 
 void Form1::DeleteFileBtn_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
@@ -3813,7 +3811,6 @@ void Form1::DeleteFileBtn_MouseUp(System::Object^  sender, System::Windows::Form
 			ImageBatchRedxnPnl->Enabled = false;
 			BatchCorrectionChck->Enabled = false;
 			BatchCorrectionChck->Checked = false;
-			EMBatch->Enabled = false;
 			HCInsertBatch->Enabled = false;
 			HCRemoveBatch->Enabled = false;
 			HCExtract->Enabled = false;
@@ -3912,7 +3909,7 @@ void Form1::FindImagePtsBtn_Click(System::Object ^sender, System::EventArgs ^e)
 	FNDCOORDS = JPMath::Find(IMAGESET[FILELISTINDEX]->Image, val, style, true);
 	if (FNDCOORDS->Length == 0)
 	{
-		::MessageBox::Show("No Points Found Matching Search Parameters...","Warning");
+		::MessageBox::Show("No Points Found Matching Search Parameters...", "Warning");
 		return;
 	}
 
@@ -3921,9 +3918,9 @@ void Form1::FindImagePtsBtn_Click(System::Object ^sender, System::EventArgs ^e)
 	FNDCOORDRECTS = gcnew array<Rectangle,1>(FNDCOORDS->GetLength(0));
 	#pragma omp parallel for
 	for (int i = 0; i < FNDCOORDS->GetLength(0); i++)
-		FNDCOORDRECTS[i] = Rectangle(int((float(FNDCOORDS[i,0])+0.5)*xsc-3),int((float(FNDCOORDS[i,1])+0.5)*ysc-3),7,7);
+		FNDCOORDRECTS[i] = Rectangle(int((float(FNDCOORDS[i, 0]) + 0.5) * xsc - 3), int((float(FNDCOORDS[i, 1]) + 0.5) * ysc - 3), 7, 7);
 
-	System::Windows::Forms::DialogResult q = ::MessageBox::Show(String::Concat("Found ",FNDCOORDS->GetLength(0).ToString()," points matching seach criteria.  Would you like to plot them?"),"Plot Points?",::MessageBoxButtons::YesNoCancel);
+	System::Windows::Forms::DialogResult q = ::MessageBox::Show(String::Concat("Found ", FNDCOORDS->GetLength(0).ToString(), " points matching seach criteria.  Would you like to plot them?"), "Plot Points?", ::MessageBoxButtons::YesNoCancel);
 	switch (q)
 	{
 	case (System::Windows::Forms::DialogResult::Yes)://then plot the points...easy! :)
@@ -3961,13 +3958,13 @@ void Form1::FindImagePtsBtn_Click(System::Object ^sender, System::EventArgs ^e)
 		array<double>^ radeg = gcnew array<double>(FNDCOORDS->GetLength(0));
 		array<double>^ decdeg = gcnew array<double>(FNDCOORDS->GetLength(0));
 
-		if (SHOW_WCSCOORDS)
+		if (SHOW_WCSCOORDS && IMAGESET[FILELISTINDEX]->WCS->Exists())
 			for (int i = 0; i < FNDCOORDS->GetLength(0); i++)
 			{
 				double ra, dec;
 				String^ r;
 				String^ d;
-				WCS->Get_Coordinate(FNDCOORDS[i, 0], FNDCOORDS[i, 1], true, "TAN", ra, dec, r, d);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate(FNDCOORDS[i, 0], FNDCOORDS[i, 1], true, "TAN", ra, dec, r, d);
 				radeg[i] = ra;
 				decdeg[i] = dec;
 			}
@@ -5289,6 +5286,9 @@ void Form1::RotateBtnCntxtNearest_Click(System::Object^  sender, System::EventAr
 
 void Form1::InfoStatic1_MouseDoubleClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 {
+	if (FIRSTLOAD)
+		return;
+
 	Label^ keylabel = (Label^)sender;
 	String^ key = keylabel->Text->Substring(0, keylabel->Text->Length - 1);
 	int keyindex = IMAGESET[FILELISTINDEX]->Header->GetKeyIndex(key, false);
@@ -5304,15 +5304,18 @@ void Form1::InfoStatic1_MouseDoubleClick(System::Object^  sender, System::Window
 
 void Form1::InfoStatic1_MouseEnter(System::Object^  sender, System::EventArgs^  e)
 {
+	if (FIRSTLOAD)
+		return;
+
 	Label^ label = (Label^)sender;
 	label->Font = gcnew ::Font(label->Font, ::FontStyle::Bold | ::FontStyle::Underline);
 	label->Refresh();
 
 	InfoCntxt->SuspendLayout();
 	InfoCntxt->Items->Clear();
-	for (int i = 0; i < HeaderTxt->Items->Count; i++)
+	for (int i = 0; i < IMAGESET[FILELISTINDEX]->Header->HeaderKeys->Length; i++)
 	{
-		InfoCntxt->Items->Add(String::Concat(HeaderTxt->Items[i]->ToString(),":   ", HeaderTxt->Items[i]->ToString(),":   ", HeaderTxt->Items[i]->ToString()));
+		InfoCntxt->Items->Add(IMAGESET[FILELISTINDEX]->Header->HeaderKeys[i]);
 		InfoCntxt->Items[i]->Click += gcnew System::EventHandler(this, &Form1::InfoCntxt_ItemClicked);
 	}
 	InfoCntxt->ResumeLayout();
@@ -5331,13 +5334,13 @@ void Form1::InfoCntxt_ItemClicked(System::Object ^sender, System::EventArgs ^e)
 {
 	Label^ label = (Label^)InfoCntxt->Tag;
 	String^ s = sender->ToString();
-	label->Text = s->Substring(0,s->IndexOf(':')+1);
+	label->Text = s + ":";
 	FileTxtsUpD();
-	SetReg("CCDLAB", "InfoStatic1",InfoStatic1->Text);
-	SetReg("CCDLAB", "InfoStatic2",InfoStatic2->Text);
-	SetReg("CCDLAB", "InfoStatic3",InfoStatic3->Text);
-	SetReg("CCDLAB", "InfoStatic4",InfoStatic4->Text);
-	SetReg("CCDLAB", "InfoStatic5",InfoStatic5->Text);
+	SetReg("CCDLAB", "InfoStatic1", InfoStatic1->Text);
+	SetReg("CCDLAB", "InfoStatic2", InfoStatic2->Text);
+	SetReg("CCDLAB", "InfoStatic3", InfoStatic3->Text);
+	SetReg("CCDLAB", "InfoStatic4", InfoStatic4->Text);
+	SetReg("CCDLAB", "InfoStatic5", InfoStatic5->Text);
 }
 
 void Form1::ImageSumStatic_MouseEnter(System::Object^  sender, System::EventArgs^  e)
@@ -5471,13 +5474,13 @@ void Form1::ClipToContrastBtn_Click(System::Object^  sender, System::EventArgs^ 
 	{
 		for (int y = 0; y < IMAGESET[FILELISTINDEX]->Height; y++)
 		{
-			if (IMAGESET[FILELISTINDEX]->Image[x,y] < DIMCLIM[0])
-				IMAGESET[FILELISTINDEX]->Image[x,y] = DIMCLIM[0];
-			if (IMAGESET[FILELISTINDEX]->Image[x,y] > DIMCLIM[1])
-				IMAGESET[FILELISTINDEX]->Image[x,y] = DIMCLIM[1];
+			if (IMAGESET[FILELISTINDEX]->Image[x, y] < DIMCLIM[0])
+				IMAGESET[FILELISTINDEX]->Image[x, y] = DIMCLIM[0];
+			else if (IMAGESET[FILELISTINDEX]->Image[x, y] > DIMCLIM[1])
+				IMAGESET[FILELISTINDEX]->Image[x, y] = DIMCLIM[1];
 
-			IMAGESET[FILELISTINDEX]->Image[x,y] -= DIMCLIM[0];
-			IMAGESET[FILELISTINDEX]->Image[x,y] /= ((DIMCLIM[1] - DIMCLIM[0])/255);
+			IMAGESET[FILELISTINDEX]->Image[x, y] -= DIMCLIM[0];
+			IMAGESET[FILELISTINDEX]->Image[x, y] /= ((DIMCLIM[1] - DIMCLIM[0]) / 255);
 		}
 	}
 
@@ -5611,9 +5614,9 @@ void Form1::SubImageRATxt_MouseClick(System::Object^  sender, System::Windows::F
 	if (e->Button == ::MouseButtons::Right)
 	{
 		double cval1, cval2;
-		WCS->Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", cval1, cval2);
+		IMAGESET[FILELISTINDEX]->WCS->Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", cval1, cval2);
 
-		String^ str = "a" + cval1 + "d" + cval2;
+		String^ str = cval1 + " " + cval2;
 		Clipboard::SetText(str);
 		Form1::Tooltip->SetToolTip((Label^)sender, "World Coordinate " + str + " copied to clipboard.");
 	}
@@ -5764,8 +5767,9 @@ void Form1::WriteImageSet()
 				else//remove after
 					if (filename->Contains(apptxt))
 					{
-						int ind1 = filename->IndexOf(apptxt) + apptxt->Length;
-						filename = filename->Remove(ind1, ind - ind1);
+						int ind1 = filename->IndexOf(apptxt);// +apptxt->Length;
+						filename = filename->Remove(ind1) + extension;// , ind - ind1);
+
 					}
 			}
 		}
@@ -6209,6 +6213,7 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 		ImageWindow->Refresh();
 
 		PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
+		PSESINDEX = 0;
 		array<double>^ x = gcnew array<double>(WCS_RA->Length);//centroid (pixels)
 		array<double>^ y = gcnew array<double>(WCS_RA->Length);//centroid (pixels)
 		for (int i = 0; i < WCS_RA->Length; i++)
@@ -6220,8 +6225,7 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 		x = PSES[PSESINDEX]->Centroids_X;
 		y = PSES[PSESINDEX]->Centroids_Y;
 
-		WCS = gcnew JPFITS::WorldCoordinateSolution();
-		WCS->Solve_WCS("TAN", x, y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]);
+		IMAGESET[FILELISTINDEX]->WCS->Solve_WCS("TAN", x, y, true, WCS_RA, WCS_DEC, IMAGESET[FILELISTINDEX]->Header);
 		SHOW_WCSCOORDS = true;
 		WCSRADecShowChck->Checked = true;
 
@@ -6234,7 +6238,7 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 			double xpix, ypix;
 			for (int i = 0; i < WCS_RA->Length; i++)
 			{
-				WCS->Get_Pixel(WCS_RA[i], WCS_DEC[i], "TAN", xpix, ypix, true);
+				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(WCS_RA[i], WCS_DEC[i], "TAN", xpix, ypix, true);
 				MARKCOORDRECTS[i] = Rectangle(int((float(xpix) + 0.5)*xsc - 3), int((float(ypix) + 0.5)*ysc - 3), 7, 7);
 				MARKCOORDS[0, i] = xpix;
 				MARKCOORDS[1, i] = ypix;
@@ -6253,14 +6257,28 @@ void Form1::WCSRADecManual_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::WCSCopyToLoadedImgs_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	WCS = gcnew JPFITS::WorldCoordinateSolution();
-	WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
+	if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
+		if (JPFITS::WorldCoordinateSolution::Exists(IMAGESET[FILELISTINDEX]->Header, gcnew array<String^>(1) { "RA---TAN" }))
+			IMAGESET[FILELISTINDEX]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+		else
+		{
+			MessageBox::Show("No WCS found in current image header...", "Error");
+			return;
+		}
+
 	for (int i = 0; i < IMAGESET->Count; i++)
 	{
 		if (i == FILELISTINDEX)
 			continue;
-		WCS->CopyTo(IMAGESET[i]);
+		IMAGESET[FILELISTINDEX]->WCS->CopyTo(IMAGESET[i]->Header);
 	}
+	MessageBox::Show("WCS copied to " + (IMAGESET->Count - 1) + " other headers...", "Success");
+}
+
+void Form1::WCSClearAllChck_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	WCSMenu->ShowDropDown();
+	WCSClearMenuBtn->ShowDropDown();
 }
 
 void Form1::WCSClearMenuBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -6268,10 +6286,16 @@ void Form1::WCSClearMenuBtn_Click(System::Object^  sender, System::EventArgs^  e
 	if (WCSClearAllChck->Checked)
 	{
 		for (int i = 0; i < IMAGESET->Count; i++)
-			WorldCoordinateSolution::Clear(IMAGESET[i]);
+		{
+			IMAGESET[i]->WCS->Clear(IMAGESET[i]->Header);
+			IMAGESET[i]->WCS->Clear();
+		}
 	}
 	else
-		WorldCoordinateSolution::Clear(IMAGESET[FILELISTINDEX]);
+	{
+		IMAGESET[FILELISTINDEX]->WCS->Clear(IMAGESET[FILELISTINDEX]->Header);
+		IMAGESET[FILELISTINDEX]->WCS->Clear();
+	}
 
 	FileTxtsUpD();
 }
@@ -6281,23 +6305,8 @@ void Form1::WCSRADecShowChck_Click(System::Object^  sender, System::EventArgs^  
 	if (WCSRADecShowChck->Checked)
 	{
 		SHOW_WCSCOORDS = true;
-
-		try
-		{
-			label40->Text = "a:";
-			label41->Text = "d:";
-
-			WCS = gcnew JPFITS::WorldCoordinateSolution();
-			WCS->Get_WCS(IMAGESET[FILELISTINDEX]);
-		}
-		catch (/*Exception^ e*/...)
-		{
-			label40->Text = "X:";
-			label41->Text = "Y:";
-			SHOW_WCSCOORDS = false;
-			WCSRADecShowChck->Checked = false;
-			::MessageBox::Show("Can't find or something wrong with WCS solution in image header...can't show.","WCS Warning...");
-		}
+		label40->Text = "a:";
+		label41->Text = "d:";
 	}
 	else
 	{
@@ -6368,7 +6377,6 @@ void Form1::ImageFingerRmvToHere_Click(System::Object^  sender, System::EventArg
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCExtract->Enabled = false;
@@ -6423,7 +6431,6 @@ void Form1::ImageFingerRecToHere_Click(System::Object^  sender, System::EventArg
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCExtract->Enabled = false;
@@ -6462,7 +6469,6 @@ void Form1::ImageFingerRmvFromHere_Click(System::Object^  sender, System::EventA
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCExtract->Enabled = false;
@@ -6519,7 +6525,6 @@ void Form1::ImageFingerRecFromHere_Click(System::Object^  sender, System::EventA
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCExtract->Enabled = false;
@@ -6850,7 +6855,6 @@ void Form1::FileDirectoryTxtContextMenuDelDirRmImg_Click(System::Object^  sender
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
-		EMBatch->Enabled = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
 		HCExtract->Enabled = false;
@@ -6904,5 +6908,47 @@ void Form1::ImageMaxStatic_MouseDoubleClick(System::Object^ sender, System::Wind
 	SubImageStatsUpD();
 	SubImageUpD();
 	ImageWindow->Refresh();
+}
+
+void Form1::FMOpenImageExtensions_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	OpenFileDialog^ ofd = gcnew OpenFileDialog();
+	ofd->Multiselect = false;
+	ofd->Filter = "FITS|*.fits;*.fit;*.fts|All|*.*";
+	ofd->InitialDirectory = (String^)GetReg("CCDLAB", "OpenFilesPath");
+	if (ofd->ShowDialog() == ::DialogResult::Cancel)
+		return;
+
+	array<String^>^ extlist = JPFITS::FITSImage::GetAllExtensionNames(ofd->FileName);
+
+	if (extlist->Length == 0)
+	{
+		MessageBox::Show("No image extensions found in the file...", "Error");
+		return;
+	}
+
+	FMImageExtensionsLoader^ iel = gcnew FMImageExtensionsLoader();
+	
+	int n = 1;
+	for (int i = 0; i < extlist->Length; i++)
+		if (extlist[i] == "")
+		{
+			iel->ExtensionChckdListBox->Items->Add("Unnamed extension: " + n, true);
+			n++;
+		}
+		else
+			iel->ExtensionChckdListBox->Items->Add(extlist[i], true);
+	
+	if (iel->ShowDialog() == ::DialogResult::Cancel)
+		return;
+
+	IMAGESET = gcnew JPFITS::FITSImageSet();
+	for (int i = 0; i < iel->ExtensionChckdListBox->Items->Count; i++)
+		if (iel->ExtensionChckdListBox->GetItemChecked(i))
+			IMAGESET->Add(gcnew JPFITS::FITSImage(ofd->FileName, i + 1, nullptr, true, true, true, true));
+
+	AUTOLOADIMAGES = true;
+	AUTOLOADIMAGESFILES = gcnew array<String^>(1) { "SingleOut" };
+	FMLoad_Click(sender, e);
 }
 

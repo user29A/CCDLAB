@@ -43,7 +43,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <CLRSupport>true</CLRSupport>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -275,6 +275,7 @@
     <ClCompile Include="EditKeyDlg.cpp" />
     <ClCompile Include="EditValueDlg.cpp" />
     <ClCompile Include="FitParametersWindow.cpp" />
+    <ClCompile Include="FMImageExtensionsLoader.cpp" />
     <ClCompile Include="GSEExtractImg.cpp" />
     <ClCompile Include="HeaderKey.cpp" />
     <ClCompile Include="JPPlot.cpp" />
@@ -306,6 +307,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="FitParametersWindow.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="FMImageExtensionsLoader.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Form1.h">
@@ -349,6 +353,7 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
     <None Include="ClassDiagram3.cd" />
@@ -380,6 +385,9 @@
     <EmbeddedResource Include="FitParametersWindow.resx">
       <DependentUpon>FitParametersWindow.h</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FMImageExtensionsLoader.resx">
+      <DependentUpon>FMImageExtensionsLoader.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resX">
       <DependentUpon>Form1.h</DependentUpon>

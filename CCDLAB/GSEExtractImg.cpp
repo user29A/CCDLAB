@@ -882,7 +882,7 @@ void CCDLAB::GSEExtractImg::ViewImageBtn_Click(System::Object^  sender, System::
 		Form1^ f = (Form1^)this->Owner;
 		NIMAGE++;
 		SetReg("CCDLAB", "FilterIndex", 2);
-		f->AddToImageSet(file);
+		f->AddToImageSet(file, true);
 		f->Focus();
 	}
 	System::IO::File::Delete(fullfile);

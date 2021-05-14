@@ -84,6 +84,9 @@
     <ClCompile Include="WCSAutoCVALList1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FMImageExtensionsLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="About.h">
@@ -140,6 +143,9 @@
     <ClInclude Include="WCSAutoCVALList1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FMImageExtensionsLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico">
@@ -155,6 +161,7 @@
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
     <None Include="ClassDiagram3.cd" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <LicxCompiler Include="licenses.licx" />

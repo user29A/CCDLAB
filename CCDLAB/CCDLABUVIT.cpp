@@ -501,7 +501,7 @@ void Form1::UVViewNextBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 
 void Form1::UVViewLastBtn_Click(System::Object^  sender, System::EventArgs^  e) 
@@ -513,7 +513,7 @@ void Form1::UVViewLastBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 
 void Form1::UVGoToBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -526,7 +526,7 @@ void Form1::UVGoToBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(file);
+	AddToImageSet(file, false);
 }
 
 void Form1::UVMovieBtn_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
@@ -723,7 +723,6 @@ void Form1::UVTransferImagesBtn_Click(System::Object^  sender, System::EventArgs
 	 BatchCorrectionChck->Checked = true;
 	 BatchCorrectionChck->Enabled = true;
 	 ImageBatchRedxnPnl->Enabled = true;
-	 EMBatch->Enabled = true;
 	 HCInsertBatch->Enabled = true;
 	 HCRemoveBatch->Enabled = true;
 	 SubBiasChck->Checked = false;
@@ -1437,6 +1436,35 @@ void Form1::UVITMenu_Click(System::Object^ sender, System::EventArgs^ e)
 	if (L1AutoProceedVISTracking->Checked)
 		L1AutoApplyVISDrift->Enabled = true;
 	L1AutoApplyVISDrift->Checked = Convert::ToBoolean(GetReg("CCDLAB", "L1AutoApplyVISDrift"));
+
+	L1MachineStandardChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "L1MachineStandardChck"));
+	L1MachineExtremeChck->Checked = Convert::ToBoolean(GetReg("CCDLAB", "L1MachineExtremeChck"));
+}
+
+void Form1::L1MachineStandardChck_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	L1MachineStandardChck->Checked = true;
+	L1MachineExtremeChck->Checked = false;
+
+	SetReg("CCDLAB", "L1MachineStandardChck", L1MachineStandardChck->Checked);
+	SetReg("CCDLAB", "L1MachineExtremeChck", L1MachineExtremeChck->Checked);
+
+	UVITMenu->ShowDropDown();
+	DigestL1FITSImageMenuItem->ShowDropDown();
+	machinePerformanceToolStripMenuItem->ShowDropDown();	
+}
+
+void Form1::L1MachineExtremeChck_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	L1MachineStandardChck->Checked = false;
+	L1MachineExtremeChck->Checked = true;
+
+	SetReg("CCDLAB", "L1MachineStandardChck", L1MachineStandardChck->Checked);
+	SetReg("CCDLAB", "L1MachineExtremeChck", L1MachineExtremeChck->Checked);
+
+	UVITMenu->ShowDropDown();
+	DigestL1FITSImageMenuItem->ShowDropDown();
+	machinePerformanceToolStripMenuItem->ShowDropDown();	
 }
 
 void Form1::UVFinalizeDeleteIntrmdtChck_Click(System::Object^  sender, System::EventArgs^  e)
@@ -1704,6 +1732,19 @@ void Form1::L1DegradientINTMode_Click(System::Object^  sender, System::EventArgs
 		L1CleanINTMode->Enabled = true;
 	else
 		L1CleanINTMode->Enabled = false;
+
+	UVITMenu->ShowDropDown();
+	DigestL1FITSImageMenuItem->ShowDropDown();
+}
+
+void Form1::L1SpecifySourceNameChck_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	//SetReg("CCDLAB", "L1SpecifySourceNameChck", L1SpecifySourceNameChck->Checked);
+
+	if (L1SpecifySourceNameChck->Checked)
+		L1SourceNameTxt->Enabled = true;
+	else
+		L1SourceNameTxt->Enabled = false;
 
 	UVITMenu->ShowDropDown();
 	DigestL1FITSImageMenuItem->ShowDropDown();
@@ -2151,7 +2192,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 	array<String^>^ IntsFileList = (array<String^>^)e->Argument;
 
 	bool do_parallel = true;
-	if (UVIT_DEROTATE_WCS || IntsFileList->Length == 1)
+	if (UVIT_DEROTATE_WCS || IntsFileList->Length == 1 || L1MachineStandardChck->Checked)
 		do_parallel = false;
 	int n = 1;
 	if (do_parallel)
@@ -2572,10 +2613,10 @@ void Form1::ConvertUVCentroidListToImgWrkr_DoWork(System::Object^  sender, Syste
 				xpix = PSES[PSESINDEX]->Centroids_X;
 				ypix = PSES[PSESINDEX]->Centroids_Y;
 				WCS_DEROT = gcnew JPFITS::WorldCoordinateSolution();
-				WCS_DEROT->Solve_WCS("TAN", xpix, ypix, true, radeg, dedeg, fitsimg);
+				WCS_DEROT->Solve_WCS("TAN", xpix, ypix, true, radeg, dedeg, fitsimg->Header);
 			}
 			else
-				WCS_DEROT->CopyTo(fitsimg);
+				WCS_DEROT->CopyTo(fitsimg->Header);
 			//fitsimg is now updated with new WCS for new derotated image
 		}
 
@@ -2623,7 +2664,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 			FileListDrop->Items->Clear();
 			IMAGESET->Clear();
 			array<String^>^ filelist = gcnew array<String^>(1) { imgname };
-			AddToImageSet(filelist);
+			AddToImageSet(filelist, true);
 			Form1::Enabled = true;
 			Form1::BringToFront();
 
@@ -2681,7 +2722,7 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 				FileListDrop->Items->Clear();
 				IMAGESET->Clear();
 				array<String^>^ filelist = gcnew array<String^>(1) { imgname };
-				AddToImageSet(filelist);
+				AddToImageSet(filelist, true);
 			}
 			WAITBAR->CancelBtn->Enabled = true;
 			if (!UVDRIFTBATCH)
@@ -2747,7 +2788,6 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 			FUVDIREXISTS = false;
 			IMAGESET = gcnew FITSImageSet();
 			FMLoad_Click(sender, e);
-			//FMLoad->PerformClick();
 			DONUVDRIFTNOW = true;
 			ConsolidateNUVApplyToFUV_Click(sender, e);
 			return;
@@ -2758,13 +2798,20 @@ void Form1::ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(System::Object^  s
 			NUVDIREXISTS = false;
 			AUTOVISDRIFTAPPLY = false;
 			FMLoad_Click(sender, e);
-			//FMLoad->PerformClick();
 			return;
+		}
+
+		if (MASTERAUTOLOADADDIN != nullptr)
+		{
+			int c = 0;
+			Array::Resize(AUTOLOADIMAGESFILES, AUTOLOADIMAGESFILES->Length + MASTERAUTOLOADADDIN->Count);
+			for (int i = AUTOLOADIMAGESFILES->Length - MASTERAUTOLOADADDIN->Count; i < AUTOLOADIMAGESFILES->Length; i++)
+				AUTOLOADIMAGESFILES[i] = (String^)MASTERAUTOLOADADDIN[i - AUTOLOADIMAGESFILES->Length + MASTERAUTOLOADADDIN->Count];
+			MASTERAUTOLOADADDIN = nullptr;
 		}
 
 		IMAGESET = gcnew FITSImageSet();
 		FMLoad_Click(sender, e);
-		//FMLoad->PerformClick();
 
 		if (UVITPOSTMERGE)
 		{
@@ -2787,6 +2834,12 @@ void Form1::ExtractL1gzsMenuItem_Click(System::Object^  sender, System::EventArg
 	ExtractL1gzsMenuItem->HideDropDown();
 	UVITMenu->HideDropDown();
 
+	if (!Directory::Exists("C:\\UVIT_CalDB"))
+	{
+		MessageBox::Show("UVIT Calibration Database not present at C:\\UVIT_CalDB\\  \r\n\r\nPlease gather it from: \r\r https://github.com/user29A/UVITCalDB/releases", "Error...");
+		return;
+	}
+
 	if (!Directory::Exists("C:\\Program Files\\7-Zip"))
 	{
 		MessageBox::Show("7-Zip not installed on this system.  Please download & install the 64-bit version from 7-zip.org to C:\\Program Files\\7-Zip", "Error...");
@@ -2804,7 +2857,7 @@ void Form1::ExtractL1gzsMenuItem_Click(System::Object^  sender, System::EventArg
 	String^ dir = DirectoryInfo(ofd->FileName).Parent->FullName;
 	SetReg("CCDLAB", "L2EventListPath", dir);
 
-	Form1::Enabled = false;
+	//Form1::Enabled = false;
 	ExtractL1ArchiveBGWrkr->RunWorkerAsync(ofd->FileName);
 }
 
@@ -2832,7 +2885,7 @@ void Form1::ExtractL1ArchiveBGWrkr_ProgressChanged(System::Object^ sender, Syste
 
 void Form1::ExtractL1ArchiveBGWrkr_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
 {
-	Form1::Enabled = true;
+	//Form1::Enabled = true;
 	Form1::BringToFront();
 	if ((::DialogResult)e->Result == ::DialogResult::Cancel)
 		return;
@@ -2933,7 +2986,7 @@ void Form1::ExtractL1ArchiveBGWrkr_RunWorkerCompleted(System::Object^  sender, S
 
 	array<String^>^ files = ::Directory::GetFiles(dir, "*level1*.fits");
 	DATE = DateTime::Now;
-	Form1::Enabled = false;
+	//Form1::Enabled = false;
 	WAITBAR = gcnew ::JPWaitBar::WaitBar();
 	WAITBAR->Text = "Digesting L1 Files...";
 	WAITBAR->ProgressBar->Maximum = files->Length;
@@ -3006,1118 +3059,1110 @@ void Form1::DigestL1FITSImageMenuItem_Click(System::Object^  sender, System::Eve
 void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
 	array<String^>^ argfiles = (array<String^>^)e->Argument;
-
+	ArrayList^ dir_list = gcnew ArrayList();
 	bool ApplyDIST = L1DigestApplyDISTChck->Checked;
 	bool ApplyFPN  = L1DigestApplyFPNChck->Checked;
+	bool discardparityerror = L1DigestPCParityChck->Checked;
+	bool discardtimebool = L1DiscardDataTimeChck->Checked;
+	bool interpDISTBiLin = L1DigestApplyDISTInterpBiLinChck->Checked;
+	bool do_parallel_L1 = L1MachineExtremeChck->Checked;
 
-	::ArrayList^ dir_list = gcnew ArrayList();
+	//TCT get the .tct file, and get the delta between absolute time and detector time from the first element in those tables
+	//apply (add) that difference to all detector times in order to get absolute local JD times, then use that to get BJD
+	double JD_abs_time_delta_sec;
+	String^ tctfile = argfiles[0]->Substring(0, argfiles[0]->LastIndexOf("uvt")) + "uvt_level1.tct";
+	bool tctfileexists = ::File::Exists(tctfile);
+	if (tctfileexists)
+	{
+		TCTFILELIST->Add(tctfile);
+
+		JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable(tctfile, "TCT");
+		array<double>^ SPS_TIME_MJD = bt->GetTTYPEEntry("SPS_TIME_MJD");
+		array<double>^ LOCAL_TIMEF = bt->GetTTYPEEntry("LOCAL_TIMEF");
+
+		double mjdref = SPS_TIME_MJD[0];
+		double detref = LOCAL_TIMEF[0];
+		JD_abs_time_delta_sec = 2455197.5 * 86400 + mjdref - detref;
+	}
+	else
+	{
+		MessageBox::Show("Can't find TCT file...exiting...", "Error...");
+		return;
+	}
+
+	//LBT get the lbt file to do filter correction
+	String^ lbtfile = argfiles[0]->Substring(0, argfiles[0]->LastIndexOf("uvt")) + "uvt_level1.lbt";
+	bool lbtfileexists = ::File::Exists(lbtfile);
+	array<double>^ lbt_times;
+	array<double>^ lbt_FUVfwangle;
+	array<double>^ lbt_NUVfwangle;
+	array<double>^ lbt_VISfwangle;
+	double lasttime_mjd_forfilter = Double::MinValue;
+	double firsttime_mjd_forfilter = Double::MaxValue;
+	bool dofiltercorrection = L1FilterCorrectionChck->Checked;
+	if (lbtfileexists)
+	{
+		LBTFILELIST->Add(lbtfile);
+
+		if (dofiltercorrection)
+		{
+			JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable(lbtfile, "UVIT-LBTHK");
+			lbt_times = bt->GetTTYPEEntry("Time");
+			lbt_FUVfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_FUV");
+			lbt_NUVfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_NUV");
+			lbt_VISfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_VIS");
+		}
+	}
+	else
+	{
+		if (dofiltercorrection && !lbtfileexists)
+		{
+			MessageBox::Show("Filter correction requested but lbt file not found.  Exiting.", "Error");
+			WAITBAR->CancelBtn->PerformClick();
+			return;
+		}
+	}
+
+	ArrayList^ pcfiles = gcnew ArrayList();
+	ArrayList^ imfiles = gcnew ArrayList();
+	FITSImage^ src;
+	for (int i = 0; i < argfiles->Length; i++)
+	{
+		src = gcnew FITSImage(argfiles[i], nullptr, true, false, false, false);
+		String^ mode = src->Header->GetKeyValue("OBS_MODE");
+		if (mode == "PC")
+			pcfiles->Add(argfiles[i]);
+		else if (mode == "IM")
+			imfiles->Add(argfiles[i]);
+		else
+		{
+			MessageBox::Show("Can't determine observation mode: '" + mode + "' on file: " + src->FileName, "Error...");
+			return;
+		}
+	}
+
+	if (!L1DigestDeleteFileChck->Checked)
+		if (!::Directory::Exists(src->FilePath + "Digested L1\\"))
+			::Directory::CreateDirectory(src->FilePath + "Digested L1\\");
 
 	int errorfileindex = 0;
-
-	try
+	int wbcounter = 0;
+	//try
 	{
-		for (int xi = 0; xi < argfiles->Length; xi++)
+		#pragma omp parallel for if (do_parallel_L1) num_threads((int)Math::Ceiling(omp_get_max_threads() / Math::E)) private(errorfileindex)
+		for (int xi = 0; xi < pcfiles->Count; xi++)
 		{
+			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+				break;// continue;
+
 			errorfileindex = xi;
-			String^ FileName = argfiles[xi];
-			String^ dir = FileName->Substring(0,FileName->LastIndexOf("\\"));
+			String^ FileName = (String^)pcfiles[xi];
+			String^ dir = FileName->Substring(0, FileName->LastIndexOf("\\"));
 			String^ path = dir;
 			FITSImage^ source = gcnew FITSImage(FileName, nullptr, true, false, false, false);
 			source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
-			String^ mode = source->Header->GetKeyValue("OBS_MODE");
-			if (mode != "PC" && mode != "IM")
+			String^ detector = source->Header->GetKeyValue("DETECTOR");
+			String^ filter = source->Header->GetKeyValue("FILTER");
+			String^ filterID = UVITFilter(detector, filter);
+			source->Header->SetKey("FILTERID", filterID, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
+			String^ orbnum = source->Header->GetKeyValue("ORB_NUM");
+			String^ sourceID; 
+			if (!L1SpecifySourceNameChck->Checked)
 			{
-				MessageBox::Show("Can't determine observation mode: " + mode, "Error...");
-				return;
-			}
-
-			FileStream^ fs = gcnew FileStream(FileName,IO::FileMode::Open);
-			BufferedStream ^ bs = gcnew BufferedStream(fs);
-			array<unsigned char>^ c = gcnew array<unsigned char>(2880);
-
-			int naxis, naxis1, naxis2, bitpix;
-			//read past primary header
-			bool end = false;
-			while (end == false)
-			{
-				//read 2880 block
-				bs->Read(c,0,2880);//stream will be placed at end of header block, so that it can begin reading data values or 2ndry header
-				for (int i = 0; i < 36; i++)
-				{
-					String^ line = System::Text::Encoding::ASCII->GetString(c,i*80,80);
-
-					if (line->Substring(0,5)->Equals("NAXIS"))
-						naxis = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("NAXIS1"))
-						naxis1 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("NAXIS2"))
-						naxis2 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("BITPIX"))
-						bitpix = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,8)->Equals("END     "))//check if we're at the end of the header keys
-					{
-						end = true;
-						break;
-					}
-				}
-			}
-			//now at end of primary header; if primary header has image data, must skip past it
-			if (naxis != 0)
-			{
-				__int64 NBytes = __int64(naxis1)*__int64(naxis2)*__int64(::Math::Abs(bitpix))/8;
-				__int64 rem;
-				::Math::DivRem(NBytes,2880,rem);
-				bs->Seek(NBytes+(2880-rem),::SeekOrigin::Current);
-			}
-			//should now be at a header extension
-			//read it until it is as its end, then skip again to 2nd extension
-
-			end = false;
-			while (end == false)
-			{
-				//read 2880 block
-				bs->Read(c,0,2880);//stream will be placed at end of header block, so that it can begin reading data values or 2ndry header
-				for (int i = 0; i < 36; i++)
-				{
-					String^ line = System::Text::Encoding::ASCII->GetString(c,i*80,80);
-
-					if (line->Substring(0,5)->Equals("NAXIS"))
-						naxis = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("NAXIS1"))
-						naxis1 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("NAXIS2"))
-						naxis2 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("BITPIX"))
-						bitpix = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,8)->Equals("END     "))//check if we're at the end of the header keys
-					{
-						end = true;
-						break;
-					}
-				}
-			}
-
-			//now at end of 1st extension header, skip its data
-			if (naxis != 0)
-			{
-				__int64 Nbytes = __int64(naxis1)*__int64(naxis2)*__int64(::Math::Abs(bitpix))/8;
-				__int64 rem;
-				::Math::DivRem(Nbytes,2880,rem);
-				bs->Seek(Nbytes+(2880-rem),::SeekOrigin::Current);
-			}
-
-			//should now be at 2nd extension header
-			//read it until it is as its end
-			int width = 0;
-			end = false;
-			while (end == false)
-			{
-				//read 2880 block
-				bs->Read(c,0,2880);//stream will be placed at end of header block, so that it can begin reading data values or 2ndry header
-				for (int i = 0; i < 36; i++)
-				{
-					String^ line = System::Text::Encoding::ASCII->GetString(c,i*80,80);
-
-					if (line->Substring(0,6)->Equals("NAXIS1"))
-						naxis1 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("NAXIS2"))
-						naxis2 = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,6)->Equals("BITPIX"))
-						bitpix = ::Convert::ToInt32(line->Substring(10,20));
-					if (line->Substring(0,7)->Equals("TFORM15"))
-					{
-						String^ tform15 = line->Substring(11,6);
-						tform15 = tform15->Replace("B","");//PC mode
-						tform15 = tform15->Replace("I","");//IM mode
-						width = ::Convert::ToInt32(tform15);
-					}
-					if (line->Substring(0,8)->Equals("END     "))//check if we're at the end of the header keys
-						end = true;
-				}
-			}//now ready to get the L1 data
-			__int64 file_bspos = bs->Position;
-
-			//TCT get the .tct file, and get the delta between absolute time and detector time from the first element in those tables
-			//apply (add) that difference to all detector times in order to get absolute local JD times, then use that to get BJD
-			double JD_abs_time_delta_sec;
-			String^ tctfile = FileName->Substring(0,FileName->LastIndexOf("uvt")) + "uvt_level1.tct";
-			bool tctfileexists = ::File::Exists(tctfile);
-			try//sometimes the tct file is empty?
-			{
-				if (tctfileexists)
-				{
-					TCTFILELIST->Add(tctfile);
-
-					JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable(tctfile, "TCT");
-					array<double>^ SPS_TIME_MJD = bt->GetTTYPEEntry("SPS_TIME_MJD");
-					array<double>^ LOCAL_TIMEF = bt->GetTTYPEEntry("LOCAL_TIMEF");
-
-					//array<double>^ SPS_TIME_MJD = JPFITS::FITSBinTable::GetExtensionEntry(tctfile, "TCT", "SPS_TIME_MJD");
-					double mjdref = SPS_TIME_MJD[0];
-					//array<double>^ LOCAL_TIMEF = JPFITS::FITSBinTable::GetExtensionEntry(tctfile, "TCT", "LOCAL_TIMEF");
-					double detref = LOCAL_TIMEF[0];
-					JD_abs_time_delta_sec = 2455197.5 * 86400 + mjdref - detref;
-				}
-			}
-			catch (...) {}
-
-			//LBT get the lbt file to do filter correction
-			String^ lbtfile = FileName->Substring(0, FileName->LastIndexOf("uvt")) + "uvt_level1.lbt";
-			bool lbtfileexists = ::File::Exists(lbtfile);
-			array<double>^ lbt_times;
-			array<double>^ lbt_FUVfwangle;
-			array<double>^ lbt_NUVfwangle;
-			array<double>^ lbt_VISfwangle;
-			double lasttime_mjd_forfilter = Double::MinValue;
-			double firsttime_mjd_forfilter = Double::MaxValue;
-			bool dofiltercorrection = L1FilterCorrectionChck->Checked;
-			if (lbtfileexists)
-			{
-				LBTFILELIST->Add(lbtfile);
-
-				if (dofiltercorrection)
-				{
-					JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable(lbtfile, "UVIT-LBTHK");
-					lbt_times = bt->GetTTYPEEntry("Time");
-					lbt_FUVfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_FUV");
-					lbt_NUVfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_NUV");
-					lbt_VISfwangle = bt->GetTTYPEEntry("FilterWheelMotorAngle_VIS");
-
-					/*lbt_times = JPFITS::FITSBinTable::GetExtensionEntry(lbtfile, "UVIT-LBTHK", "Time");
-					lbt_FUVfwangle = JPFITS::FITSBinTable::GetExtensionEntry(lbtfile, "UVIT-LBTHK", "FilterWheelMotorAngle_FUV");
-					lbt_NUVfwangle = JPFITS::FITSBinTable::GetExtensionEntry(lbtfile, "UVIT-LBTHK", "FilterWheelMotorAngle_NUV");
-					lbt_VISfwangle = JPFITS::FITSBinTable::GetExtensionEntry(lbtfile, "UVIT-LBTHK", "FilterWheelMotorAngle_VIS");*/
-				}
+				sourceID = (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "");
+				if (sourceID->Length > 17)
+					sourceID = sourceID->Substring(0, 17);
 			}
 			else
+				sourceID = L1SourceNameTxt->Text;
+
+			//try
 			{
-				if (dofiltercorrection && !lbtfileexists)
+				FITSBinTable^ detdata = gcnew JPFITS::FITSBinTable(source->FullFileName, "DETECTOR_DATA");
+				int width = 0;
+				for (int h = 0; h < detdata->Header->Length; h++)
+					if (detdata->Header[h]->Substring(0, 7) == "TFORM15")
+					{
+						String^ tform15 = detdata->Header[h]->Substring(11, 6);
+						tform15 = tform15->Replace("B", "");//PC mode
+						tform15 = tform15->Replace("I", "");//IM mode
+						width = ::Convert::ToInt32(tform15);
+						break;
+					}
+
+				if (DO_TBC)
 				{
-					MessageBox::Show("Filter correction requested but lbt file not found.  Exiting.", "Error");
-					WAITBAR->CancelBtn->PerformClick();
-					return;
-				}
-			}
-			
-			String^ filterindex = UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER"));
-			source->Header->SetKey("FILTERID", filterindex, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
-			
-			if (mode == "PC")
-			{
-				try
-				{
-					if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-						return;
-					DigestL1Wrkr->ReportProgress(xi + 1, mode + "_" + argfiles->Length);
-
-					int NBytes = naxis1 * naxis2;
-					array<unsigned char>^ arr = gcnew array<unsigned char>(NBytes);
-					bs->Read(arr, 0, NBytes);
-					bs->Close();
-					fs->Close();
-
-					if (NBytes < 150000)
-						goto skipto;
-
-					if (DO_TBC)
-						TBC(arr, naxis1, naxis2);
-
-					bool discardparityerror = L1DigestPCParityChck->Checked;
-					bool xword_parity_error = false;
-					bool yword_parity_error = false;
-					bool sword_parity_error = false;
-
-					bool discardtimebool = L1DiscardDataTimeChck->Checked;
-					unsigned int discardtimeint;
-					if (discardtimebool)
-					{
-						String^ discardtimestring = (String^)L1DiscardDataTimeDrop->SelectedItem;
-						discardtimestring = discardtimestring->Replace(" Minutes", "");
-						discardtimeint = ::Convert::ToInt32(discardtimestring) * 60 * 1000;
-					}
-
-					String^ channel = source->Header->GetKeyValue("DETECTOR");
-					String^ alg = source->Header->GetKeyValue("CENTROID");
-					if (alg != "5S" && alg != "3S")//happened once with some L1 file
-						alg = "3S"; //3S is always running in orbit now...so just assume
-					String^ FPNFile;
-					FITSImage^ FPNFits;
-					Random^ rand;
-					int N_p_errors = 0;
-
-					if (ApplyFPN)
-					{
-						if (channel == "FUV")
-						{
-							if (alg == "3S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits";
-							}
-							if (alg == "5S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits";
-							}
-						}
-						else if (channel == "NUV")
-						{
-							if (alg == "3S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits";
-							}
-							if (alg == "5S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits";
-							}
-						}
-						else if (channel == "VIS")
-						{
-							if (alg == "3S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits";
-							}
-							if (alg == "5S")
-							{
-								if (::File::Exists("C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits"))
-									FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits";
-							}
-						}
-						else
-						{
-							//get the FPN correction table
-							OpenFileDialog^ dlg = gcnew OpenFileDialog();
-							dlg->Filter = "FITS (*.fits)|*.fits";
-							dlg->Multiselect = false;
-							dlg->Title = "Select FPN Correction FITS Image File";
-							::DialogResult res = dlg->ShowDialog();
-							if (res != ::DialogResult::OK)
-								return;
-							FPNFile = dlg->FileName;
-						}
-						FPNFits = gcnew JPFITS::FITSImage(FPNFile, nullptr, true, true, false, true);
-						rand = gcnew Random();
-					}
-
-					String^ CPUXDistFile;
-					String^ CPUYDistFile;
-					JPFITS::FITSImage^ CPUXDistFits;
-					JPFITS::FITSImage^ CPUYDistFits;
-					if (ApplyDIST)
-					{
-						if (channel == "FUV")
-						{
-							if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits"))
-							{
-								CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits";
-								CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dY.fits";
-							}
-						}
-						else if (channel == "NUV")
-						{
-							if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits"))
-							{
-								CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits";
-								CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dY.fits";
-							}
-						}
-						else if (channel == "VIS")
-						{
-							if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits"))
-							{
-								CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits";
-								CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dY.fits";
-							}
-						}
-						else
-						{
-							OpenFileDialog^ dlg = gcnew OpenFileDialog();
-							dlg->Filter = "FITS (*.fits)|*.fits";
-							dlg->Multiselect = false;
-							//get the CPU *X* correction image
-							dlg->Title = "Select CPU *X* Correction FITS Image File";
-							::DialogResult res = dlg->ShowDialog();
-							if (res != ::DialogResult::OK)
-								return;
-							String^ CPUXDistFile = dlg->FileName;
-
-							//get the CPU *Y* correction image
-							dlg->Title = "Select CPU *Y* Correction FITS Image File";
-							res = dlg->ShowDialog();
-							if (res != ::DialogResult::OK)
-								return;
-							String^ CPUYDistFile = dlg->FileName;
-						}
-						CPUXDistFits = gcnew JPFITS::FITSImage(CPUXDistFile, nullptr, true, true, false, true);
-						CPUYDistFits = gcnew JPFITS::FITSImage(CPUYDistFile, nullptr, true, true, false, true);
-					}
-					bool interpDISTBiLin = L1DigestApplyDISTInterpBiLinChck->Checked;
-
-					int byteindx = 0;
-					double bzero = 0;
-					double bscale = 1;
-
-					//first thing, get number of sets
-					int Nset = 0;
-					unsigned __int16 prevframe = UInt16::MaxValue;
-					unsigned __int32 prevtime = UInt32::MaxValue;
-					for (int i = 0; i < naxis2; i++)
-					{
-						//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-						byteindx = i * naxis1;
-						byteindx += 65;
-						bzero = 32768;
-						unsigned __int16 currframe = int(((arr[byteindx]) << 8) | arr[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
-
-						//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-						byteindx = i * naxis1;
-						byteindx += 67;
-						bzero = 2147483648;
-						unsigned __int32 currtime = int(((arr[byteindx]) << 24) | (arr[byteindx + 1] << 16) | (arr[byteindx + 2]) << 8 | arr[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
-
-						//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-						//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-						//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-						//and then not get written since it will be so small (single frame)
-						if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
-							Nset++;
-
-						prevframe = currframe;
-						prevtime = currtime;
-					}
-
-					//have number of sets, now need number of centroids in each set
-					array<int>^ Ncentroids = gcnew array<int>(Nset);
-					array<int>^ Nskipped = gcnew array<int>(Nset);//skipped frame numbers...not even with 0's
-					int Ncent = 0;
-					Nset = 0;
-					prevframe = UInt16::MaxValue;
-					prevtime = UInt32::MaxValue;
-					for (int i = 0; i < naxis2; i++)
-					{
-						//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-						byteindx = i * naxis1;
-						byteindx += 65;
-						bzero = 32768;
-						unsigned __int16 currframe = int(((arr[byteindx]) << 8) | arr[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
-
-						//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-						byteindx = i * naxis1;
-						byteindx += 67;
-						bzero = 2147483648;
-						unsigned __int32 currtime = int(((arr[byteindx]) << 24) | (arr[byteindx + 1] << 16) | (arr[byteindx + 2]) << 8 | arr[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
-
-						//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-						//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-						//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-						//and then not get written since it will be so small (single frame)
-						if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
-							Nset++;
-
-						if (Math::Abs(double(currframe) - double(prevframe) > 2))
-						{
-							prevframe = currframe;
-							prevtime = currtime;
-						}
-
-						if (currframe - prevframe > 1)
-							Nskipped[Nset - 1] += currframe - prevframe - 1;
-
-						/*if (Nskipped[Nset - 1] > 1000)
-							MessageBox::Show(Nskipped[Nset - 1] + "	" + currframe + "  " + prevframe);*/
-
-						prevframe = currframe;
-						prevtime = currtime;
-
-						//Centroid - TTYPE15 = 'Centroid'
-						byteindx = i * naxis1;
-						byteindx += 79;
-						int j = 0;
-						bool checkwidth = false;
-						scanwidth:;
-						try
-						{
-							for (j; j < width / 6; j++)
-							{
-								unsigned __int16 xword = unsigned __int16((arr[byteindx + j * 6] << 8) | arr[byteindx + j * 6 + 1]);
-								unsigned __int16 yword = unsigned __int16((arr[byteindx + j * 6 + 2] << 8) | arr[byteindx + j * 6 + 3]);
-								unsigned __int16 sword = unsigned __int16((arr[byteindx + j * 6 + 4] << 8) | arr[byteindx + j * 6 + 5]);
-
-								if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
-									continue;//break;
-
-								Ncent++;//number of centroids, only incremented if there was more data for this row
-								Ncentroids[Nset - 1]++;
-							}
-						}
-						catch (...)
-						{
-							checkwidth = true;
-							width -= 6;
-							goto scanwidth;
-						}
-						if (checkwidth)
-						{
-							//Ncent--;
-							//Ncentroids[Nset - 1]--;
-						}
-					}
-
-					array<double>^				BJDS;
-					array<unsigned __int16>^	frames;
-					array<unsigned __int32>^	times;
-					array<__int16, 2>^			ints;
-					array<__int16, 2>^			decs;
-					array<unsigned __int16, 2>^	mdMm;
-
-					Ncent = 0;
-					Nset = 0;
-					prevframe = UInt16::MaxValue;
-					prevtime = UInt32::MaxValue;
-					for (int i = 0; i <= naxis2; i++)
-					{
-						if (i == naxis2)
-						{
-							prevframe = UInt16::MaxValue;//will force the last set to be written
-							prevtime = UInt32::MaxValue;
-							goto lastset;
-						}
-
-						//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-						byteindx = i * naxis1;
-						byteindx += 65;
-						bzero = 32768;
-						unsigned __int16 currframe = int(((arr[byteindx]) << 8) | arr[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
-
-						//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-						byteindx = i * naxis1;
-						byteindx += 67;
-						bzero = 2147483648;
-						unsigned __int32 currtime = int(((arr[byteindx]) << 24) | (arr[byteindx + 1] << 16) | (arr[byteindx + 2]) << 8 | arr[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
-
-						double JD;
-
-						/*//MJD_UT - TTYPE23 = 'MJD_UT'
-						byteindx = i*naxis1;
-						byteindx += 2251;
-						bzero = 0;
-						array<unsigned char>^ dbl = gcnew array<unsigned char>(8);
-						dbl[7] = arr[byteindx];
-						dbl[6] = arr[byteindx + 1];
-						dbl[5] = arr[byteindx + 2];
-						dbl[4] = arr[byteindx + 3];
-						dbl[3] = arr[byteindx + 4];
-						dbl[2] = arr[byteindx + 5];
-						dbl[1] = arr[byteindx + 6];
-						dbl[0] = arr[byteindx + 7];
-						double JD = BitConverter::ToDouble(dbl, 0) / 86400 + 2455197.5;*/
-
-						//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
-						byteindx = i * naxis1;
-						byteindx += 0;
-						bzero = 0;
-						array<unsigned char>^ dbl = gcnew array<unsigned char>(8);
-						dbl[7] = arr[byteindx];
-						dbl[6] = arr[byteindx + 1];
-						dbl[5] = arr[byteindx + 2];
-						dbl[4] = arr[byteindx + 3];
-						dbl[3] = arr[byteindx + 4];
-						dbl[2] = arr[byteindx + 5];
-						dbl[1] = arr[byteindx + 6];
-						dbl[0] = arr[byteindx + 7];
-						double temptime = BitConverter::ToDouble(dbl, 0);
-						if (temptime > lasttime_mjd_forfilter)
-							lasttime_mjd_forfilter = temptime;
-						if (temptime < firsttime_mjd_forfilter)
-							firsttime_mjd_forfilter = temptime;
-						//double JD = BitConverter::ToDouble(dbl, 0);
-						//the above time isn't exact.  Now use the JD_abs_time_delta_sec to get the BJD here
-
-						if (tctfileexists)
-							JD = (double(currtime) / 1000 + JD_abs_time_delta_sec) / 86400;//this should be the local JD...it will get used below to get BJD
-						else
-							JD = 0;
-
-					lastset:
-
-						//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-						//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-						//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-						//and then not get written since it will be so small (single frame)
-						if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
-						{
-							if (Nset > 0 || i == naxis2)//then the previous set data needs to be written
-							{
-								if (times != nullptr)
-									if (times->Length > /*0*/1000)//so that short corrupt files dont get written
-										if (discardtimebool && (times[times->Length - 1] - times[0]) > discardtimeint || !discardtimebool)
-										{
-											//do filter correction........do this first for the next below
-											if (dofiltercorrection)
-											{
-												double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
-												int lbtcounter = 0;
-												while (/*midtime*/ firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
-													lbtcounter++;
-												double fwangle;
-												if (source->Header->GetKeyValue("DETECTOR") == "FUV")
-													fwangle = lbt_FUVfwangle[lbtcounter];
-												if (source->Header->GetKeyValue("DETECTOR") == "NUV")
-													fwangle = lbt_NUVfwangle[lbtcounter];
-												String^ filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
-
-												/*if (L1TBCChck->Checked && filterindex == "F0" || L1TBCChck->Checked && filterindex == "NA")
-												{
-													lbtcounter = 0;
-													firsttime_mjd_forfilter -= 524;
-													while (firsttime_mjd_forfilter > lbt_times[lbtcounter])
-														lbtcounter++;
-													fwangle = lbt_VISfwangle[lbtcounter];
-													filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
-												}*/
-
-												String^ filter = source->Header->GetKeyValue("FILTER");
-												if (filterindex != filter)
-													source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
-												String^ filtertype = UVITFilter(source->Header->GetKeyValue("DETECTOR"), filterindex);
-												source->Header->SetKey("FILTERID", filtertype, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
-												lasttime_mjd_forfilter = Double::MinValue;
-												firsttime_mjd_forfilter = Double::MaxValue;
-											}
-
-											dir = path + "\\" + source->Header->GetKeyValue("DETECTOR") + "\\" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
-											::Directory::CreateDirectory(dir);
-											String^ obj_orb_chan;
-											obj_orb_chan = dir + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ",""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (times[0]).ToString("0000000000000");
-											dir_list->Add(dir);
-											e->Result = dir_list;
-
-											String^ BJDfile = obj_orb_chan + "_BJDList.fits";
-											if (tctfileexists)//else all 0's
-												BJDS = BJDC(BJDS, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
-
-											if (channel == "NUV" && L1TransformNUVtoFUVChck->Checked)
-												source->Header->SetKey("NUVTOFUV", "true", true, -1);
-											//source->Header->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
-											//source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
-											source->Header->SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
-											source->Header->SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
-											source->Header->SetKey("NCENTROD", times->Length.ToString(), "Number of Centroids", true, 14);
-											source->Header->SetKey("PARTREDC", Math::Round(double(N_p_errors) / double(times->Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
-											source->Header->SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
-											source->Header->RemoveKey("NFRAMES");
-											source->Header->SetKey("NFRAMES", (frames[frames->Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
-											source->Header->SetKey("FRAMREDC", Math::Round(double(Nskipped[Nset - 1]) / double(frames[frames->Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
-											N_p_errors = 0;//reset for new set
-											JPFITS::FITSImage^ f = gcnew FITSImage(BJDfile, BJDS, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::Double, true);
-
-											String^ framefile = obj_orb_chan + "_FrameList.fits";
-											f = gcnew FITSImage(framefile, frames, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::UInt16, true);
-
-											String^ timefile = obj_orb_chan + "_TimeList.fits";
-											f = gcnew FITSImage(timefile, times, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::UInt32, true);
-
-											String^ flatid;
-											FITSImage^ flat;
-											String^ channel = f->Header->GetKeyValue("CHANNEL");
-											if (channel->Length == 0)
-												channel = f->Header->GetKeyValue("DETECTOR");
-											if (channel == "FUV")
-											{
-												//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUV Normalized Flat.fits";
-
-												flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUVALL_flat_final_sens.fits";
-											}
-											if (channel == "NUV")
-											{
-												//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\NUV Normalized Flat.fits";
-
-												String^ filterid = source->Header->GetKeyValue("FILTERID");
-												if (filterid->Contains("Silica"))
-													flatid = "N242W_flat_final_sens.fits";
-												if (filterid == "NUVB15")
-													flatid = "N219M_flat_final_sens.fits";
-												if (filterid == "NUVB13")
-													flatid = "N245M_flat_final_sens.fits";
-												if (filterid == "NUVB4")
-													flatid = "N263M_flat_final_sens.fits";
-												if (filterid == "NUVN2")
-													flatid = "N279N_flat_final_sens.fits";
-												flatid = "C:\\UVIT_CalDB\\Flats Normalized\\" + flatid;
-											}
-											if (channel == "VIS")
-												flatid = "C:\\UVIT_CalDB\\Flats Normalized\\VIS Normalized Flat.fits";
-											if (!File::Exists(flatid))
-											{
-												::MessageBox::Show("Couldn't find the flat file: '" + flatid + "' in the CalDB...stopping.", "Error");
-												WAITBAR->CancelBtn->PerformClick();
-												return;
-											}
-											else
-												flat = gcnew FITSImage(flatid, nullptr, true, true, false, true);
-
-											array<double>^ flats = gcnew array<double>(Ncentroids[Nset - 1]);
-											int j = 0;
-											try
-											{
-												#pragma omp parallel for
-												for (j = 0; j < Ncentroids[Nset - 1]; j++)
-												{
-													int xpos = int(ints[0, j] / 32);
-													int ypos = int(ints[1, j] / 32);
-													if (xpos < 0 || xpos > 511 || ypos < 0 || ypos > 511)
-														flats[j] = 1;
-													else
-														flats[j] = flat[xpos, ypos];
-												}
-
-												//do NUV to FUV here, after the flat is created...simple!
-												if (channel == "NUV" && L1TransformNUVtoFUVChck->Checked)
-												{
-													::Random^ r = gcnew Random();
-													double x, y, xp, yp, center = 255 * 32;
-													int intsx, fracx, intsy, fracy;
-													array<double>^ Pnuvtofuv = gcnew array<double>(4) { 0.84898, 0.53007, 0.53007, -0.84898 };//from Shyam Feb 2017
-													for (j = 0; j < Ncentroids[Nset - 1]; j++)
-													{
-														x = double(ints[0, j] + decs[0, j] + 16) + r->NextDouble();
-														y = double(ints[1, j] + decs[1, j] + 16) + r->NextDouble();
-
-														xp = (x - center) * Pnuvtofuv[0] + (y - center) * Pnuvtofuv[1] + center;
-														yp = (x - center) * Pnuvtofuv[2] + (y - center) * Pnuvtofuv[3] + center;
-
-														//now need to split out integer and decimal parts back into their own lists...
-														intsx = Math::DivRem(int((xp)), 32, fracx) * 32;
-														fracx -= 16;//reset frac to be from -16
-														intsy = Math::DivRem(int((yp)), 32, fracy) * 32;
-														fracy -= 16;//reset frac to be from -16
-														ints[0, j] = intsx;
-														ints[1, j] = intsy;
-														decs[0, j] = fracx;
-														decs[1, j] = fracy;
-													}
-												}
-											}
-											catch (...)
-											{
-												::MessageBox::Show("xint: " + (int(ints[0, j] / 32)).ToString() + ";	yint: " + (int(ints[1, j] / 32)).ToString() + ";	j: " + j.ToString() + ";	lengthj: " + flats->Length.ToString());
-											}
-											String^ flatfile = obj_orb_chan + "_FlatList.fits";
-											FITSImage^ fitsflatlist = gcnew FITSImage(flatfile, flats, false, true);
-											fitsflatlist->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											fitsflatlist->WriteImage(::TypeCode::Double, true);
-
-											String^ intsfile = obj_orb_chan + "_XYInts_List.fits";
-											if (ApplyFPN)
-												intsfile = intsfile->Insert(intsfile->LastIndexOf("."), "_deFPN");
-											if (ApplyDIST)
-												intsfile = intsfile->Insert(intsfile->LastIndexOf("."), "_deDIST");
-											f = gcnew FITSImage(intsfile, ints, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::Int16, true);
-
-											String^ fracfile = obj_orb_chan + "_XYFrac_List.fits";
-											if (ApplyFPN)
-												fracfile = fracfile->Insert(fracfile->LastIndexOf("."), "_deFPN");
-											if (ApplyDIST)
-												fracfile = fracfile->Insert(fracfile->LastIndexOf("."), "_deDIST");
-											f = gcnew FITSImage(fracfile, decs, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::Int16, true);
-
-											String^ mdMmfile = obj_orb_chan + "_XYmdMm_List.fits";
-											f = gcnew FITSImage(mdMmfile, mdMm, false, true);
-											f->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-											f->WriteImage(::TypeCode::Int16, true);
-										}
-							}
-
-							if (i == naxis2)
-								goto lastset2;//last set was written so now go end
-
-							//reset everything for new centroids list
-							Nset++;
-							Ncent = 0;
-							BJDS = gcnew array<double>(Ncentroids[Nset - 1]);
-							frames = gcnew array<unsigned __int16>(Ncentroids[Nset - 1]);
-							times = gcnew array<unsigned __int32>(Ncentroids[Nset - 1]);
-							ints = gcnew array<__int16, 2>(2, Ncentroids[Nset - 1]);
-							decs = gcnew array<__int16, 2>(2, Ncentroids[Nset - 1]);
-							mdMm = gcnew array<unsigned __int16, 2>(2, Ncentroids[Nset - 1]);
-						}
-						prevframe = currframe;
-						prevtime = currtime;
-
-						//Centroid - TTYPE15 = 'Centroid'
-						byteindx = i * naxis1;
-						byteindx += 79;
-						for (int j = 0; j < width / 6; j++)
-						{
-							unsigned __int16 xword = unsigned __int16((arr[byteindx + j * 6] << 8) | arr[byteindx + j * 6 + 1]);
-							unsigned __int16 yword = unsigned __int16((arr[byteindx + j * 6 + 2] << 8) | arr[byteindx + j * 6 + 3]);
-							unsigned __int16 sword = unsigned __int16((arr[byteindx + j * 6 + 4] << 8) | arr[byteindx + j * 6 + 5]);
-
-							if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
-								continue;//break;
-
-							if (discardparityerror)
-							{
-								xword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(xword);
-								yword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(yword);
-								sword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(sword);
-							}
-
-							bool p_error = false;
-							if (xword_parity_error || yword_parity_error/* || sword_parity_error*/)//lets not worry about a parity error only on the sword because this doesn't affect the centroid photometry position itself, and it can still be used.  If it is a parity error on the x or y, then it does need to be accounted for.
-							{
-								p_error = true;
-								N_p_errors++;
-							}
-
-							unsigned __int16 ixpos, iypos, mc, dMm;
-							__int16	fxpos, fypos;
-
-							if (!p_error)
-							{
-								//x
-								ixpos = ((xword) >> 7) * 32;
-								fxpos = ((xword & 0x7F) >> 1);
-								if (fxpos >= 32)
-									fxpos = fxpos - 64;
-
-								//y
-								iypos = ((yword) >> 7) * 32;
-								fypos = ((yword & 0x7F) >> 1);
-								if (fypos >= 32)
-									fypos = fypos - 64;
-
-								//corner
-								mc = ((sword & 0x1FF) >> 1) * 16;
-								dMm = (sword >> 9) * 16;
-
-								if (ApplyFPN)
-								{
-									if (fxpos < -16)//X
-									{
-										ixpos -= 32;//adjust integer
-										fxpos += 32;//adjust fractional
-									}
-									if (fypos < -16)//Y
-									{
-										iypos -= 32;//adjust integer
-										fypos += 32;//adjust fractional
-									}
-									if (fxpos > 15)//X
-									{
-										ixpos += 32;//adjust integer
-										fxpos -= 32;//adjust fractional
-									}
-									if (fypos > 15)//Y
-									{
-										iypos += 32;//adjust integer
-										fypos -= 32;//adjust fractional
-									}
-
-									fxpos += 16;
-									fypos += 16;
-
-									double fx = double(fxpos);
-									double fy = double(fypos);
-
-									fx += rand->NextDouble();
-									fy += rand->NextDouble();
-
-									fx *= FPNFits[1, int(fx * 4096 / 32)];
-									fy *= FPNFits[2, int(fy * 4096 / 32)];
-
-									fxpos = (__int16)fx;
-									fypos = (__int16)fy;
-
-									fxpos -= 16;//x
-									fypos -= 16;//y
-								}
-
-								int xcorr, ycorr;
-								if (ApplyDIST)
-								{
-									if (ixpos > 0 && iypos > 0 && ixpos / 32 <= 511 && iypos / 32 <= 511)
-									{
-										if (interpDISTBiLin)
-										{
-											double x = (double(ixpos) + double(fxpos) + 16) / 32;
-											double y = (double(iypos) + double(fypos) + 16) / 32;
-											xcorr = int(32 * JPMath::InterpolateBiLinear(CPUXDistFits->Image, 512, 512, x, y));
-											ycorr = int(32 * JPMath::InterpolateBiLinear(CPUYDistFits->Image, 512, 512, x, y));
-										}
-										else
-										{
-											xcorr = int(32 * CPUXDistFits[ixpos / 32, iypos / 32]);
-											ycorr = int(32 * CPUYDistFits[ixpos / 32, iypos / 32]);
-										}										
-
-										ixpos -= xcorr;
-										iypos -= ycorr;
-									}
-									else
-										p_error = true;//treat this as p_error...it is an odd scenario but now seen to happen with Ashok Pati's data.							
-								}
-							}
-
-							BJDS[Ncent] = JD;
-							frames[Ncent] = currframe;
-							times[Ncent] = currtime;
-
-							if (p_error)
-							{
-								//::MessageBox::Show("p_error");
-								ints[0, Ncent] = 0;//these will be seen in a final image as drifting around at the top left corner
-								ints[1, Ncent] = 0;
-								decs[0, Ncent] = 0;
-								decs[1, Ncent] = 0;
-								mdMm[0, Ncent] = 0;
-								mdMm[1, Ncent] = 0;
-							}
-							else
-							{
-								ints[0, Ncent] = ixpos;
-								ints[1, Ncent] = iypos;
-								decs[0, Ncent] = fxpos;
-								decs[1, Ncent] = fypos;
-								mdMm[0, Ncent] = mc;
-								mdMm[1, Ncent] = dMm;
-							}
-							Ncent++;//number of centroids, only incremented if there was more data for this row
-						}
-					}
-				lastset2:;
-				}
-				catch (Exception^ e)
-				{
-					MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite + "\n\r + \n\r" + "File: " + argfiles[errorfileindex]);
-				}
-			}//end if PC mode
-
-
-
-
-			if (mode == "IM")
-			{
-				if (L1SkipINTMode->Checked)
-				{
-					bs->Close();
-					fs->Close();
-					goto skipto;
+					#pragma omp critical
+					TBC(detdata->BINTABLEByteArray, detdata->Naxis1, detdata->Naxis2);
 				}
 
-				bool degrade = L1DegradientINTMode->Checked;
-				double cleanthreshold = Convert::ToDouble(L1CleanINTLineThreshold->Text);
-				int cleanN = Convert::ToInt32(L1CleanINTNPix->Text);
+				bool xword_parity_error = false;
+				bool yword_parity_error = false;
+				bool sword_parity_error = false;
+
+				unsigned int discardtimeint;
+				if (discardtimebool)
+				{
+					String^ discardtimestring = (String^)L1DiscardDataTimeDrop->SelectedItem;
+					discardtimestring = discardtimestring->Replace(" Minutes", "");
+					discardtimeint = ::Convert::ToInt32(discardtimestring) * 60 * 1000;
+				}
+
+				String^ alg = source->Header->GetKeyValue("CENTROID");
+				if (alg != "5S" && alg != "3S")//happened once with some L1 file
+					alg = "3S"; //3S is always running in orbit now...so just assume
+				String^ FPNFile;
+				FITSImage^ FPNFits;
+				Random^ rand;
+				int N_p_errors = 0;
+
+				if (ApplyFPN)
+				{
+					rand = gcnew Random();
+					if (detector == "FUV")
+					{
+						if (alg == "3S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits";
+						}
+					}
+					else if (detector == "NUV")
+					{
+						if (alg == "3S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits";
+						}
+					}
+					else if (detector == "VIS")
+					{
+						if (alg == "3S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (::File::Exists("C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits";
+						}
+					}
+					else
+					{
+						MessageBox::Show("Cannot find FPN File for channel '" + detector + "' and algorithm '" + alg + "' for file: " + FileName);
+						continue;
+					}
+					#pragma omp critical
+					{
+						FPNFits = gcnew JPFITS::FITSImage(FPNFile, nullptr, false, true, false, false);
+					}
+				}
+
+				String^ CPUXDistFile;
+				String^ CPUYDistFile;
+				JPFITS::FITSImage^ CPUXDistFits;
+				JPFITS::FITSImage^ CPUYDistFits;
+				if (ApplyDIST)
+				{
+					if (detector == "FUV")
+					{
+						if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits"))
+						{
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dY.fits";
+						}
+					}
+					else if (detector == "NUV")
+					{
+						if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits"))
+						{
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dY.fits";
+						}
+					}
+					else if (detector == "VIS")
+					{
+						if (::File::Exists("C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits"))
+						{
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dY.fits";
+						}
+					}
+					else
+					{
+						MessageBox::Show("Cannot find Distortion File for channel '" + detector + "' for file: " + FileName);
+						continue;
+					}
+					#pragma omp critical
+					{
+						CPUXDistFits = gcnew JPFITS::FITSImage(CPUXDistFile, nullptr, false, true, false, false);
+						CPUYDistFits = gcnew JPFITS::FITSImage(CPUYDistFile, nullptr, false, true, false, false);
+					}
+				}
 
 				int byteindx = 0;
 				double bzero = 0;
 				double bscale = 1;
 
-				int xsize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_X_SZ"));//zero-based
-				int ysize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_Y_SZ"));//zero-based
-				int imsize = (xsize+1)*(ysize+1);
-				array<double,2>^ d2im = gcnew array<double,2>(xsize+1,ysize+1);
-				array<unsigned __int16>^ d1im = gcnew array<unsigned __int16>(imsize);//just 1-D is fine cause we're just gonna write it
-				int pixnum = 0;
-				int intprog = 0;
-				int Nimages = width*naxis2/imsize;
-				unsigned __int16 prevframe = UInt16::MaxValue - 1;
-				int set = 0;
-				array<unsigned char>^ arr = gcnew array<unsigned char>(naxis1 * naxis2);
-				bs->Read(arr, 0, naxis1 * naxis2);
-				bs->Close();
-				fs->Close();
-
-				lasttime_mjd_forfilter = Double::MinValue;
-				firsttime_mjd_forfilter = Double::MaxValue;
-
-				if (DO_TBC)
-					TBC(arr, naxis1, naxis2);
-
-				try
+				//first thing, get number of sets
+				int Nset = 0;
+				unsigned __int16 prevframe = UInt16::MaxValue;
+				unsigned __int32 prevtime = UInt32::MaxValue;
+				for (int i = 0; i < detdata->Naxis2; i++)
 				{
-					for (int i = 0; i < naxis2; i++)
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					unsigned __int16 currframe = int(((detdata->BINTABLEByteArray[byteindx]) << 8) | detdata->BINTABLEByteArray[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
+
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					unsigned __int32 currtime = int(((detdata->BINTABLEByteArray[byteindx]) << 24) | (detdata->BINTABLEByteArray[byteindx + 1] << 16) | (detdata->BINTABLEByteArray[byteindx + 2]) << 8 | detdata->BINTABLEByteArray[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
+
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
+						Nset++;
+
+					prevframe = currframe;
+					prevtime = currtime;
+				}
+
+				//have number of sets, now need number of centroids in each set
+				array<int>^ Ncentroids = gcnew array<int>(Nset);
+				array<int>^ Nskipped = gcnew array<int>(Nset);//skipped frame numbers...not even with 0's
+				int Ncent = 0;
+				Nset = 0;
+				prevframe = UInt16::MaxValue;
+				prevtime = UInt32::MaxValue;
+				for (int i = 0; i < detdata->Naxis2; i++)
+				{
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					unsigned __int16 currframe = int(((detdata->BINTABLEByteArray[byteindx]) << 8) | detdata->BINTABLEByteArray[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
+
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					unsigned __int32 currtime = int(((detdata->BINTABLEByteArray[byteindx]) << 24) | (detdata->BINTABLEByteArray[byteindx + 1] << 16) | (detdata->BINTABLEByteArray[byteindx + 2]) << 8 | detdata->BINTABLEByteArray[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
+
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
+						Nset++;
+
+					if (Math::Abs(double(currframe) - double(prevframe) > 2))
 					{
-						//frame count
-						byteindx = i * naxis1;
-						byteindx += 65;
-						bzero = 32768;
-						unsigned __int16 frame = int(((arr[byteindx]) << 8) | arr[byteindx + 1]) + (unsigned __int16)bzero;
+						prevframe = currframe;
+						prevtime = currtime;
+					}
 
-						//frame time
-						byteindx = i * naxis1;
-						byteindx += 67;
-						bzero = 2147483648;
-						bscale = 1;
-						unsigned __int32 time = int(((arr[byteindx]) << 24) | (arr[byteindx + 1] << 16) | (arr[byteindx + 2]) << 8 | arr[byteindx + 3]) + (unsigned __int32)bzero;
+					if (currframe - prevframe > 1)
+						Nskipped[Nset - 1] += currframe - prevframe - 1;
 
-						//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
-						byteindx = i * naxis1;
-						byteindx += 0;
-						bzero = 0;
-						array<unsigned char>^ dbl = gcnew array<unsigned char>(8);
-						dbl[7] = arr[byteindx];
-						dbl[6] = arr[byteindx + 1];
-						dbl[5] = arr[byteindx + 2];
-						dbl[4] = arr[byteindx + 3];
-						dbl[3] = arr[byteindx + 4];
-						dbl[2] = arr[byteindx + 5];
-						dbl[1] = arr[byteindx + 6];
-						dbl[0] = arr[byteindx + 7];
-						double temptime = BitConverter::ToDouble(dbl, 0);
-						if (temptime > lasttime_mjd_forfilter)
-							lasttime_mjd_forfilter = temptime;
-						if (temptime < firsttime_mjd_forfilter)
-							firsttime_mjd_forfilter = temptime;
+					prevframe = currframe;
+					prevtime = currtime;
 
-						if (prevframe != frame)//then it is a new image; also fires at very beginning.
+					//Centroid - TTYPE15 = 'Centroid'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 79;
+					int j = 0;
+					//bool checkwidth = false;
+				//scanwidth:;
+					//try
+					{
+						for (j; j < width / 6; j++)
 						{
-							if (prevframe > frame && prevframe != UInt16::MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
-							{
-								if (dofiltercorrection)
-								{
-									double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
-									int lbtcounter = 0;
-									//MessageBox::Show(firsttime_mjd_forfilter + "    " + lbt_times[0] + "    " + lbt_times[lbt_times->Length - 1]);
-									while (/*midtime*/ lbtcounter < lbt_times->Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
-										lbtcounter++;
-									if (lbtcounter == lbt_times->Length)
-										lbtcounter /= 2;//?????
-									double fwangle = lbt_VISfwangle[lbtcounter];
-									String^ filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
+							unsigned __int16 xword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 1]);
+							unsigned __int16 yword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 3]);
+							unsigned __int16 sword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 5]);
 
-									if (DO_TBC && filterindex == "F0" || DO_TBC && filterindex == "NA")
+							if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
+								/*continue;*/break;
+
+							Ncent++;//number of centroids, only incremented if there was more data for this row
+							Ncentroids[Nset - 1]++;
+						}
+					}
+					/*catch (...)
+					{
+						//checkwidth = true;
+						width -= 6;
+						goto scanwidth;
+					}*/
+					/*if (checkwidth)
+					{
+						//Ncent--;
+						//Ncentroids[Nset - 1]--;
+					}*/
+				}
+
+				array<double>^ BJDS;
+				array<unsigned __int16>^ frames;
+				array<unsigned __int32>^ times;
+				array<__int16, 2>^ ints;
+				array<__int16, 2>^ decs;
+				array<unsigned __int16, 2>^ mdMm;
+
+				Ncent = 0;
+				Nset = 0;
+				prevframe = UInt16::MaxValue;
+				prevtime = UInt32::MaxValue;
+				for (int i = 0; i <= detdata->Naxis2; i++)
+				{
+					if (i == detdata->Naxis2)
+					{
+						prevframe = UInt16::MaxValue;//will force the last set to be written
+						prevtime = UInt32::MaxValue;
+						goto lastset;
+					}
+
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					unsigned __int16 currframe = int(((detdata->BINTABLEByteArray[byteindx]) << 8) | detdata->BINTABLEByteArray[byteindx + 1]) + (unsigned __int16)bzero;//MUST DO IT THIS WAY
+
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					unsigned __int32 currtime = int(((detdata->BINTABLEByteArray[byteindx]) << 24) | (detdata->BINTABLEByteArray[byteindx + 1] << 16) | (detdata->BINTABLEByteArray[byteindx + 2]) << 8 | detdata->BINTABLEByteArray[byteindx + 3]) + (unsigned __int32)bzero;//MUST DO IT THIS WAY
+
+					//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
+					byteindx = i * detdata->Naxis1;
+					byteindx += 0;
+					bzero = 0;
+					array<unsigned char>^ dbl = gcnew array<unsigned char>(8);
+					dbl[7] = detdata->BINTABLEByteArray[byteindx];
+					dbl[6] = detdata->BINTABLEByteArray[byteindx + 1];
+					dbl[5] = detdata->BINTABLEByteArray[byteindx + 2];
+					dbl[4] = detdata->BINTABLEByteArray[byteindx + 3];
+					dbl[3] = detdata->BINTABLEByteArray[byteindx + 4];
+					dbl[2] = detdata->BINTABLEByteArray[byteindx + 5];
+					dbl[1] = detdata->BINTABLEByteArray[byteindx + 6];
+					dbl[0] = detdata->BINTABLEByteArray[byteindx + 7];
+					double temptime = BitConverter::ToDouble(dbl, 0);
+					if (temptime > lasttime_mjd_forfilter)
+						lasttime_mjd_forfilter = temptime;
+					if (temptime < firsttime_mjd_forfilter)
+						firsttime_mjd_forfilter = temptime;
+					//double JD = BitConverter::ToDouble(dbl, 0);
+					//the above time isn't exact.  Now use the JD_abs_time_delta_sec to get the BJD here
+
+					double JD;
+					if (tctfileexists)
+						JD = (double(currtime) / 1000 + JD_abs_time_delta_sec) / 86400;//this should be the local JD...it will get used below to get BJD
+					else
+						JD = 0;
+
+				lastset:
+
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math::Abs(double(currframe) - double(prevframe)) > 2))
+					{
+						if (Nset > 0 || i == detdata->Naxis2)//then the previous set data needs to be written
+						{
+							if (times != nullptr)
+								if (times->Length > /*0*/1000)//so that short corrupt files dont get written
+									if (discardtimebool && (times[times->Length - 1] - times[0]) > discardtimeint || !discardtimebool)
 									{
-										lbtcounter = 0;
-										firsttime_mjd_forfilter -= 524;
-										while (lbtcounter < lbt_times->Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])
-											lbtcounter++;
-										if (lbtcounter == lbt_times->Length)
-											lbtcounter /= 2;//?????
-										fwangle = lbt_VISfwangle[lbtcounter];
-										filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
-									}
+										//do filter correction........do this first for the next below
+										if (dofiltercorrection)
+										{
+											double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
+											int lbtcounter = 0;
+											while (/*midtime*/ firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
+												lbtcounter++;
+											double fwangle;
+											if (detector == "FUV")
+												fwangle = lbt_FUVfwangle[lbtcounter];
+											if (detector == "NUV")
+												fwangle = lbt_NUVfwangle[lbtcounter];
+											String^ filterindex = UVITFilter_FWAngle_to_Index(source->Header->GetKeyValue("DETECTOR"), fwangle);
 
-									String^ filter = source->Header->GetKeyValue("FILTER");
-									if (filterindex != filter)
-										source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
-									String^ filtertype = UVITFilter(source->Header->GetKeyValue("DETECTOR"), filterindex);
-									source->Header->SetKey("FILTERID", filtertype, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
-									lasttime_mjd_forfilter = Double::MinValue;
-									firsttime_mjd_forfilter = Double::MaxValue;
+											String^ filter = source->Header->GetKeyValue("FILTER");
+											if (filterindex != filter)
+											{
+												filter = filterindex;
+												source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
+											}
+											filterID = UVITFilter(detector, filterindex);
+											source->Header->SetKey("FILTERID", filterID, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
+											lasttime_mjd_forfilter = Double::MinValue;
+											firsttime_mjd_forfilter = Double::MaxValue;
+										}
+
+										dir = path + "\\" + detector + "\\" + detector + "_" + filterID + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
+										#pragma omp critical
+										{
+											::Directory::CreateDirectory(dir);
+										}
+										String^ obj_orb_chan;
+										obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
+										#pragma omp critical
+										{
+											dir_list->Add(dir);
+											e->Result = dir_list;
+										}
+
+										String^ BJDfile = obj_orb_chan + "_BJDList.fits";
+										if (tctfileexists)//else all 0's
+											BJDS = BJDC(BJDS, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
+
+										if (detector == "NUV" && L1TransformNUVtoFUVChck->Checked)
+											source->Header->SetKey("NUVTOFUV", "true", true, -1);
+										source->Header->SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
+										source->Header->SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
+										source->Header->SetKey("NCENTROD", times->Length.ToString(), "Number of Centroids", true, 14);
+										source->Header->SetKey("PARTREDC", Math::Round(double(N_p_errors) / double(times->Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
+										source->Header->SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
+										source->Header->RemoveKey("NFRAMES");
+										source->Header->SetKey("NFRAMES", (frames[frames->Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
+										source->Header->SetKey("FRAMREDC", Math::Round(double(Nskipped[Nset - 1]) / double(frames[frames->Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
+										N_p_errors = 0;//reset for new set
+										JPFITS::FITSImage^ f = gcnew FITSImage(BJDfile, BJDS, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::Double, false);
+
+										String^ framefile = obj_orb_chan + "_FrameList.fits";
+										f = gcnew FITSImage(framefile, frames, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::UInt16, false);
+
+										String^ timefile = obj_orb_chan + "_TimeList.fits";
+										f = gcnew FITSImage(timefile, times, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::UInt32, false);
+
+										String^ flatid;
+										FITSImage^ flat;
+										String^ channel = f->Header->GetKeyValue("CHANNEL");
+										if (channel->Length == 0)
+											channel = detector;
+										if (channel == "FUV")
+										{
+											//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUV Normalized Flat.fits";
+
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUVALL_flat_final_sens.fits";
+										}
+										if (channel == "NUV")
+										{
+											//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\NUV Normalized Flat.fits";
+
+											String^ filterid = source->Header->GetKeyValue("FILTERID");
+											if (filterid->Contains("Silica"))
+												flatid = "N242W_flat_final_sens.fits";
+											if (filterid == "NUVB15")
+												flatid = "N219M_flat_final_sens.fits";
+											if (filterid == "NUVB13")
+												flatid = "N245M_flat_final_sens.fits";
+											if (filterid == "NUVB4")
+												flatid = "N263M_flat_final_sens.fits";
+											if (filterid == "NUVN2")
+												flatid = "N279N_flat_final_sens.fits";
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\" + flatid;
+										}
+										if (channel == "VIS")
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\VIS Normalized Flat.fits";
+										if (!File::Exists(flatid))
+										{
+											::MessageBox::Show("Couldn't find the flat file: '" + flatid + "' in the CalDB...stopping.", "Error");
+											WAITBAR->CancelBtn->PerformClick();
+											continue;
+										}
+										#pragma omp critical
+										{
+											flat = gcnew FITSImage(flatid, nullptr, false, true, false, false);
+										}
+
+										array<double>^ flats = gcnew array<double>(Ncentroids[Nset - 1]);
+										int j = 0;
+										//try
+										{
+											//#pragma omp parallel for
+											for (j = 0; j < Ncentroids[Nset - 1]; j++)
+											{
+												int xpos = int(ints[0, j] / 32);
+												int ypos = int(ints[1, j] / 32);
+												if (xpos < 0 || xpos > 511 || ypos < 0 || ypos > 511)
+													flats[j] = 1;
+												else
+													flats[j] = flat[xpos, ypos];
+											}
+
+											//do NUV to FUV here, after the flat is created...simple!
+											if (channel == "NUV" && L1TransformNUVtoFUVChck->Checked)
+											{
+												::Random^ r = gcnew Random();
+												double x, y, xp, yp, center = 255 * 32;
+												int intsx, fracx, intsy, fracy;
+												array<double>^ Pnuvtofuv = gcnew array<double>(4) { 0.84898, 0.53007, 0.53007, -0.84898 };//from Shyam Feb 2017
+												for (j = 0; j < Ncentroids[Nset - 1]; j++)
+												{
+													x = double(ints[0, j] + decs[0, j] + 16) + r->NextDouble();
+													y = double(ints[1, j] + decs[1, j] + 16) + r->NextDouble();
+
+													xp = (x - center) * Pnuvtofuv[0] + (y - center) * Pnuvtofuv[1] + center;
+													yp = (x - center) * Pnuvtofuv[2] + (y - center) * Pnuvtofuv[3] + center;
+
+													//now need to split out integer and decimal parts back into their own lists...
+													intsx = Math::DivRem(int((xp)), 32, fracx) * 32;
+													fracx -= 16;//reset frac to be from -16
+													intsy = Math::DivRem(int((yp)), 32, fracy) * 32;
+													fracy -= 16;//reset frac to be from -16
+													ints[0, j] = intsx;
+													ints[1, j] = intsy;
+													decs[0, j] = fracx;
+													decs[1, j] = fracy;
+												}
+											}
+										}
+										/*catch (...)
+										{
+											::MessageBox::Show("xint: " + (int(ints[0, j] / 32)).ToString() + ";	yint: " + (int(ints[1, j] / 32)).ToString() + ";	j: " + j.ToString() + ";	lengthj: " + flats->Length.ToString());
+										}*/
+										String^ flatfile = obj_orb_chan + "_FlatList.fits";
+										FITSImage^ fitsflatlist = gcnew FITSImage(flatfile, flats, false, false);
+										fitsflatlist->Header->CopyHeaderFrom(source->Header);
+										fitsflatlist->WriteImage(::TypeCode::Double, false);
+
+										String^ intsfile = obj_orb_chan + "_XYInts_List.fits";
+										if (ApplyFPN)
+											intsfile = intsfile->Insert(intsfile->LastIndexOf("."), "_deFPN");
+										if (ApplyDIST)
+											intsfile = intsfile->Insert(intsfile->LastIndexOf("."), "_deDIST");
+										f = gcnew FITSImage(intsfile, ints, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::Int16, false);
+
+										String^ fracfile = obj_orb_chan + "_XYFrac_List.fits";
+										if (ApplyFPN)
+											fracfile = fracfile->Insert(fracfile->LastIndexOf("."), "_deFPN");
+										if (ApplyDIST)
+											fracfile = fracfile->Insert(fracfile->LastIndexOf("."), "_deDIST");
+										f = gcnew FITSImage(fracfile, decs, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::Int16, false);
+
+										String^ mdMmfile = obj_orb_chan + "_XYmdMm_List.fits";
+										f = gcnew FITSImage(mdMmfile, mdMm, false, false);
+										f->Header->CopyHeaderFrom(source->Header);
+										f->WriteImage(::TypeCode::Int16, false);
+									}
+						}
+
+						if (i == detdata->Naxis2)
+							goto lastset2;//last set was written so now go end
+
+						//reset everything for new centroids list
+						Nset++;
+						Ncent = 0;
+						BJDS = gcnew array<double>(Ncentroids[Nset - 1]);
+						frames = gcnew array<unsigned __int16>(Ncentroids[Nset - 1]);
+						times = gcnew array<unsigned __int32>(Ncentroids[Nset - 1]);
+						ints = gcnew array<__int16, 2>(2, Ncentroids[Nset - 1]);
+						decs = gcnew array<__int16, 2>(2, Ncentroids[Nset - 1]);
+						mdMm = gcnew array<unsigned __int16, 2>(2, Ncentroids[Nset - 1]);
+					}
+					prevframe = currframe;
+					prevtime = currtime;
+
+					//Centroid - TTYPE15 = 'Centroid'
+					byteindx = i * detdata->Naxis1;
+					byteindx += 79;
+					for (int j = 0; j < width / 6; j++)
+					{
+						unsigned __int16 xword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 1]);
+						unsigned __int16 yword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 3]);
+						unsigned __int16 sword = unsigned __int16((detdata->BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata->BINTABLEByteArray[byteindx + j * 6 + 5]);
+
+						if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
+							/*continue;*/break;
+
+						if (discardparityerror)
+						{
+							xword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(xword);
+							yword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(yword);
+							sword_parity_error = CCDLAB::GSEExtractImg::Check_Even_Parity_Flag(sword);
+						}
+
+						bool p_error = false;
+						if (xword_parity_error || yword_parity_error/* || sword_parity_error*/)//lets not worry about a parity error only on the sword because this doesn't affect the centroid photometry position itself, and it can still be used.  If it is a parity error on the x or y, then it does need to be accounted for.
+						{
+							p_error = true;
+							N_p_errors++;
+						}
+
+						unsigned __int16 ixpos, iypos, mc, dMm;
+						__int16	fxpos, fypos;
+
+						if (!p_error)
+						{
+							//x
+							ixpos = ((xword) >> 7) * 32;
+							fxpos = ((xword & 0x7F) >> 1);
+							if (fxpos >= 32)
+								fxpos = fxpos - 64;
+
+							//y
+							iypos = ((yword) >> 7) * 32;
+							fypos = ((yword & 0x7F) >> 1);
+							if (fypos >= 32)
+								fypos = fypos - 64;
+
+							//corner
+							mc = ((sword & 0x1FF) >> 1) * 16;
+							dMm = (sword >> 9) * 16;
+
+							if (ApplyFPN)
+							{
+								if (fxpos < -16)//X
+								{
+									ixpos -= 32;//adjust integer
+									fxpos += 32;//adjust fractional
+								}
+								if (fypos < -16)//Y
+								{
+									iypos -= 32;//adjust integer
+									fypos += 32;//adjust fractional
+								}
+								if (fxpos > 15)//X
+								{
+									ixpos += 32;//adjust integer
+									fxpos -= 32;//adjust fractional
+								}
+								if (fypos > 15)//Y
+								{
+									iypos += 32;//adjust integer
+									fypos -= 32;//adjust fractional
 								}
 
-								set++;//used in file name of image
-								if (source->Header->GetKeyValue("DETECTOR") == "VIS")
-									dir = path + "\\" + "VIS" + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
+								fxpos += 16;
+								fypos += 16;
+
+								double fx = double(fxpos);
+								double fy = double(fypos);
+
+								fx += rand->NextDouble();
+								fy += rand->NextDouble();
+
+								fx *= FPNFits[1, int(fx * 4096 / 32)];
+								fy *= FPNFits[2, int(fy * 4096 / 32)];
+
+								fxpos = (__int16)fx;
+								fypos = (__int16)fy;
+
+								fxpos -= 16;//x
+								fypos -= 16;//y
+							}
+
+							int xcorr, ycorr;
+							if (ApplyDIST)
+							{
+								if (ixpos > 0 && iypos > 0 && ixpos / 32 <= 511 && iypos / 32 <= 511)
+								{
+									if (interpDISTBiLin)
+									{
+										double x = (double(ixpos) + double(fxpos) + 16) / 32;
+										double y = (double(iypos) + double(fypos) + 16) / 32;
+										xcorr = int(32 * JPMath::InterpolateBiLinear(CPUXDistFits->Image, 512, 512, x, y));
+										ycorr = int(32 * JPMath::InterpolateBiLinear(CPUYDistFits->Image, 512, 512, x, y));
+									}
+									else
+									{
+										xcorr = int(32 * CPUXDistFits[ixpos / 32, iypos / 32]);
+										ycorr = int(32 * CPUYDistFits[ixpos / 32, iypos / 32]);
+									}
+
+									ixpos -= xcorr;
+									iypos -= ycorr;
+								}
 								else
-									dir = path + "\\" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000");
-								::Directory::CreateDirectory(dir);
+									p_error = true;//treat this as p_error...it is an odd scenario but now seen to happen with Ashok Pati's data.							
 							}
-							pixnum = 0;//force restart
-							prevframe = frame;
 						}
 
-						try
+						BJDS[Ncent] = JD;
+						frames[Ncent] = currframe;
+						times[Ncent] = currtime;
+
+						if (p_error)
 						{
-							//Pixel
-							byteindx = i * naxis1;
-							byteindx += 79;
-							bzero = 32768;
-							for (int j = 0; j < width; j++)
-							{
-								if (pixnum >= imsize)//image is done
-								{
-									if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-										return;
-									intprog++;
-									DigestL1Wrkr->ReportProgress(100 * intprog / Nimages, mode + "_" + (xi + 1).ToString() + "_" + argfiles->Length);
-
-									pixnum = 0;//reset pixel index
-
-									#pragma omp parallel for
-									for (int jj = 0; jj < ysize + 1; jj++)
-										for (int ii = 0; ii < xsize + 1; ii++)
-											d2im[ii, jj] = (double)(d1im[jj*(xsize + 1) + ii]);
-
-									String^ obj_orb_chan;
-									obj_orb_chan = dir + "\\" + (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "") + "_" + source->Header->GetKeyValue("DETECTOR") + "_" + UVITFilter(source->Header->GetKeyValue("DETECTOR"), source->Header->GetKeyValue("FILTER")) + "_" + source->Header->GetKeyValue("ORB_NUM") + "_" + (time).ToString("0000000000000") + ".fits";
-									if (degrade)
-										d2im = JPMath::DeGradient(d2im, 0, true);
-									FITSImage^ fits = gcnew FITSImage(obj_orb_chan, d2im, false, true);
-									//source->Header->SetKey("SRCFILE", "File Name", source->FileName->Substring(6), true, 12);
-									//source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
-									fits->Header->CopyHeaderFrom(source->Header);// CopyHeader(source);
-									fits->Header->AddKey("FRMTIME", (double(time) / 1000).ToString(), "EU Frame Time (s)", 18);
-									fits->Header->AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
-									fits->Header->AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
-									array<double>^ JD = gcnew array<double>(1) { (double(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
-									JD = BJDC(JD, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
-									fits->Header->AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
-									if (frame > 16)//skip writing first image so that noise images don't come in
-									{
-										if (L1CleanINTMode->Checked)
-											CLEAN_UVITVISIMG(fits, cleanthreshold, cleanN);
-
-										SPAREFITSImageSet->Add(fits);
-									}
-									d2im = gcnew array<double, 2>(xsize + 1, ysize + 1);
-									d1im = gcnew array<unsigned __int16>(imsize);
-									break;
-								}
-
-								d1im[pixnum] = ((arr[byteindx + j * 2] << 8) | arr[byteindx + j * 2 + 1]) + 32768;
-								pixnum++;
-							}
+							//::MessageBox::Show("p_error");
+							ints[0, Ncent] = 0;//these will be seen in a final image as drifting around at the top left corner
+							ints[1, Ncent] = 0;
+							decs[0, Ncent] = 0;
+							decs[1, Ncent] = 0;
+							mdMm[0, Ncent] = 0;
+							mdMm[1, Ncent] = 0;
 						}
-						catch (...) { /*MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);*/ }
+						else
+						{
+							ints[0, Ncent] = ixpos;
+							ints[1, Ncent] = iypos;
+							decs[0, Ncent] = fxpos;
+							decs[1, Ncent] = fypos;
+							mdMm[0, Ncent] = mc;
+							mdMm[1, Ncent] = dMm;
+						}
+						Ncent++;//number of centroids, only incremented if there was more data for this row
 					}
 				}
-				catch (Exception^ e)
-				{
-					MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-				}
-				
-				WAITBAR->Tag = path + "\\" + "VIS";//need to sneak in the VIS directory for when no PC files were digested
+			lastset2:;
+			}
+			/*catch (Exception^ e)
+			{
+				MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite + "\n\r + \n\r" + "File: " + argfiles[errorfileindex]);
+			}*/
 
-				if (SPAREFITSImageSet->Count > 0)
-				{
-					SPAREFITSImageSet->Write(::TypeCode::Int32, true, true, "");
-					SPAREFITSImageSet->Clear();
-					SPAREFITSImageSet = gcnew FITSImageSet();
-				}
-			}//end if IM mode
+			#pragma omp critical
+			{
+				wbcounter++;
+				DigestL1Wrkr->ReportProgress(wbcounter/*xi + 1*/, /*mode*/"PC" + "_" + argfiles->Length);
+			}
 
-			skipto:;
+			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+				break;// continue;
 
 			if (!L1DigestDeleteFileChck->Checked)
-			{
-				if (!::Directory::Exists(source->FilePath + "Digested L1\\"))
-					::Directory::CreateDirectory(source->FilePath + "Digested L1\\");
 				::File::Move(source->FullFileName, source->FilePath + "Digested L1\\" + source->FileName);
+			else
+				File::Delete(source->FullFileName);
+		}//end PC mode
+
+
+
+
+
+		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+			return;
+
+
+
+
+
+		bool degrade = L1DegradientINTMode->Checked;
+		double cleanthreshold = Convert::ToDouble(L1CleanINTLineThreshold->Text);
+		int cleanN = Convert::ToInt32(L1CleanINTNPix->Text);
+		for (int xi = 0; xi < imfiles->Count; xi++)
+		{
+			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+				break;
+
+			errorfileindex = xi;
+			String^ FileName = (String^)imfiles[xi];
+			String^ dir = FileName->Substring(0, FileName->LastIndexOf("\\"));
+			String^ path = dir;
+			FITSImage^ source = gcnew FITSImage(FileName, nullptr, true, false, false, false);
+			source->Header->AddCommentKeyLine("SRCFILE " + source->FileName, 12);
+			String^ detector = source->Header->GetKeyValue("DETECTOR");
+			String^ filter = source->Header->GetKeyValue("FILTER");
+			String^ filterindex = UVITFilter(detector, filter);
+			source->Header->SetKey("FILTERID", filterindex, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);	
+			String^ orbnum = source->Header->GetKeyValue("ORB_NUM");
+			String^ sourceID;
+			if (!L1SpecifySourceNameChck->Checked)
+			{
+				sourceID = (source->Header->GetKeyValue("SOURCEID")->Replace(" ", ""))->Replace("/", "");
+				if (sourceID->Length > 17)
+					sourceID = sourceID->Substring(0, 17);
 			}
+			else
+				sourceID = L1SourceNameTxt->Text;
+
+			FITSBinTable^ detdata;
+			int width = 0;
+			if (!L1SkipINTMode->Checked)
+			{
+				detdata = gcnew JPFITS::FITSBinTable(source->FullFileName, "DETECTOR_DATA");
+				for (int h = 0; h < detdata->Header->Length; h++)
+					if (detdata->Header[h]->Substring(0, 7) == "TFORM15")
+					{
+						String^ tform15 = detdata->Header[h]->Substring(11, 6);
+						tform15 = tform15->Replace("B", "");//PC mode
+						tform15 = tform15->Replace("I", "");//IM mode
+						width = ::Convert::ToInt32(tform15);
+						break;
+					}
+			}
+
+			if (!L1DigestDeleteFileChck->Checked)
+				::File::Move(source->FullFileName, source->FilePath + "Digested L1\\" + source->FileName);
 			else
 				File::Delete(source->FullFileName);
 
-		}
+			if (L1SkipINTMode->Checked)
+				continue;			
+
+			int xsize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_X_SZ"));//zero-based
+			int ysize  = ::Convert::ToInt32(source->Header->GetKeyValue("WIN_Y_SZ"));//zero-based
+			int imsize = (xsize + 1) * (ysize + 1);
+			array<double, 2>^ d2im = gcnew array<double, 2>(xsize + 1, ysize + 1);
+			array<unsigned __int16>^ d1im = gcnew array<unsigned __int16>(imsize);//just 1-D is fine cause we're just gonna write it
+			int pixnum = 0;
+			int intprog = 0;
+			int Nimages = width * detdata->Naxis2 / imsize;
+			unsigned __int16 prevframe = UInt16::MaxValue - 1;
+			//int set = 0;				
+
+			lasttime_mjd_forfilter = Double::MinValue;
+			firsttime_mjd_forfilter = Double::MaxValue;
+
+			if (DO_TBC)
+			{
+				#pragma omp critical
+				TBC(detdata->BINTABLEByteArray, detdata->Naxis1, detdata->Naxis2);
+			}
+
+
+			
+
+
+
+
+
+
+
+
+			//ArrayList^ framelist = gcnew ArrayList();
+			//ArrayList^ dirlist = gcnew ArrayList();
+			//int nfrm = 0;
+			//for (int i = 0; i < detdata->Naxis2; i++)
+			//{
+			//	int byteindx;
+			//	double bzero;
+			//	double bscale;
+
+			//	//frame count
+			//	byteindx = i * detdata->Naxis1;
+			//	byteindx += 65;
+			//	bzero = 32768;
+			//	unsigned __int16 frame = int(((detdata->BINTABLEByteArray[byteindx]) << 8) | detdata->BINTABLEByteArray[byteindx + 1]) + (unsigned __int16)bzero;
+
+			//	//frame time
+			//	byteindx = i * detdata->Naxis1;
+			//	byteindx += 67;
+			//	bzero = 2147483648;
+			//	bscale = 1;
+			//	unsigned __int32 time = int(((detdata->BINTABLEByteArray[byteindx]) << 24) | (detdata->BINTABLEByteArray[byteindx + 1] << 16) | (detdata->BINTABLEByteArray[byteindx + 2]) << 8 | detdata->BINTABLEByteArray[byteindx + 3]) + (unsigned __int32)bzero;
+
+			//	if (prevframe != frame)//then it is a new image; also fires at very beginning.
+			//	{					
+			//		if (prevframe > frame && prevframe != UInt16::MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
+			//		{
+			//			dir = path + "\\" + detector + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000");
+			//			::Directory::CreateDirectory(dir);
+			//		}
+			//		prevframe = frame;
+			//		framelist->Add(frame);
+			//		dirlist->Add(dir);
+			//		nfrm++;
+			//	}
+			//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//try
+			{
+				for (int i = 0; i < detdata->Naxis2; i++)
+				{
+					int byteindx;
+					double bzero;
+					double bscale;
+
+					//frame count
+					byteindx = i * detdata->Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					unsigned __int16 frame = int(((detdata->BINTABLEByteArray[byteindx]) << 8) | detdata->BINTABLEByteArray[byteindx + 1]) + (unsigned __int16)bzero;
+
+					//frame time
+					byteindx = i * detdata->Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					bscale = 1;
+					unsigned __int32 time = int(((detdata->BINTABLEByteArray[byteindx]) << 24) | (detdata->BINTABLEByteArray[byteindx + 1] << 16) | (detdata->BINTABLEByteArray[byteindx + 2]) << 8 | detdata->BINTABLEByteArray[byteindx + 3]) + (unsigned __int32)bzero;
+
+					//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
+					byteindx = i * detdata->Naxis1;
+					byteindx += 0;
+					bzero = 0;
+					array<unsigned char>^ dbl = gcnew array<unsigned char>(8);
+					dbl[7] = detdata->BINTABLEByteArray[byteindx];
+					dbl[6] = detdata->BINTABLEByteArray[byteindx + 1];
+					dbl[5] = detdata->BINTABLEByteArray[byteindx + 2];
+					dbl[4] = detdata->BINTABLEByteArray[byteindx + 3];
+					dbl[3] = detdata->BINTABLEByteArray[byteindx + 4];
+					dbl[2] = detdata->BINTABLEByteArray[byteindx + 5];
+					dbl[1] = detdata->BINTABLEByteArray[byteindx + 6];
+					dbl[0] = detdata->BINTABLEByteArray[byteindx + 7];
+					double temptime = BitConverter::ToDouble(dbl, 0);
+					if (temptime > lasttime_mjd_forfilter)
+						lasttime_mjd_forfilter = temptime;
+					if (temptime < firsttime_mjd_forfilter)
+						firsttime_mjd_forfilter = temptime;
+
+					if (prevframe != frame)//then it is a new image; also fires at very beginning.
+					{
+						if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+							break;
+
+						if (prevframe > frame && prevframe != UInt16::MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
+						{
+							if (dofiltercorrection)
+							{
+								double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
+								int lbtcounter = 0;
+								//MessageBox::Show(firsttime_mjd_forfilter + "    " + lbt_times[0] + "    " + lbt_times[lbt_times->Length - 1]);
+								while (/*midtime*/ lbtcounter < lbt_times->Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
+									lbtcounter++;
+								if (lbtcounter == lbt_times->Length)
+									lbtcounter /= 2;//?????
+								double fwangle = lbt_VISfwangle[lbtcounter];
+								String^ filterindex = UVITFilter_FWAngle_to_Index(detector, fwangle);
+
+								if (DO_TBC && filterindex == "F0" || DO_TBC && filterindex == "NA")
+								{
+									lbtcounter = 0;
+									firsttime_mjd_forfilter -= 524;
+									while (lbtcounter < lbt_times->Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])
+										lbtcounter++;
+									if (lbtcounter == lbt_times->Length)
+										lbtcounter /= 2;//?????
+									fwangle = lbt_VISfwangle[lbtcounter];
+									filterindex = UVITFilter_FWAngle_to_Index(detector, fwangle);
+								}
+
+								if (filterindex != filter)
+									source->Header->SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
+								String^ filtertype = UVITFilter(detector, filterindex);
+								source->Header->SetKey("FILTERID", filtertype, "Filter type", true, source->Header->GetKeyIndex("FILTER", false) + 1);
+								lasttime_mjd_forfilter = Double::MinValue;
+								firsttime_mjd_forfilter = Double::MaxValue;
+							}
+
+							//set++;//used in file name of image
+							dir = path + "\\" + detector + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000");
+							::Directory::CreateDirectory(dir);
+						}
+						pixnum = 0;//force restart
+						prevframe = frame;
+					}
+
+					try
+					{
+						//Pixel
+						byteindx = i * detdata->Naxis1;
+						byteindx += 79;
+						bzero = 32768;
+						for (int j = 0; j < width; j++)
+						{
+							if (pixnum >= imsize)//image is done
+							{
+								if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+									break;
+
+								intprog++;
+								DigestL1Wrkr->ReportProgress(100 * intprog / Nimages, "IM" + "_" + (xi + 1 + pcfiles->Count).ToString() + "_" + (pcfiles->Count + imfiles->Count));
+
+								pixnum = 0;//reset pixel index
+
+								for (int jj = 0; jj < ysize + 1; jj++)
+									for (int ii = 0; ii < xsize + 1; ii++)
+										d2im[ii, jj] = (double)(d1im[jj*(xsize + 1) + ii]);
+
+								String^ obj_orb_chan;
+								obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000") + ".fits";
+								if (degrade)
+									d2im = JPMath::DeGradient(d2im, 0, true);
+								FITSImage^ fits = gcnew FITSImage(obj_orb_chan, d2im, false, true);
+								fits->Header->CopyHeaderFrom(source->Header);
+								fits->Header->AddKey("FRMTIME", (double(time) / 1000).ToString(), "EU Frame Time (s)", 18);
+								fits->Header->AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
+								//fits->Header->AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
+								array<double>^ JD = gcnew array<double>(1) { (double(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
+								JD = BJDC(JD, Convert::ToDouble(source->Header->GetKeyValue("RA_PNT")), Convert::ToDouble(source->Header->GetKeyValue("DEC_PNT")), false);
+								fits->Header->AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
+								if (frame > 16)//skip writing first image so that noise images don't come in
+								{
+									if (L1CleanINTMode->Checked)
+										CLEAN_UVITVISIMG(fits, cleanthreshold, cleanN, true);
+
+									if (do_parallel_L1)
+										SPAREFITSImageSet->Add(fits);
+									else
+										fits->WriteImage(::TypeCode::Int32, false);
+									
+								}
+								d2im = gcnew array<double, 2>(xsize + 1, ysize + 1);
+								d1im = gcnew array<unsigned __int16>(imsize);
+								break;
+							}
+
+							d1im[pixnum] = ((detdata->BINTABLEByteArray[byteindx + j * 2] << 8) | detdata->BINTABLEByteArray[byteindx + j * 2 + 1]) + 32768;
+							pixnum++;
+						}
+					}
+					catch (...) { /*MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);*/ }
+				}
+			}
+			/*catch (Exception^ e)
+			{
+				MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
+			}*/
+				
+			WAITBAR->Tag = path + "\\" + "VIS";//need to sneak in the VIS directory for when no PC files were digested
+
+			if (do_parallel_L1 && SPAREFITSImageSet->Count > 0 && WAITBAR->DialogResult != ::DialogResult::Cancel)
+			{
+				SPAREFITSImageSet->Write(::TypeCode::Int32, true, true, "Saving Orbit VIS Images to Disk");
+				SPAREFITSImageSet->Clear();
+				SPAREFITSImageSet = gcnew FITSImageSet();
+			}
+		}//end IM mode
 	}
-	catch (Exception^ e)
+	/*catch (Exception^ e)
 	{
 		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite + "\n\r" + "File: " + argfiles[errorfileindex]);
-	}
+	}*/
 }
 
 void Form1::DigestL1Wrkr_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
@@ -4676,7 +4721,7 @@ void Form1::DiscardL1DuplicateWrkr_RunWorkerCompleted(System::Object^  sender, S
 		FileListDrop->Items->Clear();
 		IMAGESET->Clear();
 		array<String^>^ filelist = gcnew array<String^>(1) { median->FullFileName };
-		AddToImageSet(filelist);
+		AddToImageSet(filelist, true);
 		Form1::Enabled = true;
 		Form1::BringToFront();
 
@@ -4688,7 +4733,7 @@ void Form1::DiscardL1DuplicateWrkr_RunWorkerCompleted(System::Object^  sender, S
 		MainTab->SelectTab("BatchTab");
 		BatchOperationTab->SelectTab("BatchIndividualTab");
 		BatchScanDirectoryBtn->PerformClick();
-		BatchFileParallelChck->Checked = true;
+		BatchFileParallelChck->Checked = L1MachineExtremeChck->Checked;
 		UVITBATCHMESG = "Subtracting Median from " + BATCHLIST->Length + " VIS Images...";
 		FILESAVEPREC = TypeCode::Int32;
 		BatchComputeBtn_Click(sender, e);
@@ -5074,7 +5119,7 @@ void Form1::ParcelUVCentroidWrkr_RunWorkerCompleted(System::Object^  sender, Sys
 
 	FileListDrop->Items->Clear();
 	IMAGESET->Clear();
-	AddToImageSet(filelist);
+	AddToImageSet(filelist, true);
 	Form1::Enabled = true;
 	Form1::BringToFront();
 }
@@ -5230,7 +5275,7 @@ void Form1::DriftFromPCPSTrackBtn_Click(System::Object^ sender, System::EventArg
 		}
 
 		if (PointSrcROIAutoRunChck->Checked)
-			if (HalfWidthXUpD->Value >= 15 || HalfWidthYUpD->Value >= 15)
+			if (HalfWidthXUpD->Value > 9 || HalfWidthYUpD->Value > 9)
 			{
 				HalfWidthXUpD->Value = 9;
 				HalfWidthYUpD->Value = 9;
@@ -5598,7 +5643,7 @@ void Form1::DriftFromPCPSTrackBGWrkr_DoWork(System::Object^ sender, System::Comp
 	FITSImage^ driftfits = gcnew FITSImage(driftslistfile, drift, false, true);
 	driftfits->Header->CopyHeaderFrom(IntsFits->Header);// CopyHeader(IntsFits);
 	driftfits->Header->AddKey("PSDSTAKT", PointSrcROIStackDriftDrop->SelectedItem->ToString(), "Point Source Drift Stack Time", 14);
-	driftfits->WriteImage(::TypeCode::Double, true);
+	driftfits->WriteImage(::TypeCode::Double, false);
 	UVPLOTDRIFTFILENAME = driftslistfile;
 	UVAPPLYDRIFTCENTROIDSFILENAME = intsname;
 }
@@ -6234,7 +6279,7 @@ void Form1::ApplyDriftListMentuItem_Click(System::Object^  sender, System::Event
 
 void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
-	try
+	//try
 	{
 		if (UVAPPLYDRIFTNOW)
 			UVAPPLYDRIFTNOW = false;
@@ -6741,10 +6786,10 @@ void Form1::ApplyDriftListWrkr_DoWork(System::Object^  sender, System::Component
 			ApplyDriftListWrkr->ReportProgress(3);
 		}
 	}
-	catch (Exception^ e)
+	/*catch (Exception^ e)
 	{
 		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-	}
+	}*/
 }
 
 void Form1::ApplyDriftListWrkr_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
@@ -7097,7 +7142,7 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 			FileListDrop->Items->Clear();
 			IMAGESET->Clear();
 			array<String^>^ ref = gcnew array<String^>(1){UVITMANREGFILELIST[0]};
-			AddToImageSet(ref);
+			AddToImageSet(ref, false);
 			MainTab->SelectedIndex = 0;
 			ImageBatchRedxnPnl->Enabled = true;
 			ContrastWideRad->PerformClick();
@@ -7108,12 +7153,12 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 			array<bool, 2>^ ROI = gcnew array<bool, 2>(512, 512);
 			for (int x = 0; x < 512; x++)
 				for (int y = 0; y < 512; y++)
-					if ((x - 255) * (x - 255) + (y - 255) * (y - 255) < 225 * 225)
+					if ((x - 255) * (x - 255) + (y - 255) * (y - 255) < 240 * 240)
 						ROI[x, y] = true;
 			PSES = gcnew array<JPFITS::SourceExtractor^>(1) {gcnew JPFITS::SourceExtractor() };
 			PSESINDEX = 0;
 			PSESRECTS = gcnew array<array<Rectangle>^>(1);
-			PSES[PSESINDEX]->Extract_Sources(IMAGESET[0]->Image, 0, 150, 25000, 200, Double::MaxValue, false, 2, 10, PSEAutoBackgroundChck->Checked, "", ROI, false);
+			PSES[PSESINDEX]->Extract_Sources(IMAGESET[0]->Image, 0, 150, 65000, 175, Double::MaxValue, false, 2, 10, true, "", ROI, false);
 			if (PSES[PSESINDEX]->N_Sources > 35)
 				PSES[PSESINDEX]->ClipToNBrightest(35);
 			if (PSES[PSESINDEX]->N_Sources > 0)
@@ -7188,7 +7233,7 @@ void Form1::CreateDriftFromINTMenuItem_Click(System::Object^  sender, System::Ev
 
 void Form1::DriftFromINTWrkr_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
-	try
+	//try
 	{
 		array<Object^>^ arg = (array<Object^>^)e->Argument;
 		array<String^>^ filelist = (array<String^>^)arg[0];
@@ -7363,10 +7408,10 @@ void Form1::DriftFromINTWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		driftfits->WriteImage(::TypeCode::Double, true);
 		UVPLOTDRIFTFILENAME = driftslistfile;
 	}
-	catch (Exception^ e)
+	/*catch (Exception^ e)
 	{
 		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-	}
+	}*/
 }
 
 void Form1::DriftFromINTWrkr_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
@@ -7869,7 +7914,7 @@ void Form1::RotationUVCentroidWrkr_DoWork(System::Object^  sender, System::Compo
 	#pragma omp parallel for
 	for (int wrkri = 0; wrkri < IntsFiles->Length; wrkri++)
 	{
-		try
+		//try
 		{
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				break;
@@ -7957,8 +8002,8 @@ void Form1::RotationUVCentroidWrkr_DoWork(System::Object^  sender, System::Compo
 
 				if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
 				{
-					WCS_DEROT->CopyTo(IntsFits);
-					WCS_DEROT->CopyTo(FracFits);
+					WCS_DEROT->CopyTo(IntsFits->Header);
+					WCS_DEROT->CopyTo(FracFits->Header);
 
 					//rotate and shift the exposure array image so that it matches the WCS derotated aspect
 					String^ dedrift = "_deDrift";
@@ -8019,10 +8064,10 @@ void Form1::RotationUVCentroidWrkr_DoWork(System::Object^  sender, System::Compo
 
 			UVCONVERTLISTTOIMAGEBATCHFILES[wrkri] = IntsFile;
 		}
-		catch (Exception^ e)
+		/*catch (Exception^ e)
 		{
 			MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-		}
+		}*/
 	}
 }
 
@@ -8096,7 +8141,7 @@ void Form1::DeRotateViaWCS_Click(System::Object^  sender, System::EventArgs^  e)
 	UserYShiftTxt->Text = "0";
 	UserRotationXCenterTxt->Text = "255";
 	UserRotationYCenterTxt->Text = "255";
-	UserRotationTxt->Text = Convert::ToString(-(WCS->CROTAn[1] + WCS->CROTAn[2]) / 2);
+	UserRotationTxt->Text = Convert::ToString(-(IMAGESET[FILELISTINDEX]->WCS->CROTAn[1] + IMAGESET[FILELISTINDEX]->WCS->CROTAn[2]) / 2);
 	UVCONVERTLISTTOIMAGEBATCHFILES = gcnew array<String^>(UVIT_DEROTATE_FILES->Length);//pre-make
 
 	/////////////////////////////////
@@ -8106,8 +8151,7 @@ void Form1::DeRotateViaWCS_Click(System::Object^  sender, System::EventArgs^  e)
 	double xcenter = ::Convert::ToDouble(UserRotationXCenterTxt->Text);
 	double ycenter = ::Convert::ToDouble(UserRotationYCenterTxt->Text);
 	double rotation = -1 * ::Convert::ToDouble(UserRotationTxt->Text) * Math::PI / 180;//degrees to radians
-	WCS_DEROT = gcnew JPFITS::WorldCoordinateSolution();
-	WCS_DEROT->Get_WCS(IMAGESET[FILELISTINDEX]);
+	WCS_DEROT = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
 	double prec = 1;//check for the image precision...
 	String^ strprec = IMAGESET[FILELISTINDEX]->Header->GetKeyValue("IMAGPREC");
 	if (strprec != "")
@@ -8265,16 +8309,33 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 			//each XYInts file will be in its own directory, and this is where its dupes will be
 			//we want only the most recent (longest file name length) dupe from each directory
 			//when registering can only do so on deDrift files, so if there are directories that couldn't be deDrift, don't use those files
-			xyintsfiles = Directory::GetFiles(fbd->SelectedPath, "*MASTER*XYInts_List*deDrift*.fits", SearchOption::AllDirectories);
-			if (xyintsfiles->Length == 0)//only do MASTER if these are available
-				xyintsfiles = Directory::GetFiles(fbd->SelectedPath, "*XYInts_List*deDrift*.fits", SearchOption::AllDirectories);
+
+			//xyintsfiles = Directory::GetFiles(fbd->SelectedPath, "*MASTER*XYInts_List*deDrift*.fits", SearchOption::AllDirectories);
+			//if (xyintsfiles->Length == 0)//then just doing filter directories with multiobs
+			//	xyintsfiles = Directory::GetFiles(fbd->SelectedPath, "*XYInts_List*deDrift*.fits", SearchOption::AllDirectories);
+			xyintsfiles = Directory::GetFiles(fbd->SelectedPath, "*XYInts_List*deDrift*.fits", SearchOption::AllDirectories);
+			for (int i = 0; i < xyintsfiles->Length; i++)
+			{
+				String^ dir = Path::GetDirectoryName(Path::GetDirectoryName(xyintsfiles[i]));
+				if (Directory::GetFiles(dir, "*MASTER*XYInts_List*deDrift*.fits")->Length != 0)//then use only master files, ignore unmerged files
+					xyintsfiles[i] = "";
+			}
+			int c = 0;
+			for (int i = 0; i < xyintsfiles->Length; i++)
+				if (xyintsfiles[i] != "")
+				{
+					xyintsfiles[c] = xyintsfiles[i];
+					c++;
+				}
+			Array::Resize(xyintsfiles, c);
+
 			Array::Sort(xyintsfiles);
 			if (xyintsfiles->Length == 0)
 			{
 				::MessageBox::Show("No files found...", "Error...");
 				return;
 			}
-			int c = 0;
+			/*int */c = 0;
 			for (int i = 0; i < xyintsfiles->Length; i++)
 			{
 				String^ curdir = Path::GetDirectoryName(xyintsfiles[i]);
@@ -8505,7 +8566,7 @@ void Form1::GeneralUVRegistrationMenuItem_Click(System::Object^  sender, System:
 
 void Form1::RegistrationUVCentroidWrkr_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
-	try
+	//try
 	{
 		//update first reference files
 		String^ IntsFile = UVREGISTRATIONFILES[0];
@@ -8715,10 +8776,10 @@ void Form1::RegistrationUVCentroidWrkr_DoWork(System::Object^  sender, System::C
 			//Such a region's centroids have full weight for their own orbit, but for the combined orbits they should likewise be scaled to the total exposure time
 		}
 	}
-	catch (Exception^ e)
+	/*catch (Exception^ e)
 	{
 		MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-	}
+	}*/
 
 	WAITBAR->DialogResult = ::DialogResult::OK;
 }
@@ -8844,17 +8905,82 @@ void Form1::CombineUVCentroidListsMenuItem_Click(System::Object^  sender, System
 						UVMERGEDIRS[i] = Nuvdirs[i - Fuvdirs->Length];
 				}
 			}
+			else if (Directory::GetDirectories(fbd->SelectedPath, "NUV", SearchOption::AllDirectories)->Length > 0 || Directory::GetDirectories(fbd->SelectedPath, "FUV", SearchOption::AllDirectories)->Length > 0)//typically when processing multiple epochs
+			{
+				array<String^>^ NUVdirs = Directory::GetDirectories(fbd->SelectedPath, "NUV", SearchOption::AllDirectories);
+				array<String^>^ FUVdirs = Directory::GetDirectories(fbd->SelectedPath, "FUV", SearchOption::AllDirectories);
+
+				ArrayList^ mergedirs = gcnew ArrayList();
+				for (int i = 0; i < NUVdirs->Length; i++)
+					mergedirs->AddRange(Directory::GetDirectories(NUVdirs[i]));
+				for (int i = 0; i < FUVdirs->Length; i++)
+					mergedirs->AddRange(Directory::GetDirectories(FUVdirs[i]));
+
+				if (mergedirs->Count == 0)
+				{
+					MessageBox::Show("I can't determine what to do...so I'm leaving. (A)");//cant tell what to do
+					return;
+				}
+
+				UVMERGEDIRS = gcnew array<String^>(mergedirs->Count);
+				for (int i = 0; i < mergedirs->Count; i++)
+					UVMERGEDIRS[i] = (String^)mergedirs[i];				
+			}
 			else
 			{
-				MessageBox::Show("I can't determine what to do...so I'm leaving.");//cant tell what to do
+				MessageBox::Show("I can't determine what to do...so I'm leaving. (B)");//cant tell what to do
 				return;
 			}
 
+			//might have a directory where only one file is dedrifted but there are others without dedrift...
+			//one option is to masterize the single and get rid of the other directories
+			//another is that I can dedrift by other means and come back
+			for (int i = 0; i < UVMERGEDIRS->Length; i++)
+			{
+				xyintsfiles = Directory::GetFiles(UVMERGEDIRS[i], "*XYInts_List*deDrift*RGSTRD*.fits", SearchOption::AllDirectories);
+				if (xyintsfiles->Length == 1 && !xyintsfiles[0]->Contains("MASTER"))
+				{
+					::DialogResult res = MessageBox::Show("Error: A channel-filter directory was found which contains only a single de-drifted and registered image, but there are other folders with uncorrected centroid lists.\r\r 'Retry' to masterize the single and delete the other uncorrected directories.\r\r 'Cancel' to exit.\r\r Directory: " + UVMERGEDIRS[i], "Warning", MessageBoxButtons::RetryCancel);
+
+					if (res == ::DialogResult::Cancel)
+						return;
+
+					int indlast = xyintsfiles[0]->IndexOf("_XYInts");
+					String^ test = xyintsfiles[0]->Substring(0, indlast - 1);
+					int indfirst = test->LastIndexOf("_");
+					test = xyintsfiles[0]->Substring(0, indfirst - 1);
+					indfirst = test->LastIndexOf("_") + 1;
+					String^ replacestr = xyintsfiles[0]->Substring(indfirst, indlast - indfirst);
+
+					array<String^>^ dirfiles = Directory::GetFiles(Path::GetDirectoryName(xyintsfiles[0]));
+					for (int j = 0; j < dirfiles->Length; j++)
+					{
+						String^ newfile = dirfiles[j]->Replace(replacestr, "__MASTER__");
+						newfile = UVMERGEDIRS[i] + "\\" + newfile->Substring(newfile->LastIndexOf("\\"));
+						File::Move(dirfiles[j], newfile);
+					}
+					array<String^>^ dirs = Directory::GetDirectories(UVMERGEDIRS[i]);
+					for (int j = 0; j < dirs->Length; j++)
+						Directory::Delete(dirs[j], true);
+				}
+			}
+
 			//might have a masterized single which we want to ignore
+			MASTERAUTOLOADADDIN = gcnew ArrayList();
 			int c = 0;
 			for (int i = 0; i < UVMERGEDIRS->Length; i++)
 				if (Directory::GetDirectories(UVMERGEDIRS[i])->Length == 0)//then it was a masterized single
 				{
+					array<String^>^ fils = Directory::GetFiles(UVMERGEDIRS[i], "*MASTER*RGSTRD*IMAGE*");
+					int len = 0;
+					int lenindex = -1;
+					for (int a = 0; a < fils->Length; a++)
+						if (fils[a]->Length > len)
+						{
+							len = fils[a]->Length;
+							lenindex = a;
+						}
+					MASTERAUTOLOADADDIN->Add(fils[lenindex]);
 					UVMERGEDIRS[i] = "";
 					c++;
 				}
@@ -8866,10 +8992,11 @@ void Form1::CombineUVCentroidListsMenuItem_Click(System::Object^  sender, System
 					{
 						UVMERGEDIRS[c] = UVMERGEDIRS[i];
 						c++;
-					}
-				Array::Resize(UVMERGEDIRS, UVMERGEDIRS->Length - c);
+					}						
+				Array::Resize(UVMERGEDIRS, c);
 			}
-
+			else
+				MASTERAUTOLOADADDIN = nullptr;
 			AUTOLOADIMAGESFILES = gcnew array<String^>(UVMERGEDIRS->Length);
 		}
 		
@@ -8933,7 +9060,10 @@ void Form1::CombineUVCentroidListsMenuItem_Click(System::Object^  sender, System
 	if (xyintsfiles->Length == 1)
 	{
 		::MessageBox::Show("Need to select more than 1 file for merging...", "Error...");
-		CombineUVCentroidListsMenuItem_Click(sender, e);
+
+		//System::Diagnostics::Process::Start("Explorer.exe", DirectoryInfo(xyintsfiles[0]).Parent->FullName);
+		
+		//CombineUVCentroidListsMenuItem_Click(sender, e);
 		return;
 	}
 
@@ -9037,7 +9167,7 @@ void Form1::MergeCentroidListsWrkr_DoWork(System::Object^  sender, System::Compo
 	array<int>^ count = gcnew array<int>(n);
 	int prog = 0;
 	
-	#pragma omp parallel for
+	#pragma omp parallel for if (L1MachineExtremeChck->Checked)
 	for (int i = 0; i < filenames->Length; i++)
 	{
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
@@ -9347,160 +9477,227 @@ void Form1::DeSaturateROICountsMenuItem_DoubleClick(System::Object^  sender, Sys
 {
 	UVITMenu->HideDropDown();
 	DeSaturateROICountsMenuItem->HideDropDown();
-
-	String^ imgname = IMAGESET[FileListDrop->SelectedIndex]->FullFileName;
-	String^ dedrift = "";
-	while (imgname->Contains(dedrift + "_deDrift"))
-		dedrift += "_deDrift";
-
-	String^ framesname = imgname->Substring(0, imgname->IndexOf("deFPN")) + "FrameList" + dedrift + ".fits";
-	String^ timessname = framesname->Replace("Frame","Time");
-	String^ flatssname = framesname->Replace("Frame", "Flat");
-	String^ expssname = framesname->Replace("Frame", "ExpArray");
-	
-	String^ intsname = imgname->Substring(0, imgname->IndexOf("_IMAGE"));
-	intsname = intsname->Insert(intsname->IndexOf("deFPN"), "XYInts_List_") + ".fits";
-	String^ fracsname = intsname->Replace("Ints","Frac");
-
-	array<double>^ frames = JPFITS::FITSImage::ReadImageVectorOnly(framesname, nullptr, true);
-	array<double>^ times = JPFITS::FITSImage::ReadImageVectorOnly(timessname, nullptr, true);
-	array<double>^ flats = JPFITS::FITSImage::ReadImageVectorOnly(flatssname, nullptr, true);
-	array<double>^ exps = JPFITS::FITSImage::ReadImageVectorOnly(expssname, nullptr, true);
-	JPFITS::FITSImage^ FracFits = gcnew FITSImage(fracsname, nullptr, true, true, false, true);
-	JPFITS::FITSImage^ IntsFits = gcnew FITSImage(intsname, nullptr, true, true, false, true);
-
-	String^ EXTXRNG = FracFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
-	if (EXTXRNG == "")
-		EXTXRNG = "0:511";//from L2 data
-	String^ EXTYRNG = FracFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
-	if (EXTYRNG == "")
-		EXTYRNG = "0:511";//from L2 data
-	int ix = EXTXRNG->IndexOf(":");
-	int iy = EXTYRNG->IndexOf(":");
-	double rx1 = ::Convert::ToDouble(EXTXRNG->Substring(0,ix));//range start
-	double ry1 = ::Convert::ToDouble(EXTYRNG->Substring(0,iy));
-	double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix+1));//range end
-	double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy+1));
-
-	String^ xoffset = FracFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
-	if (xoffset == "")
-		xoffset = FracFits->Header->GetKeyValue("WIN_XOFF");//from L2 data
-	double ox = ::Convert::ToDouble(xoffset);//x offset
-	String^ yoffset = FracFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
-	if (yoffset == "")
-		yoffset = FracFits->Header->GetKeyValue("WIN_YOFF");//from L2 data
-	double oy = ::Convert::ToDouble(yoffset);//y offset
-
-	double prec = 1;//check for the image precision...
-	String^ strprec = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("IMAGPREC");
-	if (strprec != "")
-		prec = ::Convert::ToDouble(strprec);
-
-	int offset = 0;
-	String^ stroffset = IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("PADOFSET");
-	if (stroffset != "")
-		offset = ::Convert::ToInt32(stroffset);
-
-	int XSTART = XSUBRANGE[0] - offset*int(prec);
-	int YSTART = YSUBRANGE[0] - offset*int(prec);
-	int XEND = XSUBRANGE[XSUBRANGE->Length - 1] - offset*int(prec);
-	int YEND = YSUBRANGE[YSUBRANGE->Length - 1] - offset*int(prec);
-
-	double curframe = -1;//initialize frame number
-	double ROIframecount = 0;//frame count
-	double ROIrawcount = 0;//raw count - counter for centroids in ROI
-	double flateff = 0;
-	double expeff = 0;
-
-	for (int i = 0; i < frames->Length; i++)
-	{
-		int xpos = (int)((IntsFits[0,i] - rx1*32 - ox*32 + FracFits[0,i] + 16)/32 * prec);
-		int ypos = (int)((IntsFits[1,i] - ry1*32 - oy*32 + FracFits[1,i] + 16)/32 * prec);
-
-		if (xpos >= XSTART && ypos >= YSTART && xpos <= XEND && ypos <= YEND)
-		{
-			ROIrawcount++;
-			flateff += 1 / flats[i];
-			expeff += 1 / exps[i];
-			if (curframe != frames[i])
-			{
-				ROIframecount++;
-				curframe = frames[i];
-			}
-		}
-	}
-
-	flateff /= ROIrawcount;
-	expeff /= ROIrawcount;
-	flateff = 1 / flateff;
-	expeff = 1 / expeff;
-
-	double totaltime = Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("RDCDTIME"));
-	double nframes = (frames[frames->Length - 1] - frames[0] + 1);//number of frames in raw EU data
-	double listframecount = (double)int(nframes * (1 - Convert::ToDouble(IMAGESET[FileListDrop->SelectedIndex]->Header->GetKeyValue("FRAMREDC"))));//number of actual existing data frames (nframes adjusted for CRC missing frames)
-	double listframeskips = nframes - listframecount;//number of frames which were CRC skipped
-	double frames_per_sec = Math::Round(1000*(frames[frames->Length - 1] - frames[0]) / (times[times->Length - 1] - times[0]), 4);
-	
-	double bg = 0;//background
-	if (CorrectBackgroundCountsChck->Checked)
-		bg = ::Convert::ToDouble(BackgroundCountsPixelFrameTxt->Text);//total counts per pixel for final image near ROI, user entered from COG analysis
-	bg = bg * SUBIMAGE->Length;//total bg counts in ROI - multiply bg counts per pixel by number of pixels in ROI
-	bg = bg / listframecount;//rate of bg event in ROI per frame NOT adjusted for exposure array...so get it from good region
-
-	double zeros = listframecount - ROIframecount / expeff;//number of zero count frames adjusted for exposure array
-	double Pzero = zeros / listframecount;//probability of zero-count frames per frame
-	double correctedcountrate = Math::Log(1/Pzero) - bg;//rate per frame
-	double err = Math::Sqrt(ROIrawcount / Math::Exp(-correctedcountrate));
-	
-	String^ result;
-	result += "ROI Window Size:	" + XSUBRANGE->Length.ToString() + "x" + YSUBRANGE->Length.ToString() + "\r\n";
-	result += "ROI Window Location:	" + "X: " + (XSUBRANGE[(int)HalfWidthXUpD->Value]+1).ToString() + ", Y: " + (YSUBRANGE[(int)HalfWidthYUpD->Value]+1).ToString() + "\r\n";
-	result += "ROI Raw Count:	" + ROIrawcount.ToString() + "\r\n";
-	result += "ROI Flat:	" + flateff.ToString() + "\r\n";
-	result += "ROI Exposure:	" + expeff.ToString() + "\r\n";
-	result += "ROI Raw Exposure Count:	" + (ROIrawcount / expeff).ToString() + "\r\n";
-	result += "N Frames in Observation:	" + nframes.ToString() + "\r\n";
-	result += "Missing Frames:	" + listframeskips.ToString() + "\r\n";
-	result += "Known Frames:	" + listframecount.ToString() + "\r\n";
-	result += "Known Time:	" + totaltime.ToString() + "\r\n";
-	result += "Frames per Second:	" + frames_per_sec.ToString() + "\r\n";
-	result += "ROI Raw Data Frames:	" + ROIframecount.ToString() + "\r\n";
-	result += "ROI Exposure Frames:	" + (ROIframecount / expeff).ToString() + "\r\n";
-	result += "ROI 0 Count Frames:	" + zeros.ToString() + "\r\n";
-	result += "ROI Exp P(0):	" + (Pzero).ToString() + "\r\n";
-	result += "ROI Exp Count Rate/f:	" + (ROIrawcount / expeff / listframecount).ToString() + "\r\n";
-	result += "ROI Exp Desaturated Rate/f:	" + correctedcountrate.ToString() + "\r\n";
-	result += "ROI Exp/Flat Desaturated Rate/f:	" + (correctedcountrate / flateff).ToString() + "\r\n";
-	result += "ROI Background Rate/f:	" + bg.ToString() + "\r\n";
-	result += "ROI Exp Desaturated Rate/s:	" + (correctedcountrate * listframecount / totaltime).ToString() + "\r\n";
-	result += "ROI Exp/Flat Desaturated Rate/s:	" + (correctedcountrate / flateff * listframecount / totaltime).ToString() + "\r\n";
-	System::Windows::Forms::Clipboard::SetText(result);
-
 	COG_PLOT->Close();
 
-	result = "";
-	result += "ROI Window Size:			" + XSUBRANGE->Length.ToString() + "x" + YSUBRANGE->Length.ToString() + "\r\n";
-	result += "ROI Window Location:		" + "X: " + (XSUBRANGE[(int)HalfWidthXUpD->Value] + 1).ToString() + ", Y: " + (YSUBRANGE[(int)HalfWidthYUpD->Value] + 1).ToString() + "\r\n";
-	result += "ROI Raw Count:			" + ROIrawcount.ToString() + "\r\n";
-	result += "ROI Flat:				" + flateff.ToString() + "\r\n";
-	result += "ROI Exposure:			" + expeff.ToString() + "\r\n";
-	result += "ROI Raw Exposure Count:		" + (ROIrawcount / expeff).ToString() + "\r\n";
-	result += "N Frames in Observation:		" + nframes.ToString() + "\r\n";
-	result += "Missing Frames:			" + listframeskips.ToString() + "\r\n";
-	result += "Known Frames:			" + listframecount.ToString() + "\r\n";
-	result += "Known Time:			" + totaltime.ToString() + "\r\n";
-	result += "Frames per Second:			" + frames_per_sec.ToString() + "\r\n";
-	result += "ROI Raw Data Frames:		" + ROIframecount.ToString() + "\r\n";
-	result += "ROI Exposure Frames:		" + (ROIframecount / expeff).ToString() + "\r\n";
-	result += "ROI 0 Count Frames:			" + zeros.ToString() + "\r\n";
-	result += "ROI Exp P(0):			" + (Pzero).ToString() + "\r\n";
-	result += "ROI Exp Count Rate/f:		" + (ROIrawcount / expeff / listframecount).ToString() + "\r\n";
-	result += "ROI Exp Desaturated Rate/f:		" + correctedcountrate.ToString() + "\r\n";
-	result += "ROI Exp/Flat Desaturated Rate/f:	" + (correctedcountrate / flateff).ToString() + "\r\n";
-	result += "ROI Background Rate/f:		" + bg.ToString() + "\r\n";
-	result += "ROI Exp Desaturated Rate/s:		" + (correctedcountrate * listframecount / totaltime).ToString() + "\r\n";
-	result += "ROI Exp/Flat Desaturated Rate/s:	" + (correctedcountrate / flateff * listframecount / totaltime).ToString() + "\r\n";
-	::MessageBox::Show(result,"This table copied to clipboard...");	
+	array<int>^ inds;
+	if (DeSaturateCurrentImageChck->Text != "Current Image")
+	{
+		inds = gcnew array<int>(IMAGESET->Count);
+		for (int i = 0; i < IMAGESET->Count; i++)
+			inds[i] = i;
+	}
+	else
+		inds = gcnew array<int>(1) { FILELISTINDEX };
+
+	double bg = 0, signal;
+	array<double>^ npts;
+	array<double>^ cog;
+	array<double>^ desatsounts = gcnew array<double>(inds->Length);
+	array<double>^ desatsounts_expt = gcnew array<double>(inds->Length);
+	array<double>^ desatsounts_meanBJD = gcnew array<double>(inds->Length);
+	array<String^>^ desatsounts_filter = gcnew array<String^>(inds->Length);
+	String^ result = "";
+
+	if (inds->Length > 1)
+	{
+		ProgressBar->Maximum = inds->Length;
+		ProgressBar->Value = 0;
+	}
+
+	for (int i = 0; i < inds->Length; i++)
+	{
+		if (inds->Length > 1)
+		{
+			ProgressBar->Value++;
+			ProgressBar->Refresh();
+		}
+
+		String^ imgname = IMAGESET[inds[i]]->FullFileName;
+		String^ dedrift = "";
+		while (imgname->Contains(dedrift + "_deDrift"))
+			dedrift += "_deDrift";
+
+		String^ framesname = imgname->Substring(0, imgname->IndexOf("deFPN")) + "FrameList" + dedrift + ".fits";
+		String^ timessname = framesname->Replace("Frame", "Time");
+		String^ flatssname = framesname->Replace("Frame", "Flat");
+		String^ expssname = framesname->Replace("Frame", "ExpArray");
+
+		String^ intsname = imgname->Substring(0, imgname->IndexOf("_IMAGE"));
+		intsname = intsname->Insert(intsname->IndexOf("deFPN"), "XYInts_List_") + ".fits";
+		String^ fracsname = intsname->Replace("Ints", "Frac");
+
+		array<double>^ frames = JPFITS::FITSImage::ReadImageVectorOnly(framesname, nullptr, true);
+		array<double>^ times = JPFITS::FITSImage::ReadImageVectorOnly(timessname, nullptr, true);
+		array<double>^ flats = JPFITS::FITSImage::ReadImageVectorOnly(flatssname, nullptr, true);
+		array<double>^ exps = JPFITS::FITSImage::ReadImageVectorOnly(expssname, nullptr, true);
+		JPFITS::FITSImage^ FracFits = gcnew FITSImage(fracsname, nullptr, true, true, false, true);
+		JPFITS::FITSImage^ IntsFits = gcnew FITSImage(intsname, nullptr, true, true, false, true);
+
+		String^ EXTXRNG = FracFits->Header->GetKeyValue("EXTXRNG");//from GSE CCDLAB processing
+		if (EXTXRNG == "")
+			EXTXRNG = "0:511";//from L2 data
+		String^ EXTYRNG = FracFits->Header->GetKeyValue("EXTYRNG");//from GSE CCDLAB processing
+		if (EXTYRNG == "")
+			EXTYRNG = "0:511";//from L2 data
+		int ix = EXTXRNG->IndexOf(":");
+		int iy = EXTYRNG->IndexOf(":");
+		double rx1 = ::Convert::ToDouble(EXTXRNG->Substring(0, ix));//range start
+		double ry1 = ::Convert::ToDouble(EXTYRNG->Substring(0, iy));
+		double rx2 = ::Convert::ToDouble(EXTXRNG->Substring(ix + 1));//range end
+		double ry2 = ::Convert::ToDouble(EXTYRNG->Substring(iy + 1));
+
+		String^ xoffset = FracFits->Header->GetKeyValue("XOFFSET");//from GSE CCCDLAB processing
+		if (xoffset == "")
+			xoffset = FracFits->Header->GetKeyValue("WIN_XOFF");//from L2 data
+		double ox = ::Convert::ToDouble(xoffset);//x offset
+		String^ yoffset = FracFits->Header->GetKeyValue("YOFFSET");//from GSE CCCDLAB processing
+		if (yoffset == "")
+			yoffset = FracFits->Header->GetKeyValue("WIN_YOFF");//from L2 data
+		double oy = ::Convert::ToDouble(yoffset);//y offset
+
+		double prec = 1;//check for the image precision...
+		String^ strprec = IMAGESET[inds[i]]->Header->GetKeyValue("IMAGPREC");
+		if (strprec != "")
+			prec = ::Convert::ToDouble(strprec);
+
+		int offset = 0;
+		String^ stroffset = IMAGESET[inds[i]]->Header->GetKeyValue("PADOFSET");
+		if (stroffset != "")
+			offset = ::Convert::ToInt32(stroffset);
+
+		int XSTART = XSUBRANGE[0] - offset * int(prec);
+		int YSTART = YSUBRANGE[0] - offset * int(prec);
+		int XEND = XSUBRANGE[XSUBRANGE->Length - 1] - offset * int(prec);
+		int YEND = YSUBRANGE[YSUBRANGE->Length - 1] - offset * int(prec);
+
+		double curframe = -1;//initialize frame number
+		double ROIframecount = 0;//frame count
+		double ROIrawcount = 0;//raw count - counter for centroids in ROI
+		double flateff = 0;
+		double expeff = 0;
+
+		for (int i = 0; i < frames->Length; i++)
+		{
+			int xpos = (int)((IntsFits[0, i] - rx1 * 32 - ox * 32 + FracFits[0, i] + 16) / 32 * prec);
+			int ypos = (int)((IntsFits[1, i] - ry1 * 32 - oy * 32 + FracFits[1, i] + 16) / 32 * prec);
+
+			if (xpos >= XSTART && ypos >= YSTART && xpos <= XEND && ypos <= YEND)
+			{
+				ROIrawcount++;
+				flateff += 1 / flats[i];
+				expeff += 1 / exps[i];
+				if (curframe != frames[i])
+				{
+					ROIframecount++;
+					curframe = frames[i];
+				}
+			}
+		}
+
+		flateff /= ROIrawcount;
+		expeff /= ROIrawcount;
+		flateff = 1 / flateff;
+		expeff = 1 / expeff;
+
+		double totaltime = Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("RDCDTIME"));
+		double nframes = (frames[frames->Length - 1] - frames[0] + 1);//number of frames in raw EU data
+		double listframecount = (double)int(nframes * (1 - Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("FRAMREDC"))));//number of actual existing data frames (nframes adjusted for CRC missing frames)
+		double listframeskips = nframes - listframecount;//number of frames which were CRC skipped
+		double frames_per_sec = Math::Round(1000 * (frames[frames->Length - 1] - frames[0]) / (times[times->Length - 1] - times[0]), 4);
+
+		//get the background counts
+		if (CorrectBackgroundCountsChck->Checked)
+		{
+			if (inds->Length > 1)
+				cog = JPMath::COG(IMAGESET[inds[i]]->GetSubImage(XSUBRANGE[SUBIMAGE_HWX], YSUBRANGE[SUBIMAGE_HWY], SUBIMAGE_HWX, SUBIMAGE_HWY), (int)COGIgnoreNPtsUpD->Value, npts, bg, signal);
+			else
+				bg = ::Convert::ToDouble(BackgroundCountsPixelFrameTxt->Text);//total counts per pixel for final image near ROI, user entered from COG analysis
+			bg = bg * SUBIMAGE->Length;//total bg counts in ROI - multiply bg counts per pixel by number of pixels in ROI
+			bg = bg / listframecount;//rate of bg event in ROI per frame NOT adjusted for exposure array...so get it from good region
+		}
+
+		double zeros = listframecount - ROIframecount / expeff;//number of zero count frames adjusted for exposure array
+		double Pzero = zeros / listframecount;//probability of zero-count frames per frame
+		double correctedcountrate = Math::Log(1 / Pzero) - bg;//rate per frame
+		double err = Math::Sqrt(ROIrawcount / Math::Exp(-correctedcountrate));
+
+		desatsounts[i] = correctedcountrate / flateff * listframecount / totaltime;
+		desatsounts_expt[i] = Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("RDCDTIME"));
+		desatsounts_meanBJD[i] = Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("MEANBJD"));
+		desatsounts_filter[i] = IMAGESET[inds[i]]->Header->GetKeyValue("FILTERID");
+
+		if (inds->Length == 1)
+		{			
+			result += "ROI Window Size:	" + XSUBRANGE->Length.ToString() + "x" + YSUBRANGE->Length.ToString() + "\r\n";
+			result += "ROI Window Location:	" + "X: " + (XSUBRANGE[(int)HalfWidthXUpD->Value] + 1).ToString() + ", Y: " + (YSUBRANGE[(int)HalfWidthYUpD->Value] + 1).ToString() + "\r\n";
+			result += "ROI Raw Count:	" + ROIrawcount.ToString() + "\r\n";
+			result += "ROI Flat:	" + flateff.ToString() + "\r\n";
+			result += "ROI Exposure:	" + expeff.ToString() + "\r\n";
+			result += "ROI Raw Exposure Count:	" + (ROIrawcount / expeff).ToString() + "\r\n";
+			result += "N Frames in Observation:	" + nframes.ToString() + "\r\n";
+			result += "Missing Frames:	" + listframeskips.ToString() + "\r\n";
+			result += "Known Frames:	" + listframecount.ToString() + "\r\n";
+			result += "Known Time:	" + totaltime.ToString() + "\r\n";
+			result += "Frames per Second:	" + frames_per_sec.ToString() + "\r\n";
+			result += "ROI Raw Data Frames:	" + ROIframecount.ToString() + "\r\n";
+			result += "ROI Exposure Frames:	" + (ROIframecount / expeff).ToString() + "\r\n";
+			result += "ROI 0 Count Frames:	" + zeros.ToString() + "\r\n";
+			result += "ROI Exp P(0):	" + (Pzero).ToString() + "\r\n";
+			result += "ROI Exp Count Rate/f:	" + (ROIrawcount / expeff / listframecount).ToString() + "\r\n";
+			result += "ROI Exp Desaturated Rate/f:	" + correctedcountrate.ToString() + "\r\n";
+			result += "ROI Exp/Flat Desaturated Rate/f:	" + (correctedcountrate / flateff).ToString() + "\r\n";
+			result += "ROI Background Rate/f:	" + bg.ToString() + "\r\n";
+			result += "ROI Exp Desaturated Rate/s:	" + (correctedcountrate * listframecount / totaltime).ToString() + "\r\n";
+			result += "ROI Exp/Flat Desaturated Rate/s:	" + (correctedcountrate / flateff * listframecount / totaltime).ToString() + "\r\n";
+			System::Windows::Forms::Clipboard::SetText(result);
+
+			result = "";
+			result += "ROI Window Size:			" + XSUBRANGE->Length.ToString() + "x" + YSUBRANGE->Length.ToString() + "\r\n";
+			result += "ROI Window Location:		" + "X: " + (XSUBRANGE[(int)HalfWidthXUpD->Value] + 1).ToString() + ", Y: " + (YSUBRANGE[(int)HalfWidthYUpD->Value] + 1).ToString() + "\r\n";
+			result += "ROI Raw Count:			" + ROIrawcount.ToString() + "\r\n";
+			result += "ROI Flat:				" + flateff.ToString() + "\r\n";
+			result += "ROI Exposure:			" + expeff.ToString() + "\r\n";
+			result += "ROI Raw Exposure Count:		" + (ROIrawcount / expeff).ToString() + "\r\n";
+			result += "N Frames in Observation:		" + nframes.ToString() + "\r\n";
+			result += "Missing Frames:			" + listframeskips.ToString() + "\r\n";
+			result += "Known Frames:			" + listframecount.ToString() + "\r\n";
+			result += "Known Time:			" + totaltime.ToString() + "\r\n";
+			result += "Frames per Second:			" + frames_per_sec.ToString() + "\r\n";
+			result += "ROI Raw Data Frames:		" + ROIframecount.ToString() + "\r\n";
+			result += "ROI Exposure Frames:		" + (ROIframecount / expeff).ToString() + "\r\n";
+			result += "ROI 0 Count Frames:			" + zeros.ToString() + "\r\n";
+			result += "ROI Exp P(0):			" + (Pzero).ToString() + "\r\n";
+			result += "ROI Exp Count Rate/f:		" + (ROIrawcount / expeff / listframecount).ToString() + "\r\n";
+			result += "ROI Exp Desaturated Rate/f:		" + correctedcountrate.ToString() + "\r\n";
+			result += "ROI Exp/Flat Desaturated Rate/f:	" + (correctedcountrate / flateff).ToString() + "\r\n";
+			result += "ROI Background Rate/f:		" + bg.ToString() + "\r\n";
+			result += "ROI Exp Desaturated Rate/s:		" + (correctedcountrate * listframecount / totaltime).ToString() + "\r\n";
+			result += "ROI Exp/Flat Desaturated Rate/s:	" + (correctedcountrate / flateff * listframecount / totaltime).ToString() + "\r\n";
+			::MessageBox::Show(result, "This table copied to clipboard...");
+			return;
+		}
+		else
+			result += desatsounts_meanBJD[i] + "	" + Math::Round(desatsounts[i], 4) + "			" + desatsounts_filter[i] + "	" + desatsounts_expt[i] + "\r\n";
+	}
+	ProgressBar->Value = 0;
+	ProgressBar->Refresh();
+
+	System::Windows::Forms::Clipboard::SetText(result);
+	result = "MeanDBJ		Desaturated Count	Filter		Exposure Time" + "\r\n" + result;
+	MessageBox::Show(result, "This table copied to clipboard...");
+}
+
+void Form1::DeSaturateCurrentImageChck_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	if (DeSaturateCurrentImageChck->Text == "Current Image")
+		DeSaturateCurrentImageChck->Text = "All Images";
+	else
+		DeSaturateCurrentImageChck->Text = "Current Image";
+
+	DeSaturateCurrentImageChck->Checked = true;
+
+	UVITMenu->ShowDropDown();
+	DeSaturateROICountsMenuItem->ShowDropDown();
 }
 
 void Form1::ExtractROICentroidListMenuItem_Click(System::Object^  sender, System::EventArgs^  e)
@@ -9620,44 +9817,44 @@ void Form1::ExtractROICentroidListMenuItem_Click(System::Object^  sender, System
 
 	timesname = timesname->Substring(0, timesname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROItimeFits = gcnew JPFITS::FITSImage(timesname, ROItimelist, false, false);
-	ROItimeFits->Header->CopyHeaderFrom(FrameFits->Header);// CopyHeader(FrameFits);
+	ROItimeFits->Header->CopyHeaderFrom(FrameFits->Header);
 	ROItimeFits->Header->SetKey("EXTXRNG", XSTART.ToString() + ":" +  XEND.ToString(), "Extraction X-Range", true, -1);
 	ROItimeFits->Header->SetKey("EXTYRNG", YSTART.ToString() + ":" +  YEND.ToString(), "Extraction Y-Range", true, -1);
 	ROItimeFits->WriteImage(::TypeCode::UInt32, false);
 
 	framesname = framesname->Substring(0, framesname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIframeFits = gcnew JPFITS::FITSImage(framesname, ROIframelist, false, false);
-	ROIframeFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIframeFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIframeFits->WriteImage(::TypeCode::UInt32, false);
 
 	intsname = intsname->Substring(0, intsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIintsFits = gcnew JPFITS::FITSImage(intsname, ROIintslist, false, false);
-	ROIintsFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIintsFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIintsFits->WriteImage(::TypeCode::Int16, false);
 
 	fracsname = fracsname->Substring(0, fracsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIfracFits = gcnew JPFITS::FITSImage(fracsname, ROIfraclist, false, false);
-	ROIfracFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIfracFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIfracFits->WriteImage(::TypeCode::Int16, false);
 
 	flatsname = flatsname->Substring(0, flatsname->IndexOf(".fits")) + "_ROIx" + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIflatFits = gcnew JPFITS::FITSImage(flatsname, ROIflatlist, false, false);
-	ROIflatFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIflatFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIflatFits->WriteImage(::TypeCode::Double, false);
 
 	expsname = expsname->Substring(0, expsname->IndexOf(".fits")) + "_ROIx" + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIexpFits = gcnew JPFITS::FITSImage(expsname, ROIexplist, false, false);
-	ROIexpFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIexpFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIexpFits->WriteImage(::TypeCode::Double, false);
 
 	BJDSname = BJDSname->Substring(0, BJDSname->IndexOf(".fits")) + "_ROIx" "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROIBJDSFits = gcnew JPFITS::FITSImage(BJDSname, ROIBJDlist, false, false);
-	ROIBJDSFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROIBJDSFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROIBJDSFits->WriteImage(::TypeCode::Double, false);
 
 	mdMmsname = mdMmsname->Substring(0, mdMmsname->IndexOf(".fits")) + "_ROIx" + XSTART.ToString() + "-" + XEND.ToString() + "y" + YSTART.ToString() + "-" + YEND.ToString() + ".fits";
 	JPFITS::FITSImage^ ROImdMmFits = gcnew JPFITS::FITSImage(mdMmsname, ROImdMmlist, false, false);
-	ROImdMmFits->Header->CopyHeaderFrom(ROItimeFits->Header);// CopyHeader(ROItimeFits);
+	ROImdMmFits->Header->CopyHeaderFrom(ROItimeFits->Header);
 	ROImdMmFits->WriteImage(::TypeCode::Int16, false);
 
 	::MessageBox::Show("ROI centroid list extracted and written in image directory.","Success...");
@@ -10192,9 +10389,9 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 
 	int n = omp_get_max_threads();
 	array<int>^ count = gcnew array<int>(n);
-	int prog = 0;
+	int prog = 0;	
 
-	#pragma omp parallel for
+	#pragma omp parallel for if (L1MachineExtremeChck->Checked)
 	for (int i = 0; i < TimeListNames->Length; i++)
 	{
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
@@ -10452,7 +10649,7 @@ void Form1::DriftNUVtoFUVBGWrkr_DoWork(System::Object^  sender, System::Componen
 
 					increment = 1;//increment for current frame
 
-								  //update moved position stuff...at least one of the drifts is moved 32 or more...update that one or both only
+					//update moved position stuff...at least one of the drifts is moved 32 or more...update that one or both only
 					if (Math::Abs(fuvdriftlist[1, k] - oldxdrift) >= pixres)
 					{
 						oldxdrift = fuvdriftlist[1, k];
@@ -10810,17 +11007,17 @@ void Form1::CleanVISBGWrkr_DoWork(System::Object^  sender, System::ComponentMode
 
 		FITSImage^ VISfits = gcnew FITSImage(VISfiles[i], nullptr, true, true, false, true);
 		
-		if (CLEAN_UVITVISIMG(VISfits, threshold, N))
+		if (CLEAN_UVITVISIMG(VISfits, threshold, N, !doparallel))
 			VISfits->WriteImage(TypeCode::Int32, true);
 	}
 }
 
-bool Form1::CLEAN_UVITVISIMG(JPFITS::FITSImage^ VISfits, double threshold, int occurences)
+bool Form1::CLEAN_UVITVISIMG(JPFITS::FITSImage^ VISfits, double threshold, int occurences, bool do_parallel)
 {
 	double med = 0;//alwys zero if degradiented...which they have to be for this...so make sure... JPMath::Median(VISfits->Image);
 	bool cleaned = false;
 
-	#pragma omp parallel for
+	#pragma omp parallel for if (do_parallel)
 	for (int y = 1; y < 511; y++)
 	{
 		//check if there are too many values in the line some range above the median
@@ -11064,6 +11261,7 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		WAITBAR->CancelBtn->PerformClick();
 		return;
 	}
+
 	if (imagefiles->Length == 1 && !IMAGESET[0]->FileName->Contains("MASTER"))//perhaps there is only a single orbit image, and hence was never masterized...ex SMC campaign
 	{
 		//need to masterize the directory
@@ -11086,32 +11284,30 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 		}
 		Directory::Delete(filedir, true);
 	}
-	/////////////////////need to get the file path//////////////////////////////
-	String^ objdir = Path::GetDirectoryName(imagefiles[0]);
-	try
-	{
-		while (!Directory::Exists(objdir + "\\archive"))
-			objdir = Directory::GetParent(objdir)->FullName;
-	}
-	catch (...)
-	{
-		FolderBrowserDialog^ fbd = gcnew FolderBrowserDialog();
-		fbd->SelectedPath = IMAGESET->GetCommonDirectory();
-		fbd->Description = "Select the parent location to find images to finalize...";
-		if (fbd->ShowDialog() == ::DialogResult::Cancel)
-		{
-			WAITBAR->CancelBtn->PerformClick();
-			return;
-		}
-		objdir = fbd->SelectedPath;
-	}
 
-	ArrayList^ zipfiles = gcnew ArrayList();
+	ArrayList^ allobjdirs = gcnew ArrayList();
 	//want to get the IMAGE images and their associated exposure maps
 	for (int i = 0; i < imagefiles->Length; i++)
 	{
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 			return;
+
+		String^ objdir = Path::GetDirectoryName(Path::GetDirectoryName((Path::GetDirectoryName(imagefiles[i]))));
+
+		if (allobjdirs->Count == 0)
+			allobjdirs->Add(objdir);
+		else
+		{
+			bool exists = false;
+			for (int k = 0; k < allobjdirs->Count; k++)
+				if (objdir == (String^)allobjdirs[k])
+				{
+					exists = true;
+					break;
+				}
+			if (!exists)
+				allobjdirs->Add(objdir);
+		}
 
 		FITSImage^ image = gcnew FITSImage(imagefiles[i], nullptr, true, false, false, true);
 
@@ -11140,27 +11336,27 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			expfitsimg->SetImage(debinexp, false, true);
 
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing exposure array");
-			expfitsimg->FileName = expfitsimg->FileName->Remove(expfitsimg->FileName->IndexOf("MASTER")) + "MASTER_NORM_EXPARRAY.fits";
+			expfitsimg->FileName = expfitsimg->FileName->Remove(expfitsimg->FileName->IndexOf("MASTER")) + "MASTER_EXPARRAY_" + DirectoryInfo(objdir).Name + ".fits";
 			expfitsimg->FilePath = objdir;
 			expfitsimg->WriteImage(TypeCode::Double, true);
-			zipfiles->Add(expfitsimg->FullFileName);
-			e->Result = zipfiles;
+			/*zipfiles->Add(expfitsimg->FullFileName);
+			e->Result = zipfiles;*/
 		}
 
 		if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 			return;
 		UVFinalizeBGWrkr->ReportProgress(0, "Writing image");
 		String^ origfilename = image->FullFileName;
-		image->FileName = image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_NORMEXP_IMAGE.fits";
+		image->FileName = image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_IMAGE_" + DirectoryInfo(objdir).Name + ".fits";
 		image->FilePath = objdir;
 		File::Copy(origfilename, image->FullFileName, true);
-		zipfiles->Add(image->FullFileName);
-		e->Result = zipfiles;
+		/*zipfiles->Add(image->FullFileName);
+		e->Result = zipfiles;*/
 
 		if (!UVFinalizeIncludeTablesChck->Checked)
 			continue;
 
-		try
+		//try
 		{
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
@@ -11181,9 +11377,9 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 				return;
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing centroid table");
-			String^ binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE.fits";
-			zipfiles->Add(binname);
-			e->Result = zipfiles;
+			String^ binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE_" + DirectoryInfo(objdir).Name + ".fits";
+			/*zipfiles->Add(binname);
+			e->Result = zipfiles;*/
 			JPFITS::FITSBinTable^ bt = gcnew JPFITS::FITSBinTable();
 			bt->SetTTYPEEntries(gcnew array<String^>(2) { "XCENTROID", "YCENTROID" }, gcnew array<String^>(2) { "pix*32", "pix*32" }, gcnew array<Object^>(2) { xcents, ycents });
 			bt->AddExtraHeaderKey("COMMENT", "Centroids are at ", "1/32 pixel precision.");
@@ -11194,9 +11390,9 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing BJD table");
 			String^ bjdname = xyintsname->Remove(xyintsname->IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
 			array<double>^ bjds = FITSImage::ReadImageVectorOnly(bjdname, nullptr, true);
-			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_BJD_TABLE.fits";
-			zipfiles->Add(binname);
-			e->Result = zipfiles;
+			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_BJD_TABLE_" + DirectoryInfo(objdir).Name + ".fits";
+			/*zipfiles->Add(binname);
+			e->Result = zipfiles;*/
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
 			bt->AddExtraHeaderKey("COMMENT", "BaryCenterJD ", "means solar system barycenter.");
@@ -11207,9 +11403,9 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing flat table");
 			String^ flatname = bjdname->Replace("BJDList", "FlatList");
 			array<double>^ flats = FITSImage::ReadImageVectorOnly(flatname, nullptr, true);
-			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_FLAT_TABLE.fits";
-			zipfiles->Add(binname);
-			e->Result = zipfiles;
+			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_FLAT_TABLE_" + DirectoryInfo(objdir).Name + ".fits";
+			/*zipfiles->Add(binname);
+			e->Result = zipfiles;*/
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
 			bt->Write(binname, "FLAT", true);
@@ -11219,29 +11415,79 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 			UVFinalizeBGWrkr->ReportProgress(0, "Writing exposure table");
 			String^ expname = bjdname->Replace("BJDList", "ExpArrayList");
 			array<double>^ exps = FITSImage::ReadImageVectorOnly(expname, nullptr, true);
-			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE.fits";
-			zipfiles->Add(binname);
-			e->Result = zipfiles;
+			binname = objdir + "\\" + image->FileName->Remove(image->FileName->IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE_" + DirectoryInfo(objdir).Name + ".fits";
+			/*zipfiles->Add(binname);
+			e->Result = zipfiles;*/
 			bt = gcnew JPFITS::FITSBinTable();
 			bt->AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
 			bt->Write(binname, "EXPOSURE", true);
 		}
-		catch (Exception^ e)
+		/*catch (Exception^ e)
 		{
 			MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
+		}*/
+	}
+
+	//chck delete intermdt
+	if (UVFinalizeDeleteIntrmdtChck->Checked)
+	{
+		for (int i = 0; i < allobjdirs->Count; i++)
+		{
+			if (Directory::Exists((String^)allobjdirs[i] + "\\FUV"))
+			{
+				UVFinalizeBGWrkr->ReportProgress(0, "Cleaning up FUV files in folder " + (i + 1) + " of " + allobjdirs->Count);
+				Directory::Delete((String^)allobjdirs[i] + "\\FUV", true);
+			}
+			if (Directory::Exists((String^)allobjdirs[i] + "\\NUV"))
+			{
+				UVFinalizeBGWrkr->ReportProgress(0, "Cleaning up NUV files in folder " + (i + 1) + " of " + allobjdirs->Count);
+				Directory::Delete((String^)allobjdirs[i] + "\\NUV", true);
+			}
+			if (Directory::Exists((String^)allobjdirs[i] + "\\VIS"))
+			{
+				UVFinalizeBGWrkr->ReportProgress(0, "Cleaning up VIS files in folder " + (i + 1) + " of " + allobjdirs->Count);
+				Directory::Delete((String^)allobjdirs[i] + "\\VIS", true);
+			}
+			if (Directory::Exists((String^)allobjdirs[i] + "\\Digested L1"))
+			{
+				UVFinalizeBGWrkr->ReportProgress(0, "Cleaning up L1 files in folder " + (i + 1) + " of " + allobjdirs->Count);
+				Directory::Delete((String^)allobjdirs[i] + "\\Digested L1", true);
+			}
 		}
 	}
 
-	UVFinalizeBGWrkr->ReportProgress(0, "Please wait while I clean up...");
+	UVFinalizeBGWrkr->ReportProgress(0, "Please wait while I finish up...");
+
+	if (allobjdirs->Count > 1)
+	{
+		String^ multipardir = Path::GetDirectoryName((String^)allobjdirs[0]);
+		array<String^>^ files = Directory::GetFiles(multipardir, "*MASTER_EXPARRAY*.fits", SearchOption::AllDirectories);
+		for (int i = 0; i < files->Length; i++)
+		{
+			FITSImage^ fi = gcnew FITSImage(files[i], nullptr, false, false, false, false);
+			fi->FilePath = multipardir;
+			File::Move(files[i], fi->FullFileName);
+		}
+		files = Directory::GetFiles(multipardir, "*MASTER_IMAGE*.fits", SearchOption::AllDirectories);
+		for (int i = 0; i < files->Length; i++)
+		{
+			FITSImage^ fi = gcnew FITSImage(files[i], nullptr, false, false, false, false);
+			fi->FilePath = multipardir;
+			File::Move(files[i], fi->FullFileName);
+		}
+		allobjdirs = gcnew ArrayList();
+		allobjdirs->Add(multipardir);
+	}
+
+	array<String^>^ zipfiles = Directory::GetFiles((String^)allobjdirs[0], "*.fits");
 
 	String^ ziplist = CCDLABPATH + "tozip.txt";
 	StreamWriter^ sw = gcnew StreamWriter(ziplist);
-	for (int i = 0; i < zipfiles->Count; i++)
+	for (int i = 0; i < zipfiles->Length; i++)
 		sw->WriteLine((String^)zipfiles[i]);
 	sw->Close();
 
-	//String^ fname = FITSImageSet::GetCommonDirectory(zipfiles) + "\\" + DirectoryInfo(FITSImageSet::GetCommonDirectory(zipfiles)).Name;
-	String^ fname = objdir + "\\" + DirectoryInfo(objdir).Name;
+	String^ fname = (String^)allobjdirs[0] + "\\" + DirectoryInfo((String^)allobjdirs[0]).Name;
 
 	::Diagnostics::Process^ p = gcnew ::Diagnostics::Process();
 	p->StartInfo->FileName = "c:\\Program Files\\7-Zip\\7zG.exe";
@@ -11250,8 +11496,8 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 	p->WaitForExit();
 	if (p->ExitCode != 0)
 	{
-		for (int j = 0; j < zipfiles->Count; j++)
-			if((String^)zipfiles[j] != "" && File::Exists((String^)zipfiles[j]))
+		for (int j = 0; j < zipfiles->Length; j++)
+			if ((String^)zipfiles[j] != "" && File::Exists((String^)zipfiles[j]))
 				File::Delete((String^)zipfiles[j]);
 		File::Delete(fname);
 		WAITBAR->CancelBtn->PerformClick();
@@ -11260,24 +11506,11 @@ void Form1::UVFinalizeBGWrkr_DoWork(System::Object^  sender, System::ComponentMo
 
 	//chck move or copy
 	if (UVFinalizeMoveOrCopyZipChck->Text->Contains("Move"))
-		for (int i = 0; i < zipfiles->Count; i++)
+		for (int i = 0; i < zipfiles->Length; i++)
 			File::Delete((String^)zipfiles[i]);
 
-	//chck delete intermdt
-	if (UVFinalizeDeleteIntrmdtChck->Checked)
-	{
-		if (Directory::Exists(objdir + "\\FUV"))
-			Directory::Delete(objdir + "\\FUV", true);
-		if (Directory::Exists(objdir + "\\NUV"))
-			Directory::Delete(objdir + "\\NUV", true);
-		if (Directory::Exists(objdir + "\\VIS"))
-			Directory::Delete(objdir + "\\VIS", true);
-		if (Directory::Exists(objdir + "\\Digested L1"))
-			Directory::Delete(objdir + "\\Digested L1", true);
-	}
-
 	WAITBAR->Close();
-	SetReg("CCDLAB", "UVFINALDIR", objdir);
+	SetReg("CCDLAB", "UVFINALDIR", (String^)allobjdirs[0]);
 }
 
 void Form1::UVFinalizeBGWrkr_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
@@ -11291,17 +11524,14 @@ void Form1::UVFinalizeBGWrkr_RunWorkerCompleted(System::Object^  sender, System:
 {
 	if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 	{
-		array<String^>^ zipfiles = (array<String^>^)e->Result;
+		/*array<String^>^ zipfiles = (array<String^>^)e->Result;
 		for (int j = 0; j < zipfiles->Length; j++)
 			if (zipfiles[j] != "" && File::Exists(zipfiles[j]))
-				File::Delete(zipfiles[j]);
+				File::Delete(zipfiles[j]);*/
 	}
 	else
-	{
-		String^ objdir = (String^)GetReg("CCDLAB", "UVFINALDIR");
 		if (MessageBox::Show("Open Final Products Directory?", "Open Directory?", MessageBoxButtons::YesNo) == ::DialogResult::Yes)
-			System::Diagnostics::Process::Start("Explorer.exe", objdir);
-	}
+			System::Diagnostics::Process::Start("Explorer.exe", (String^)GetReg("CCDLAB", "UVFINALDIR"));
 }
 
 void Form1::PSTrackDisplayClearBtn_Click(System::Object^ sender, System::EventArgs^ e)
@@ -11323,6 +11553,8 @@ void Form1::invertWCSToolStripMenuItem_Click(System::Object^ sender, System::Eve
 	IMAGESET[FILELISTINDEX]->Header->SetKey("CRPIX2", CRPIX2.ToString("F8"), "WCS coordinate reference value on axis 2 (deg)", true, -1);
 	IMAGESET[FILELISTINDEX]->Header->SetKey("CD1_2", CD1_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
 	IMAGESET[FILELISTINDEX]->Header->SetKey("CD2_2", CD2_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
+
+	IMAGESET[FILELISTINDEX]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
 
 	WCSCopyToLoadedImgs->PerformClick();
 
