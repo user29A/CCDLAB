@@ -486,6 +486,8 @@ void Form1::PSEDrop_SelectedIndexChanged(System::Object^  sender, System::EventA
 	MAKEPSERECTS();
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
+	PSEFitResultListBox->Items->Clear();
+	PSEFitResultListBox->Items->Add("N:  " + PSES[PSESINDEX]->N_Sources);
 
 	if (PSES[PSESINDEX]->PSEParametersSet)
 	{
@@ -737,7 +739,7 @@ void Form1::PSEFindSrcBtn_MouseUp(System::Object^  sender, System::Windows::Form
 		PSESRECTS[PSESINDEX][i] = Rectangle(int((float(PSES[PSESINDEX]->Centroids_X[i]) + 0.5)*xsc - 3), int((float(PSES[PSESINDEX]->Centroids_Y[i]) + 0.5)*ysc - 3), 7, 7);
 
 	PSEFitResultListBox->Items->Clear();
-	PSEFitResultListBox->Items->Add(String::Concat("N:   ", PSES[PSESINDEX]->N_Sources));
+	PSEFitResultListBox->Items->Add(String::Concat("N Sources:   ", PSES[PSESINDEX]->N_Sources));
 	PSEFitResultListBox->Visible = true;
 	ShowPSEChck->Checked = true;
 	ShowPSEChck->Enabled = true;
@@ -1675,6 +1677,53 @@ void Form1::PSEFitResultsCntxt_Opening(System::Object^  sender, System::Componen
 		PSEFitResultCntxtCopySelected->Enabled = true;
 }
 
+void Form1::WCSSolutionPtsCopyTableBtn_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	if (IMAGESET->Count == 0)
+		return;
+
+	bool cpexists = true;
+	int n = 0;
+	while (cpexists)
+	{
+		n++;
+		if (IMAGESET[FILELISTINDEX]->Header->GetKeyIndex("WCP1_" + n.ToString("000"), false) == -1)
+			cpexists = false;
+	}
+	n--;
+
+	if (n == 0)
+	{
+		MessageBox::Show("No WCS solution points found in header...");
+		return;
+	}
+
+	array<double>^ cp1 = gcnew array<double>(n);
+	array<double>^ cp2 = gcnew array<double>(n);
+	array<double>^ cv1 = gcnew array<double>(n);
+	array<double>^ cv2 = gcnew array<double>(n);
+	array<double>^ cd1 = gcnew array<double>(n);
+	array<double>^ cd2 = gcnew array<double>(n);
+
+	for (int i = 1; i <= n; i++)
+	{
+		cp1[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCP1_" + i.ToString("000")));
+		cp2[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCP2_" + i.ToString("000")));
+		cv1[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCV1_" + i.ToString("000")));
+		cv2[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCV2_" + i.ToString("000")));
+		cd1[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCD1_" + i.ToString("000")));
+		cd2[i - 1] = Convert::ToDouble(IMAGESET[FILELISTINDEX]->Header->GetKeyValue("WCD2_" + i.ToString("000")));
+	}
+
+	String^ clipbrd = "Source Pixel X-Centroid (pixels)" + "\t" + "Source Pixel Y-Centroid (pixels)" + "\t" + "Source Catalogue RA (degrees)" + "\t" + "Source Catalogue Decl (degrees)" + "\t" +  "WCS RA Residual (arcsec)" + "\t" + "WCS Decl Residual (arcsec)";
+	for (int i = 1; i <= n; i++)
+		clipbrd += "\r\n" + cp1[i - 1] + "\t" + cp2[i - 1] + "\t" + cv2[i - 1] + "\t" + cv2[i - 1] + "\t" + cd2[i - 1] + "\t" + cd2[i - 1];
+
+	Clipboard::SetText(clipbrd);
+
+	MessageBox::Show("WCS Coordinates Table copied to clipboard...");
+}
+
 void Form1::WCSPlotSolutionPtsBtn_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	if (IMAGESET->Count == 0)
@@ -1713,6 +1762,17 @@ void Form1::WCSPlotSolutionPtsBtn_Click(System::Object^  sender, System::EventAr
 	MAKEMARKCOORDRECTS();
 	ImageWindow->Refresh();
 	SubImageWindow->Refresh();
+
+	WCSMenu->ShowDropDown();
+	WCSSolutionPtsBtn->ShowDropDown();
+}
+
+void Form1::WCSClearPlotSolutionPtsBtn_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	MarkCoordClear->PerformClick();
+
+	WCSMenu->ShowDropDown();
+	WCSSolutionPtsBtn->ShowDropDown();
 }
 
 void Form1::WCSRefineSolutionBtn_DropDownOpened(System::Object^  sender, System::EventArgs^  e)
@@ -3204,6 +3264,26 @@ void Form1::GET_CATALOGUE_NPTS(String^ filename, String^ catExtension, String^ c
 		Array::Resize(WCS_DEC, N_bright);
 	}
 }
+
+void Form1::PSEGroupizeBtn_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	if (PSES == nullptr)
+		return;
+	
+	PSES[PSESINDEX]->GroupizePSE((double)PSESeparationUpD->Value);
+
+	PSEDRAWGROUPREGIONS = true;
+	ImageWindow->Refresh();
+	SubImageWindow->Refresh();
+	PSEFitResultListBox->Items->Clear();
+	PSEFitResultListBox->Items->Add(String::Concat("N Sources:   ", PSES[PSESINDEX]->N_Sources));
+	PSEFitResultListBox->Items->Add(String::Concat("N Groups:   ", PSES[PSESINDEX]->NGroups));
+}
+
+
+
+
+
 
 void Form1::AutoWCSXCorr_Click(System::Object^ sender, System::EventArgs^ e)
 {

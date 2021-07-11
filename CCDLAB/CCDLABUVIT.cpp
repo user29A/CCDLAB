@@ -3069,7 +3069,7 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 
 	//TCT get the .tct file, and get the delta between absolute time and detector time from the first element in those tables
 	//apply (add) that difference to all detector times in order to get absolute local JD times, then use that to get BJD
-	double JD_abs_time_delta_sec;
+	double JD_abs_time_delta_sec = Double::MinValue;
 	String^ tctfile = argfiles[0]->Substring(0, argfiles[0]->LastIndexOf("uvt")) + "uvt_level1.tct";
 	bool tctfileexists = ::File::Exists(tctfile);
 	if (tctfileexists)
@@ -3086,8 +3086,8 @@ void Form1::DigestL1Wrkr_DoWork(System::Object^  sender, System::ComponentModel:
 	}
 	else
 	{
-		MessageBox::Show("Can't find TCT file...exiting...", "Error...");
-		return;
+		if (MessageBox::Show("Can't find TCT file: proceed without correct BJD reference?", "Warning...", ::MessageBoxButtons::OKCancel) == ::DialogResult::Cancel)
+			return;
 	}
 
 	//LBT get the lbt file to do filter correction

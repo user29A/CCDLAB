@@ -41,8 +41,8 @@ void Form1::SubImageWindow_Paint(System::Object^  sender, System::Windows::Forms
 	{
 		IMAGEWINDOWPEN->Color = Color::Red;
 		for (int i = 0; i < FNDCOORDS->GetLength(0); i++)
-			if (FNDCOORDS[i,0] >= XSUBRANGE[0] && FNDCOORDS[i,0] <= XSUBRANGE[XSUBRANGE->Length-1] && FNDCOORDS[i,1] >= YSUBRANGE[0] && FNDCOORDS[i,1] <= YSUBRANGE[YSUBRANGE->Length-1])
-				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush,(float)((float(FNDCOORDS[i,0])-float(XSUBRANGE[0])+0.5)*subxsc-3.0),(float)((float(FNDCOORDS[i,1])-float(YSUBRANGE[0])+0.5)*subysc-3.0),7.0,7.0);
+			if (FNDCOORDS[i, 0] >= XSUBRANGE[0] && FNDCOORDS[i, 0] <= XSUBRANGE[XSUBRANGE->Length - 1] && FNDCOORDS[i, 1] >= YSUBRANGE[0] && FNDCOORDS[i, 1] <= YSUBRANGE[YSUBRANGE->Length - 1])
+				e->Graphics->FillRectangle(IMAGEWINDOWPEN->Brush, (float)((float(FNDCOORDS[i, 0]) - float(XSUBRANGE[0]) + 0.5) * subxsc - 3.0), (float)((float(FNDCOORDS[i, 1]) - float(YSUBRANGE[0]) + 0.5) * subysc - 3.0), 7.0, 7.0);
 	}
 
 	if (ShowPSEChck->Checked && PSESRECTS != nullptr && PSESRECTS[PSESINDEX] != nullptr)
@@ -104,6 +104,58 @@ void Form1::SubImageWindow_Paint(System::Object^  sender, System::Windows::Forms
 		for (int i = 0; i < MANREGCOORDS->GetLength(0); i++)
 			if (MANREGCOORDS[i, 0] >= XSUBRANGE[0] && MANREGCOORDS[i, 0] <= XSUBRANGE[XSUBRANGE->Length - 1] && MANREGCOORDS[i, 1] >= YSUBRANGE[0] && MANREGCOORDS[i, 1] <= YSUBRANGE[YSUBRANGE->Length - 1])
 				e->Graphics->DrawRectangle(IMAGEWINDOWPEN, (float)((float(MANREGCOORDS[i, 0]) - float(XSUBRANGE[0]) + 0.5) * subxsc - 6.0), (float)((float(MANREGCOORDS[i, 1]) - float(YSUBRANGE[0]) + 0.5) * subysc - 6.0), 13.0, 13.0);
+	}
+
+	if (PSEDRAWGROUPREGIONS && PSES != nullptr && PSES[PSESINDEX] != nullptr)
+	{
+		::Drawing2D::Matrix^ tm = gcnew ::Drawing2D::Matrix();
+		tm->Scale(subxsc, subysc);
+
+		ArrayList^ groups = gcnew ArrayList();
+		for (int x = XSUBRANGE[0]; x <= XSUBRANGE[XSUBRANGE->Length - 1]; x++)
+			for (int y = YSUBRANGE[0]; y <= YSUBRANGE[YSUBRANGE->Length - 1]; y++)
+				if (PSES[PSESINDEX]->SourceGroupMap[x, y] != -1)
+					if (!groups->Contains(PSES[PSESINDEX]->SourceGroupMap[x, y]))
+						groups->Add(PSES[PSESINDEX]->SourceGroupMap[x, y]);
+
+		for (int i = 0; i < groups->Count; i++)
+		{
+			IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(50, PSES[PSESINDEX]->Groups[(int)groups[i]]->COLOR));
+
+			Drawing::Region^ reg = gcnew Drawing::Region();
+			reg = PSES[PSESINDEX]->Groups[(int)groups[i]]->REGION->Clone();
+			reg->Translate(-XSUBRANGE[0], -YSUBRANGE[0]);
+			reg->Transform(tm);
+			e->Graphics->FillRegion(IMAGEWINDOWBRUSH, reg);
+		}
+
+
+		//for (int i = 0; i < PSES[PSESINDEX]->NGroups; i++)
+		//	/*for (int j = 0; j < PSES[PSESINDEX]->Groups[i]->NElements; j++)
+		//		if (PSES[PSESINDEX]->Centroids_X[PSES[PSESINDEX]->Groups[i]->ElementIndices[j]] >= double(XSUBRANGE[0] - (int)PSESeparationUpD->Value) && PSES[PSESINDEX]->Centroids_X[PSES[PSESINDEX]->Groups[i]->ElementIndices[j]] <= double(XSUBRANGE[XSUBRANGE->Length - 1] + (int)PSESeparationUpD->Value))
+		//			if (PSES[PSESINDEX]->Centroids_Y[PSES[PSESINDEX]->Groups[i]->ElementIndices[j]] >= double(YSUBRANGE[0] - (int)PSESeparationUpD->Value) && PSES[PSESINDEX]->Centroids_Y[PSES[PSESINDEX]->Groups[i]->ElementIndices[j]] <= double(YSUBRANGE[YSUBRANGE->Length - 1] + (int)PSESeparationUpD->Value))
+		//			{
+		//				IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(50, PSES[PSESINDEX]->Groups[i]->COLOR));
+
+		//				Drawing::Region^ reg = gcnew Drawing::Region();
+		//				reg = PSES[PSESINDEX]->Groups[i]->REGION->Clone();
+		//				reg->Translate(-XSUBRANGE[0], -YSUBRANGE[0]);
+		//				reg->Transform(tm);
+		//				e->Graphics->FillRegion(IMAGEWINDOWBRUSH, reg);
+
+		//				break;
+		//			}*/
+		//	
+		//	if (PSES[PSESINDEX]->Groups[i]->REGION->IsVisible(XSUBRANGE[0], YSUBRANGE[0], XSUBRANGE->Length, YSUBRANGE->Length))
+		//	{
+		//		IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(50, PSES[PSESINDEX]->Groups[i]->COLOR));
+
+		//		Drawing::Region^ reg = gcnew Drawing::Region();
+		//		reg = PSES[PSESINDEX]->Groups[i]->REGION->Clone();
+		//		reg->Translate(-XSUBRANGE[0], -YSUBRANGE[0]);
+		//		reg->Transform(tm);
+		//		e->Graphics->FillRegion(IMAGEWINDOWBRUSH, reg);
+		//	}
 	}
 
 	/*if (toolStripMenuItem1->Checked)
@@ -213,26 +265,33 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 
 		if (SHOW_WCSCOORDS)//plot grid lines of constant RA & dec
 		{
-			if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
-				IMAGESET[FILELISTINDEX]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
-			if (IMAGESET[FILELISTINDEX]->WCS->Exists())
+			try
 			{
-				double xt, yt, xb, yb, xl, yl, xr, yr;
-				double width = (double)IMAGESET[FILELISTINDEX]->Width * IMAGESET[FILELISTINDEX]->WCS->CDELTn[1] / 7200;
-				double height = (double)IMAGESET[FILELISTINDEX]->Height * IMAGESET[FILELISTINDEX]->WCS->CDELTn[2] / 7200;
-				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] + width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xl, yl, true);
-				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] - width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xr, yr, true);
-				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] + height, "TAN", xt, yt, true);
-				IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] - height, "TAN", xb, yb, true);
+				if (!IMAGESET[FILELISTINDEX]->WCS->Exists())
+					IMAGESET[FILELISTINDEX]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[FILELISTINDEX]->Header);
+				if (IMAGESET[FILELISTINDEX]->WCS->Exists())
+				{
+					double xt, yt, xb, yb, xl, yl, xr, yr;
+					double width = (double)IMAGESET[FILELISTINDEX]->Width * IMAGESET[FILELISTINDEX]->WCS->CDELTn[1] / 7200;
+					double height = (double)IMAGESET[FILELISTINDEX]->Height * IMAGESET[FILELISTINDEX]->WCS->CDELTn[2] / 7200;
+					IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] + width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xl, yl, true);
+					IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1] - width, IMAGESET[FILELISTINDEX]->WCS->CRVALn[2], "TAN", xr, yr, true);
+					IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] + height, "TAN", xt, yt, true);
+					IMAGESET[FILELISTINDEX]->WCS->Get_Pixel(IMAGESET[FILELISTINDEX]->WCS->CRVALn[1], IMAGESET[FILELISTINDEX]->WCS->CRVALn[2] - height, "TAN", xb, yb, true);
 
-				IMAGEWINDOWPEN->Color = Color::Red;
-				Drawing2D::LinearGradientBrush^ lgb = gcnew Drawing2D::LinearGradientBrush(Drawing::Point(int((float(xb) + 0.5f) * xsc), int((float(yb) + 0.5f) * ysc)), Drawing::Point(int((float(xt) + 0.5f) * xsc), int((float(yt) + 0.5f) * ysc)), Drawing::Color::Red, Drawing::Color::Blue);
-				Drawing::Pen^ pn = gcnew Drawing::Pen(lgb);
-				pn->Width = 2;
-				e->Graphics->DrawLine(pn, (float(xb) + 0.5f) * xsc, (float(yb) + 0.5f) * ysc, (float(xt) + 0.5f) * xsc, (float(yt) + 0.5f) * ysc);
-				IMAGEWINDOWPEN->Width = 2;
-				e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xr) + 0.5f) * xsc, (float(yr) + 0.5f) * ysc, (float(xl) + 0.5f) * xsc, (float(yl) + 0.5f) * ysc);
-				IMAGEWINDOWPEN->Width = 1;
+					IMAGEWINDOWPEN->Color = Color::Red;
+					Drawing2D::LinearGradientBrush^ lgb = gcnew Drawing2D::LinearGradientBrush(Drawing::Point(int((float(xb) + 0.5f) * xsc), int((float(yb) + 0.5f) * ysc)), Drawing::Point(int((float(xt) + 0.5f) * xsc), int((float(yt) + 0.5f) * ysc)), Drawing::Color::Red, Drawing::Color::Blue);
+					Drawing::Pen^ pn = gcnew Drawing::Pen(lgb);
+					pn->Width = 2;
+					e->Graphics->DrawLine(pn, (float(xb) + 0.5f) * xsc, (float(yb) + 0.5f) * ysc, (float(xt) + 0.5f) * xsc, (float(yt) + 0.5f) * ysc);
+					IMAGEWINDOWPEN->Width = 2;
+					e->Graphics->DrawLine(IMAGEWINDOWPEN, (float(xr) + 0.5f) * xsc, (float(yr) + 0.5f) * ysc, (float(xl) + 0.5f) * xsc, (float(yl) + 0.5f) * ysc);
+					IMAGEWINDOWPEN->Width = 1;
+				}
+			}
+			catch (Exception^ e)
+			{
+				MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
 			}
 		}
 
@@ -300,6 +359,23 @@ void Form1::ImageWindow_Paint(System::Object^  sender, System::Windows::Forms::P
 			IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(25, 255, 0, 0));
 			e->Graphics->FillPolygon(IMAGEWINDOWBRUSH, ROI_PATH_POINTS);
 		}
+
+		if (PSEDRAWGROUPREGIONS && PSES!= nullptr && PSES[PSESINDEX] != nullptr)
+		{
+			::Drawing2D::Matrix^ tm = gcnew ::Drawing2D::Matrix();
+			tm->Scale(xsc, ysc);
+
+			for (int i = 0; i < PSES[PSESINDEX]->NGroups; i++)
+			{
+				IMAGEWINDOWBRUSH = gcnew SolidBrush(Color::FromArgb(50, PSES[PSESINDEX]->Groups[i]->COLOR));
+
+				Drawing::Region^ reg = gcnew Drawing::Region();
+				reg = PSES[PSESINDEX]->Groups[i]->REGION->Clone();
+				reg->Transform(tm);
+				e->Graphics->FillRegion(IMAGEWINDOWBRUSH, reg);
+			}
+		}
+
 	}
 	catch(Exception^ e)
 	{
@@ -1097,7 +1173,7 @@ void Form1::ImageWindow_MouseWheel(System::Object^  sender, System::Windows::For
 	if (IMAGESET->Count == 0)
 		return;
 
-	Decimal d = 1;
+	int d = 1;
 	if (e->Delta < 0)
 		d = -1;
 
@@ -1119,7 +1195,7 @@ void Form1::SubImageWindow_MouseWheel(System::Object^  sender, System::Windows::
 {
 	if (IMAGESET->Count > 0)
 	{
-		Decimal d = 1;
+		int d = 1;
 		if (e->Delta < 0)
 			d = -1;
 
@@ -2202,14 +2278,9 @@ void Form1::ImageWindowCntxtSquare_Click(System::Object^  sender, System::EventA
 	Form1::Refresh();*/
 }
 
-void Form1::WCSClearPlotSolutionPtsBtn_Click(System::Object^ sender, System::EventArgs^ e)
-{
-	MarkCoordClear->PerformClick();
-}
-
 void Form1::Form1_Shown(System::Object^  sender, System::EventArgs^  e)
 {
-	if (SubImageSlideY->Right + SubImagePanel->Width < this->Right - 20)
+	if (Windows::Forms::Screen::PrimaryScreen->Bounds.Height >= 1080 && (SubImageSlideY->Right + SubImagePanel->Width) < (this->Right - 20))
 	{
 		int diff = this->Right - 20 - SubImageSlideY->Right - SubImagePanel->Width;
 		SubImageWindow->Location = ::Drawing::Point(SubImageWindow->Location.X, SubImageWindow->Location.Y - diff);

@@ -526,10 +526,16 @@ void Form1::FMViewExtensionTable_Click(System::Object^  sender, System::EventArg
 {
 	OpenFileDialog^ ofd = gcnew OpenFileDialog();
 	ofd->InitialDirectory = (String^)GetReg("CCDLAB", "OpenFilesPath");
-	ofd->Filter = "FITS|*.fits;*.fit;*.fts;*.drift|All|*.*";
+	ofd->Filter = "FITS|*.fits;*.fit;*.fts;|All|*.*";
 	ofd->Multiselect = false;
 	if (ofd->ShowDialog() == ::DialogResult::Cancel)
 		return;
+
+	if (JPFITS::FITSBinTable::GetAllExtensionNames(ofd->FileName)->Length == 0)
+	{
+		MessageBox::Show("No BINTABLE extensions exist in the file...", "Error");
+		return;
+	}
 
 	SetReg("CCDLAB", "OpenFilesPath", ofd->FileName->Substring(0, ofd->FileName->LastIndexOf("\\")));
 	JPFITS::FitsExtensionTableViewer^ view = gcnew FitsExtensionTableViewer(ofd->FileName);
@@ -2665,6 +2671,7 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 		BatchViewPanel->Enabled = true;
 		TBSaveBatch->Enabled = true;
 		TBSaveBatchOver->Enabled = true;
+		TBSaveSetExtensions->Enabled = true;
 		TBZipAllBtn->Enabled = true;
 		BatchCorrectionChck->Checked = true;
 		BatchCorrectionChck->Enabled = true;
@@ -2678,6 +2685,7 @@ void Form1::FMLoad_Click(System::Object^ sender, System::EventArgs^ e)
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		BatchCorrectionChck->Enabled = false;
@@ -2973,6 +2981,7 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist, bool updateRecent)
 		BatchViewPanel->Enabled = true;
 		TBSaveBatch->Enabled = true;
 		TBSaveBatchOver->Enabled = true;
+		TBSaveSetExtensions->Enabled = true;
 		TBZipAllBtn->Enabled = true;
 		BatchCorrectionChck->Checked = true;
 		BatchCorrectionChck->Enabled = true;
@@ -2985,6 +2994,7 @@ void Form1::AddToImageSet(array<String^>^ fullpathlist, bool updateRecent)
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		BatchCorrectionChck->Enabled = false;
@@ -3667,7 +3677,7 @@ void Form1::BlinkChck_CheckedChanged(System::Object ^sender, System::EventArgs ^
 	{
 		MainTab->Enabled = true;
 		BlinkTimer->Enabled = false;
-		BlinkChck->Text = "Blink";
+		BlinkChck->Text = "Scan";
 		BlinkChck->BackColor = Drawing::Color::FromName(Control::BackColor.ToString());//Gray;
 	}
 }
@@ -3807,13 +3817,13 @@ void Form1::DeleteFileBtn_MouseUp(System::Object^  sender, System::Windows::Form
 			BatchViewPanel->Enabled = false;
 			TBSaveBatch->Enabled = false;
 			TBSaveBatchOver->Enabled = false;
+			TBSaveSetExtensions->Enabled = false;
 			TBZipAllBtn->Enabled = false;
 			ImageBatchRedxnPnl->Enabled = false;
 			BatchCorrectionChck->Enabled = false;
 			BatchCorrectionChck->Checked = false;
 			HCInsertBatch->Enabled = false;
 			HCRemoveBatch->Enabled = false;
-			HCExtract->Enabled = false;
 			HCExtractKeyValue->Enabled = false;
 			index = 0;
 		}
@@ -4346,10 +4356,59 @@ void Form1::RotCWBtn_Click(System::Object^  sender, System::EventArgs^  e)
 
 void Form1::CutSubImBtn_Click(System::Object^  sender, System::EventArgs^  e) 
 {
+	CROPPING = gcnew array<int>(4) { XSUBRANGE[0], XSUBRANGE[XSUBRANGE->Length - 1], YSUBRANGE[0], YSUBRANGE[YSUBRANGE->Length - 1] };
+
 	Form1::Enabled = false;
 	WAITBAR = gcnew JPWaitBar::WaitBar();
 	WAITBAR->ProgressBar->Maximum = FileListDrop->Items->Count;
 	WAITBAR->Text = "Cropping to sub-image...";
+	ImageOpsWrkr->RunWorkerAsync(7);
+	WAITBAR->ShowDialog();
+}
+
+void Form1::CutSubImBtn_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+{
+	if (e->Button != ::MouseButtons::Right)
+		return;
+
+	RangeDlg^ rdlg = gcnew RangeDlg();
+	rdlg->HelpButton = false;
+	rdlg->Text = "Set Image Range...";
+	rdlg->XStartUpD->Minimum = 1;
+	rdlg->XEndUpD->Minimum = 1;
+	rdlg->YStartUpD->Minimum = 1;
+	rdlg->YEndUpD->Minimum = 1;
+	try
+	{
+		rdlg->XStartUpD->Value = (int)GetReg("CCDLAB", "CROPXSTART");
+		rdlg->XEndUpD->Value = (int)GetReg("CCDLAB", "CROPXEND");
+		rdlg->YStartUpD->Value = (int)GetReg("CCDLAB", "CROPYSTART");
+		rdlg->YEndUpD->Value = (int)GetReg("CCDLAB", "CROPYEND");
+	}
+	catch (...) {};
+
+	if (rdlg->ShowDialog() == ::DialogResult::Cancel)
+		return;
+
+	int xstart = (int)rdlg->XStartUpD->Value;
+	int xend = (int)rdlg->XEndUpD->Value;
+	int ystart = (int)rdlg->YStartUpD->Value;
+	int yend = (int)rdlg->YEndUpD->Value;
+
+	if (xstart == 0 && ystart == 0 && xend == 0 && yend == 0)
+		return;
+
+	SetReg("CCDLAB", "CROPXSTART", xstart);
+	SetReg("CCDLAB", "CROPXEND", xend);
+	SetReg("CCDLAB", "CROPYSTART", ystart);
+	SetReg("CCDLAB", "CROPYEND", yend);
+
+	CROPPING = gcnew array<int>(4) { xstart, xend, ystart, yend };
+
+	Form1::Enabled = false;
+	WAITBAR = gcnew JPWaitBar::WaitBar();
+	WAITBAR->ProgressBar->Maximum = FileListDrop->Items->Count;
+	WAITBAR->Text = "Image Cropping...";
 	ImageOpsWrkr->RunWorkerAsync(7);
 	WAITBAR->ShowDialog();
 }
@@ -4425,6 +4484,16 @@ void Form1::MathOpBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		WAITBAR->Text = "Applying Hanning Window...";
 		ImageOpsWrkr->RunWorkerAsync(28);
 	}
+	else if (MathOpDrop->SelectedIndex == 15)
+	{
+		WAITBAR->Text = "Replaciong NaN's with 0...";
+		ImageOpsWrkr->RunWorkerAsync(29);
+	}
+	else if (MathOpDrop->SelectedIndex == 16)
+	{
+		WAITBAR->Text = "Replacing Inf's with 0...";
+		ImageOpsWrkr->RunWorkerAsync(30);
+	}
 	else
 		ImageOpsWrkr->RunWorkerAsync(11);//the other ones...they should be separated out here
 
@@ -4457,23 +4526,24 @@ void Form1::KeyValNormBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	HeaderKey^ hk = gcnew HeaderKey();
 	if (hk->ShowDialog() == ::DialogResult::Cancel)
 		return;
-	String^ key = hk->textBox1->Text;
+
+	NORMKEY = hk->textBox1->Text;
 
 	for (int i = 0; i < IMAGESET->Count; i++)
 	{
-		int jj = IMAGESET[i]->Header->GetKeyIndex(key, false);
+		int jj = IMAGESET[i]->Header->GetKeyIndex(NORMKEY, false);
 		if (jj == -1)
 		{
-			::MessageBox::Show("Key doesn't exist at file: " + (i+1).ToString(),"Error...");
+			::MessageBox::Show("Key '" + NORMKEY + "' doesn't exist at file: " + (i + 1).ToString(), "Error...");
 			return;
 		}
 		try
 		{
-			double val = ::Convert::ToDouble(IMAGESET[i]->Header->GetKeyValue(key));
+			double val = ::Convert::ToDouble(IMAGESET[i]->Header->GetKeyValue(NORMKEY));
 		}
 		catch (...)
 		{
-			::MessageBox::Show("Key value doesn't convert to numeric value at file: " + (i+1).ToString(),"Error...");
+			::MessageBox::Show("Key value for '" + NORMKEY + "' = '" + IMAGESET[i]->Header->GetKeyValue(NORMKEY) + "'  doesn't convert to numeric value at file: " + (i + 1).ToString(), "Error...");
 			return;
 		}
 	}
@@ -4481,7 +4551,7 @@ void Form1::KeyValNormBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	Form1::Enabled = false;
 	WAITBAR = gcnew JPWaitBar::WaitBar();
 	WAITBAR->ProgressBar->Maximum = FileListDrop->Items->Count;
-	WAITBAR->Text = "Normalizing to Key: " + key;
+	WAITBAR->Text = "Normalizing to Key: " + NORMKEY;
 	ImageOpsWrkr->RunWorkerAsync(27);
 	WAITBAR->ShowDialog();
 }
@@ -4539,103 +4609,99 @@ void Form1::ImageOpFilterBtn_Click(System::Object^  sender, System::EventArgs^  
 	}
 }
 
-void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::DoWorkEventArgs ^e)
+void Form1::ImageOpsWrkr_DoWork(System::Object^ sender, System::ComponentModel::DoWorkEventArgs^ e)
 {
-	array<int,1>^ inds;
+	array<int, 1>^ inds;
 	if (BatchCorrectionChck->Checked == false)
 	{
-		inds = gcnew array<int,1>(1){FILELISTINDEX};
+		inds = gcnew array<int, 1>(1) { FILELISTINDEX };
 		WAITBAR->ProgressBar->Maximum = 1;
 	}
 	else
 	{
-		inds = gcnew array<int,1>(IMAGESET->Count);
-		for (int i = 0; i<IMAGESET->Count; i++)
+		inds = gcnew array<int, 1>(IMAGESET->Count);
+		for (int i = 0; i < IMAGESET->Count; i++)
 			inds[i] = i;
 	}
 
 	switch (::Convert::ToInt32(e->Argument))
 	{
-	case (1):// subtract background image
+		case (1):// subtract background image
 		{
-		FITSImage^ simg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, true, true, true, true);
-			for (int i=0; i<inds->Length; i++)
+			FITSImage^ simg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, true, true, true, true);
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] - simg, true, true);
 			}
 			break;
 		}
-	case(2):// divide background image
+		case(2):// divide background image
 		{
-		FITSImage^ dimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, true, true, false, true);
-			for (int i=0; i<inds->Length; i++)
+			FITSImage^ dimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, true, true, false, true);
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] / dimg, true, true);
 			}
 			break;
 		}
-	case(3)://add image
+		case(3)://add image
 		{
-		FITSImage^ aimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, false, true, false, true);
+			FITSImage^ aimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, false, true, false, true);
 
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] + aimg, true, true);
 			}
 			break;
 		}
-	case(4):// multiply background image
+		case(4):// multiply background image
 		{
-		FITSImage^ mimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, false, true, false, true);
+			FITSImage^ mimg = gcnew FITSImage(DIVMULTADDSUB_FILE, SUBRANGE, false, true, false, true);
 
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] * mimg, true, true);
 			}
 			break;
 		}
-	case(5):
+		case(5):
 		{
 			break;
 		}
-	case(6):// Binning
+		case(6):// Binning
 		{
 			int xbin = (int)XBinUpD->Value;
 			int ybin = (int)YBinUpD->Value;
 
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(JPMath::Bin(IMAGESET[inds[i]]->Image, xbin, ybin, true), true, true);
 			}
 			break;
 		}
-	case(7):// Cut Sub Image
+		case(7):// Cut Sub Image
 		{
-			int C = IMAGESET->Count;
-			ProgressBar->Maximum = C;
-			int w = XSUBRANGE->Length;
-			int h = YSUBRANGE->Length;
-			array<double,2>^ subarray = gcnew array<double,2>(w,h);
+			ProgressBar->Maximum = IMAGESET->Count;
 
 			for (int i = 0; i < inds->Length; i++)
 			{
@@ -4643,108 +4709,69 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 					return;
 				ImageOpsWrkr->ReportProgress(i);
 
-				for (int k = 0; k < w; k++)
-					for (int j = 0; j < h; j++)
-						subarray[k,j] = IMAGESET[inds[i]]->Image[XSUBRANGE[k], YSUBRANGE[j]];
-
-				String^ fname = IMAGESET[inds[i]]->FileName;
-				int pind = fname->LastIndexOf(".");
-				fname = fname->Substring(0,pind);
-				fname = fname->Concat(fname,"_Sub_",XSUBRANGE[0].ToString(),"-",XSUBRANGE[w-1].ToString(),"_",YSUBRANGE[0].ToString(),"-",YSUBRANGE[h-1].ToString(),".fits");
-				/*IMAGESET->Add(gcnew FITSImage(String::Concat(IMAGESET[i]->FilePath,fname),subarray,true));
-				IMAGESET[IMAGESET->Count-1]->CopyHeader(IMAGESET[i]);
-				FileListDrop->Items->Add(fname);*/
-				IMAGESET[inds[i]]->SetImage(subarray, true, true);
-				IMAGESET[inds[i]]->Header->AddKey("XCROPSTT", XSUBRANGE[0].ToString(),"Cropped image x-start index (0-based)",-1);
-				IMAGESET[inds[i]]->Header->AddKey("XCROPEND",(XSUBRANGE[w - 1]).ToString(),"Cropped image x-end index (0-based)",-1);
-				IMAGESET[inds[i]]->Header->AddKey("YCROPSTT", YSUBRANGE[0].ToString(),"Cropped image y-start index (0-based)",-1);
-				IMAGESET[inds[i]]->Header->AddKey("YCROPEND",(YSUBRANGE[h - 1]).ToString(),"Cropped image y-end index (0-based)",-1);
-				//IMAGESET[inds[i]]->FileName = fname;
-				//FileListDrop->Items[inds[i]] = fname;
+				IMAGESET[inds[i]]->SetImage(JPMath::Crop(IMAGESET[inds[i]]->Image, CROPPING, true), true, true);
+				IMAGESET[inds[i]]->Header->AddKey("XCROPSTT", CROPPING[0].ToString(), "Cropped image x-start index (0-based)", -1);
+				IMAGESET[inds[i]]->Header->AddKey("XCROPEND", CROPPING[1].ToString(), "Cropped image x-end index (0-based)", -1);
+				IMAGESET[inds[i]]->Header->AddKey("YCROPSTT", CROPPING[2].ToString(), "Cropped image y-start index (0-based)", -1);
+				IMAGESET[inds[i]]->Header->AddKey("YCROPEND", CROPPING[3].ToString(), "Cropped image y-end index (0-based)", -1);
 
 				if (IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX1") != "")//then the key exists and has a value...must adjust CRPIX1&2 to the new pixel axes placements
 				{
-					double crpix1 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX1")) - XSUBRANGE[0];
-					double crpix2 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX2")) - YSUBRANGE[0];
+					double crpix1 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX1")) - CROPPING[0];
+					double crpix2 = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue("CRPIX2")) - CROPPING[2];
 
-					IMAGESET[inds[i]]->Header->SetKey("CRPIX1",crpix1.ToString(),false,0);
-					IMAGESET[inds[i]]->Header->SetKey("CRPIX2",crpix2.ToString(),false,0);
+					IMAGESET[inds[i]]->Header->SetKey("CRPIX1", crpix1.ToString(), false, 0);
+					IMAGESET[inds[i]]->Header->SetKey("CRPIX2", crpix2.ToString(), false, 0);
+
+					IMAGESET[inds[i]]->WCS = gcnew JPFITS::WorldCoordinateSolution(IMAGESET[inds[i]]->Header);
 				}
-
-
 			}
-			/*FileListDrop->SelectedIndex = C;*/
 
-			/*BatchViewPanel->Enabled = true;
-			TBSaveBatch->Enabled = true;
-			TBSaveBatchOver->Enabled = true;
-			TBZipAllBtn->Enabled = true;
-			BatchCorrectionChck->Checked = true;
-			BatchCorrectionChck->Enabled = true;
-			ImageBatchRedxnPnl->Enabled = true;
-			EMBatch->Enabled = true;
-			HCInsertBatch->Enabled = true;
-			HCRemoveBatch->Enabled = true;
-
-			SubBiasChck->Checked = false;
-			MultImgChck->Checked = false;
-			AddImageChck->Checked = false;
-			DivFlatChck->Checked = false;
-			BatchMeanChck->Checked = false;
-			BatchSumChck->Checked = false;
-			BatchQuadratureChck->Checked = false;
-			BatchMedianChck->Checked = false;
-			BatchStdvChck->Checked = false;
-			BatchMaximumChck->Checked = false;
-			BatchMinimumChck->Checked = false;*/
 			break;
 		}
-	case(8):
-		{	
-			//array<double, 2>^ newimg;
+		case(8)://padding
+		{
 			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
 				ImageOpsWrkr->ReportProgress(i);
-
-				//newimg = gcnew array<double, 2>(IMAGESET[inds[i]]->Width + PADDING[0] + PADDING[1], IMAGESET[inds[i]]->Height + PADDING[2] + PADDING[3]);
-
-				/*#pragma omp parallel for
-				for (int x = 0; x < IMAGESET[inds[i]]->Width; x++)
-					for (int y = 0; y < IMAGESET[inds[i]]->Height; y++)
-						newimg[x + PADDING[0], y + PADDING[2]] = IMAGESET[inds[i]][x, y];*/
 
 				IMAGESET[inds[i]]->SetImage(JPMath::Pad(IMAGESET[inds[i]]->Image, PADDING, true), true, true);
 			}
 			break;
 		}
-	case(9):
+		case(9)://excising
 		{
-			//array<double, 2>^ newimg;
+			int x0 = -1;
+			int hw = -1;
+			if (ExciseBtnContxtColumnsChck->Checked)
+			{
+				x0 = XSUBRANGE[SUBIMAGE_HWX];
+				hw = SUBIMAGE_HWX;
+			}
+			else
+			{
+				x0 = YSUBRANGE[SUBIMAGE_HWY];
+				hw = SUBIMAGE_HWY;
+			}
+
 			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
 				ImageOpsWrkr->ReportProgress(i);
 
-				/*newimg = gcnew array<double, 2>(CROPPING[1] - CROPPING[0] + 1, CROPPING[3] - CROPPING[2] + 1);
-
-				#pragma omp parallel for
-				for (int x = 0; x < newimg->GetLength(0); x++)
-					for (int y = 0; y < newimg->GetLength(1); y++)
-						newimg[x, y] = IMAGESET[inds[i]][x + CROPPING[0] - 1, y + CROPPING[2] - 1];*/
-
-				IMAGESET[inds[i]]->SetImage(JPMath::Crop(IMAGESET[inds[i]]->Image, CROPPING, true), true, true);
+				IMAGESET[inds[i]]->SetImage(JPMath::Excise(IMAGESET[inds[i]]->Image, ExciseBtnContxtColumnsChck->Checked, x0, hw, true), true, true);
 			}
 			break;
 		}
-	case(10)://scalar ops
+		case(10)://scalar ops
 		{
 			double scalar = ::Convert::ToDouble(ScalarOpValTxt->Text);
 			int style = ScalarOpStyleDrop->SelectedIndex;
 
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
@@ -4752,39 +4779,38 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 
 				switch (style)
 				{
-				case(0):// +
+					case(0):// +
 					{
 						IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] + scalar, true, true);
 						break;
 					}
-				case(1):// -
+					case(1):// -
 					{
 						IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] - scalar, true, true);
 						break;
 					}
-				case(2):// *
+					case(2):// *
 					{
 						IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] * scalar, true, true);
 						break;
 					}
-				case(3):// /
+					case(3):// /
 					{
 						IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] / scalar, true, true);
 						break;
 					}
-				case(4):// ^
+					case(4):// ^
 					{
 						IMAGESET[inds[i]]->SetImage(IMAGESET[inds[i]] ^ scalar, true, true);
 						break;
 					}
 				}
 			}
-			FileListDrop_SelectedIndexChanged(sender,e);
 			break;
 		}
-	case(11)://Math Ops
+		case(11)://Math Ops
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
@@ -4793,250 +4819,245 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 				int style = MathOpDrop->SelectedIndex;
 				switch (style)
 				{
-				case(0)://round
+					case(0)://round
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Round(IMAGESET[inds[i]]->Image, 0, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Round(IMAGESET[inds[i]]->Image, 0, true), true, true);
 						break;
 					}
-				case(1)://floor
+					case(1)://floor
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Floor(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Floor(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(2)://ceil
+					case(2)://ceil
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Ceil(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Ceil(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(3)://abs
+					case(3)://abs
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Abs(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Abs(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(4)://below one (changes < 1 to 1)
+					case(4)://below one (changes < 1 to 1)
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Floor(IMAGESET[inds[i]]->Image, 1), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Floor(IMAGESET[inds[i]]->Image, 1), true, true);
 						break;
 					}
-				case(6)://sqrt
+					case(6)://sqrt
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Sqrt(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Sqrt(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(7)://Log
+					case(7)://Log
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Log(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Log(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(8)://10^
+					case(8)://10^
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Exp(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Exp(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(9)://Ln
+					case(9)://Ln
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Ln(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Ln(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
-				case(10)://e^
+					case(10)://e^
 					{
-					IMAGESET[inds[i]]->SetImage(JPMath::Exp(IMAGESET[inds[i]]->Image, true), true, true);
+						IMAGESET[inds[i]]->SetImage(JPMath::Exp(IMAGESET[inds[i]]->Image, true), true, true);
 						break;
 					}
 				}
 			}
-			FileListDrop_SelectedIndexChanged(sender,e);
 			break;
 		}
-	case(12)://Median Filter
+		case(12)://Median Filter
 		{
 			int size = (int)ImageOpFilterWidthUpD->Value;
-			
-			for (int i=0; i<inds->Length; i++)
+
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
-			
-				String^ filename = IMAGESET[inds[i]]->FullFileName;
-				filename = filename->Substring(0,filename->LastIndexOf(".")) + "_MEDFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
-				FITSImage^ f = gcnew FITSImage(filename, JPMath::MedianFilter(IMAGESET[inds[i]]->Image, (size - 1) / 2, true), true, true);
-				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);//  CopyHeader(IMAGESET[inds[i]]);
-				IMAGESET->Add(f);
-				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count-1]->FileName);
-			}
-			FileListDrop->SelectedIndex = FileListDrop->Items->Count - 1;
-			BatchViewPanel->Enabled = true;
-			TBSaveBatch->Enabled = true;
-			TBSaveBatchOver->Enabled = true;
-			TBZipAllBtn->Enabled = true;
-			break;
-		}
-	case(13)://convolution filter
-		{
-			double FWHM = (double)ImageOpFilterWidthUpD->Value;
-			double sig = FWHM/(2*Math::Sqrt(2*Math::Log(2)));
-			array<double,2>^ g = JPMath::Gaussian(1, FWHM, (int)Math::Ceiling(sig*5), false);
-			g = JPMath::MatrixDivScalar(g, JPMath::Sum(g, true), false);
-			
-			for (int i=0; i<inds->Length; i++)
-			{
-				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				String^ filename = IMAGESET[inds[i]]->FullFileName;
-				filename = filename->Substring(0,filename->LastIndexOf(".")) + "_GAUSSFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
-				FITSImage^ f = gcnew FITSImage(filename, JPMath::MatrixConvolveMatrix(IMAGESET[inds[i]]->Image, g, true), true, true);
-				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);//  CopyHeader(IMAGESET[inds[i]]);
+				filename = filename->Substring(0, filename->LastIndexOf(".")) + "_MEDFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
+				FITSImage^ f = gcnew FITSImage(filename, JPMath::MedianFilter(IMAGESET[inds[i]]->Image, (size - 1) / 2, true), true, true);
+				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);
 				IMAGESET->Add(f);
-				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count-1]->FileName);
+				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count - 1]->FileName);
 			}
 			FileListDrop->SelectedIndex = FileListDrop->Items->Count - 1;
 			BatchViewPanel->Enabled = true;
 			TBSaveBatch->Enabled = true;
 			TBSaveBatchOver->Enabled = true;
+			TBSaveSetExtensions->Enabled = true;
 			TBZipAllBtn->Enabled = true;
 			break;
 		}
-	case(14)://Wiener Linear Filter
+		case(13)://convolution filter
+		{
+			double FWHM = (double)ImageOpFilterWidthUpD->Value;
+			double sig = FWHM / (2 * Math::Sqrt(2 * Math::Log(2)));
+			array<double, 2>^ g = JPMath::Gaussian(1, FWHM, (int)Math::Ceiling(sig * 5), false);
+			g = JPMath::MatrixDivScalar(g, JPMath::Sum(g, true), false);
+
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				String^ filename = IMAGESET[inds[i]]->FullFileName;
+				filename = filename->Substring(0, filename->LastIndexOf(".")) + "_GAUSSFILTER_" + ImageOpFilterWidthUpD->Value.ToString() + filename->Substring(filename->LastIndexOf("."));
+				FITSImage^ f = gcnew FITSImage(filename, JPMath::MatrixConvolveMatrix(IMAGESET[inds[i]]->Image, g, true), true, true);
+				f->Header->CopyHeaderFrom(IMAGESET[inds[i]]->Header);
+				IMAGESET->Add(f);
+				FileListDrop->Items->Add(IMAGESET[IMAGESET->Count - 1]->FileName);
+			}
+			FileListDrop->SelectedIndex = FileListDrop->Items->Count - 1;
+			BatchViewPanel->Enabled = true;
+			TBSaveBatch->Enabled = true;
+			TBSaveBatchOver->Enabled = true;
+			TBSaveSetExtensions->Enabled = true;
+			TBZipAllBtn->Enabled = true;
+			break;
+		}
+		case(14)://Wiener Linear Filter
 		{
 			MWNumericArray^ size = gcnew MWNumericArray((int)ImageOpFilterWidthUpD->Value);
 			MLCCDLAB::ImageFilter^ IF = gcnew MLCCDLAB::ImageFilter;
-			
-			for (int i=0; i<inds->Length; i++)
+
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				MWNumericArray^ z = gcnew MWNumericArray(IMAGESET[inds[i]]->Image);
-				MWNumericArray^ z2 = (MWNumericArray^)IF->WienerFilter2D(z,size);
+				MWNumericArray^ z2 = (MWNumericArray^)IF->WienerFilter2D(z, size);
 
-				IMAGESET->Add(gcnew FITSImage(String::Concat(IMAGESET[inds[i]]->FilePath,inds[i].ToString()),(array<double,2>^)z2->ToArray(MWArrayComponent::Real),true, true));
+				IMAGESET->Add(gcnew FITSImage(String::Concat(IMAGESET[inds[i]]->FilePath, inds[i].ToString()), (array<double, 2>^)z2->ToArray(MWArrayComponent::Real), true, true));
 				FileListDrop->Items->Add(inds[i].ToString());
 			}
 			FileListDrop->SelectedIndex = FileListDrop->Items->Count - 1;
 			BatchViewPanel->Enabled = true;
 			TBSaveBatch->Enabled = true;
 			TBSaveBatchOver->Enabled = true;
+			TBSaveSetExtensions->Enabled = true;
 			TBZipAllBtn->Enabled = true;
 			break;
 		}
-	case(15)://Wiener Deconv Filter
+		case(15)://Wiener Deconv Filter
 		{
 			MWNumericArray^ FWHM = gcnew MWNumericArray((double)ImageOpFilterWidthUpD->Value);
 			MLCCDLAB::ImageFilter^ IF = gcnew MLCCDLAB::ImageFilter;
 
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				MWNumericArray^ z = gcnew MWNumericArray(IMAGESET[inds[i]]->Image);
-				MWNumericArray^ z2 = (MWNumericArray^)IF->WienerDeconv(z,FWHM);
+				MWNumericArray^ z2 = (MWNumericArray^)IF->WienerDeconv(z, FWHM);
 
-				IMAGESET->Add(gcnew FITSImage(String::Concat(IMAGESET[inds[i]]->FilePath,inds[i].ToString()),(array<double,2>^)z2->ToArray(MWArrayComponent::Real),true, true));
+				IMAGESET->Add(gcnew FITSImage(String::Concat(IMAGESET[inds[i]]->FilePath, inds[i].ToString()), (array<double, 2>^)z2->ToArray(MWArrayComponent::Real), true, true));
 				FileListDrop->Items->Add(inds[i].ToString());
 			}
 			FileListDrop->SelectedIndex = FileListDrop->Items->Count - 1;
 			BatchViewPanel->Enabled = true;
 			TBSaveBatch->Enabled = true;
 			TBSaveBatchOver->Enabled = true;
+			TBSaveSetExtensions->Enabled = true;
 			TBZipAllBtn->Enabled = true;
 			break;
 		}
-	case(16)://flip horizontal
+		case(16)://flip horizontal
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->FlipHorizontal();
 			}
 			break;
 		}
-	case(17)://flip vertical
+		case(17)://flip vertical
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->FlipVertical();
 			}
 			break;
 		}
-	case(18)://invert (horiz + vertical)
+		case(18)://invert (horiz + vertical)
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->FlipHorizontal();
 				IMAGESET[inds[i]]->FlipVertical();
 			}
 			break;
 		}
-	case(19)://rotate CCW
+		case(19)://rotate CCW
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->RotateCW(false);
 			}
 			break;
 		}
-	case(20)://rotate CW
+		case(20)://rotate CW
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->RotateCW(true);
 			}
 			break;
 		}
-	case(21)://normalize
+		case(21)://normalize
 		{
-			for (int i=0; i<inds->Length; i++)
+			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
 
-				IMAGESET[inds[i]]->SetImage(JPMath::MatrixDivScalar(IMAGESET[inds[i]]->Image,IMAGESET[inds[i]]->Mean, true),true, true);
+				IMAGESET[inds[i]]->SetImage(JPMath::MatrixDivScalar(IMAGESET[inds[i]]->Image, IMAGESET[inds[i]]->Mean, true), true, true);
 			}
 			break;
 		}
-	case(22)://rotate
+		case(22)://rotate
 		{
 			try
 			{
-				/*MWNumericArray^ angle = gcnew MWNumericArray(-(double)RotateAngleUpD->Value);
-				MLCCDLAB::Rotate^ ROT = gcnew MLCCDLAB::Rotate;*/
-
-				for (int i=0; i<inds->Length; i++)
+				for (int i = 0; i < inds->Length; i++)
 				{
 					if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 						return;
-					ImageOpsWrkr->ReportProgress(i+1);
-
-					//rotate image here
-					/*MWNumericArray^ z = gcnew MWNumericArray(IMAGESET[inds[i]]->Image);
-					MWNumericArray^ z2 = (MWNumericArray^)ROT->ImageRotate(z, angle);
-					IMAGESET[inds[i]]->SetImage((array<double,2>^)z2->ToArray(MWArrayComponent::Real),true);*/
+					ImageOpsWrkr->ReportProgress(i + 1);
 
 					if (RotateBtnCntxtNearest->Checked)
 						IMAGESET[inds[i]]->SetImage(JPMath::RotateShiftArray(IMAGESET[inds[i]]->Image, (double)RotateAngleUpD->Value * Math::PI / 180, Double::MaxValue, Double::MaxValue, "nearest", 0, 0, true), true, true);
@@ -5056,91 +5077,106 @@ void Form1::ImageOpsWrkr_DoWork(System::Object ^sender, System::ComponentModel::
 			}
 			break;
 		}
-	case(23)://horz shift
+		case(23)://horz shift
 		{
 			int shift = (int)NShiftHorzUpD->Value;
 
-			for (int ii=0; ii<inds->Length; ii++)
+			for (int ii = 0; ii < inds->Length; ii++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(ii+1);
-				IMAGESET[inds[ii]]->SetImage(JPMath::ShiftArrayInt(IMAGESET[inds[ii]]->Image, shift, 0, true),true, true);
+				ImageOpsWrkr->ReportProgress(ii + 1);
+				IMAGESET[inds[ii]]->SetImage(JPMath::ShiftArrayInt(IMAGESET[inds[ii]]->Image, shift, 0, true), true, true);
 			}
 			break;
 		}
-	case(24)://vert shift
+		case(24)://vert shift
 		{
 			int shift = (int)NShiftVertUpD->Value;
-			
-			for (int ii=0; ii<inds->Length; ii++)
+
+			for (int ii = 0; ii < inds->Length; ii++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(ii+1);
-				IMAGESET[inds[ii]]->SetImage(JPMath::ShiftArrayInt(IMAGESET[inds[ii]]->Image, 0, shift, true),true, true);
+				ImageOpsWrkr->ReportProgress(ii + 1);
+				IMAGESET[inds[ii]]->SetImage(JPMath::ShiftArrayInt(IMAGESET[inds[ii]]->Image, 0, shift, true), true, true);
 			}
 			break;
 		}
-	case (25)://degradientX
-		{
-			for (int i=0; i<inds->Length; i++)
-			{
-				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-					return;
-				ImageOpsWrkr->ReportProgress(i+1);
-
-				IMAGESET[inds[i]]->SetImage(JPMath::DeGradient(IMAGESET[inds[i]]->Image, 0, true), true, true);
-			}
-			break;
-		}
-	case (26)://degradientY
-		{
-			for (int i=0; i<inds->Length; i++)
-			{
-				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-					return;
-				ImageOpsWrkr->ReportProgress(i+1);
-
-				IMAGESET[inds[i]]->SetImage(JPMath::DeGradient(IMAGESET[inds[i]]->Image, 1, true), true, true);
-			}
-			break;
-		}
-	case (27)://Normalize to key
-		{
-			try
-			{
-				String^ key = (String^)GetReg("CCDLAB", "NormHeaderKey");
-
-				for (int i=0; i<inds->Length; i++)
-				{
-					if (WAITBAR->DialogResult == ::DialogResult::Cancel)
-						return;
-					ImageOpsWrkr->ReportProgress(i+1);
-
-					double val = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue(key));
-
-					IMAGESET[inds[i]]->SetImage(JPMath::MatrixDivScalar(IMAGESET[inds[i]]->Image, val, true), true, true);
-					IMAGESET[inds[i]]->Header->AddKey("KEYNORM","true","Image Normalized to: " + key,-1);
-				}
-			}
-			catch (Exception ^e)
-			{
-				MessageBox::Show(e->Data + "	" + e->InnerException + "	" + e->Message + "	" + e->Source + "	" + e->StackTrace + "	" + e->TargetSite);
-			}
-			break;
-		}
-	case (28)://Hanning Window
+		case (25)://degradientX
 		{
 			for (int i = 0; i < inds->Length; i++)
 			{
 				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
 					return;
-				ImageOpsWrkr->ReportProgress(i+1);
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				IMAGESET[inds[i]]->SetImage(JPMath::DeGradient(IMAGESET[inds[i]]->Image, 0, true), true, true);
+			}
+			break;
+		}
+		case (26)://degradientY
+		{
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				IMAGESET[inds[i]]->SetImage(JPMath::DeGradient(IMAGESET[inds[i]]->Image, 1, true), true, true);
+			}
+			break;
+		}
+		case (27)://Normalize to key
+		{
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				double val = ::Convert::ToDouble(IMAGESET[inds[i]]->Header->GetKeyValue(NORMKEY));
+
+				IMAGESET[inds[i]]->SetImage(JPMath::MatrixDivScalar(IMAGESET[inds[i]]->Image, val, true), true, true);
+				IMAGESET[inds[i]]->Header->AddKey("KEYNORM", "true", "Image Normalized to: " + NORMKEY, -1);
+			}
+			break;
+		}
+		case (28)://Hanning Window
+		{
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
 
 				IMAGESET[inds[i]]->SetImage(JPMath::Hanning(IMAGESET[inds[i]]->Image, true), true, true);
 			}
 			break;
+		}
+		case (29)://de-NaN
+		{
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				IMAGESET[inds[i]]->SetImage(JPMath::Replace(IMAGESET[inds[i]]->Image, JPMath::Find(IMAGESET[inds[i]]->Image, Double::NaN, "==", true), 0, true), true, true);
+			}
+			break;
+		}
+		case (30)://de-Inf
+		{
+			for (int i = 0; i < inds->Length; i++)
+			{
+				if (WAITBAR->DialogResult == ::DialogResult::Cancel)
+					return;
+				ImageOpsWrkr->ReportProgress(i + 1);
+
+				IMAGESET[inds[i]]->SetImage(JPMath::Replace(IMAGESET[inds[i]]->Image, JPMath::Find(IMAGESET[inds[i]]->Image, Double::PositiveInfinity, "==", true), 0, true), true, true);
+				IMAGESET[inds[i]]->SetImage(JPMath::Replace(IMAGESET[inds[i]]->Image, JPMath::Find(IMAGESET[inds[i]]->Image, Double::NegativeInfinity, "==", true), 0, true), true, true);
+			}
 		}
 	}
 }
@@ -5158,7 +5194,7 @@ void Form1::ImageOpsWrkr_RunWorkerCompleted(System::Object^  sender, System::Com
 	WAITBAR->Close();
 	FileListDrop_SelectedIndexChanged(sender,e);
 
-	::GC::Collect(3,::GCCollectionMode::Forced);
+	::GC::Collect();// 3, ::GCCollectionMode::Forced);
 }
 
 void Form1::RotateBtn_Click(System::Object^  sender, System::EventArgs^  e)
@@ -6373,13 +6409,13 @@ void Form1::ImageFingerRmvToHere_Click(System::Object^  sender, System::EventArg
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
-		HCExtract->Enabled = false;
 		HCExtractKeyValue->Enabled = false;
 	}
 
@@ -6427,13 +6463,13 @@ void Form1::ImageFingerRecToHere_Click(System::Object^  sender, System::EventArg
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
-		HCExtract->Enabled = false;
 		HCExtractKeyValue->Enabled = false;
 	}
 
@@ -6465,13 +6501,13 @@ void Form1::ImageFingerRmvFromHere_Click(System::Object^  sender, System::EventA
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
-		HCExtract->Enabled = false;
 		HCExtractKeyValue->Enabled = false;
 	}
 
@@ -6521,13 +6557,13 @@ void Form1::ImageFingerRecFromHere_Click(System::Object^  sender, System::EventA
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
-		HCExtract->Enabled = false;
 		HCExtractKeyValue->Enabled = false;
 	}
 
@@ -6756,6 +6792,7 @@ void Form1::PadImageBtn_Click(System::Object^  sender, System::EventArgs^  e)
 		return;
 
 	SetReg("CCDLAB", "PADXSTART", xstart);
+	SetReg("CCDLAB", "PADYSTART", ystart);
 	SetReg("CCDLAB", "PADXEND", xend);
 	SetReg("CCDLAB", "PADYEND", yend);
 
@@ -6769,54 +6806,41 @@ void Form1::PadImageBtn_Click(System::Object^  sender, System::EventArgs^  e)
 	WAITBAR->ShowDialog();
 }
 
-void Form1::CutSubImBtn_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+void Form1::ExciseBtnContxtColumnsChck_Click(System::Object^ sender, System::EventArgs^ e)
 {
+	if (ExciseBtnContxtColumnsChck->Checked)
+		ExciseBtnContxtRowsChck->Checked = false;
+	else
+		ExciseBtnContxtColumnsChck->Checked = true;
 
+	ExciseBtnContxt->Show();
 }
 
-void Form1::CutSubImBtn_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+void Form1::ExciseBtnContxtRowsChck_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	if (e->Button != ::MouseButtons::Right)
-		return;
+	if (ExciseBtnContxtRowsChck->Checked)
+		ExciseBtnContxtColumnsChck->Checked = false;
+	else
+		ExciseBtnContxtRowsChck->Checked = true;
 
-	RangeDlg^ rdlg = gcnew RangeDlg();
-	rdlg->HelpButton = false;
-	rdlg->Text = "Set Image Range...";
-	rdlg->XStartUpD->Minimum = 1;
-	rdlg->XEndUpD->Minimum = 1;
-	rdlg->YStartUpD->Minimum = 1;
-	rdlg->YEndUpD->Minimum = 1;
-	try
+	ExciseBtnContxt->Show();
+}
+
+void Form1::ExciseImageBtn_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	if (!ExciseBtnContxtRowsChck->Checked && !ExciseBtnContxtColumnsChck->Checked)
 	{
-		rdlg->XStartUpD->Value = (int)GetReg("CCDLAB", "CROPXSTART");
-		rdlg->XEndUpD->Value = (int)GetReg("CCDLAB", "CROPXEND");
-		rdlg->YStartUpD->Value = (int)GetReg("CCDLAB", "CROPYSTART");
-		rdlg->YEndUpD->Value = (int)GetReg("CCDLAB", "CROPYEND");
+		MessageBox::Show("Please select rows or columns excise with right-click context menu on Excise button...", "Error...");
+		return;
 	}
-	catch (...) {};
 
-	if (rdlg->ShowDialog() == ::DialogResult::Cancel)
+	if (MessageBox::Show("Are you sure that you want to exise the indicated rows or columns from the image(s)?", "Ready?", MessageBoxButtons::OKCancel) == ::DialogResult::Cancel)
 		return;
-
-	int xstart = (int)rdlg->XStartUpD->Value;
-	int xend = (int)rdlg->XEndUpD->Value;
-	int ystart = (int)rdlg->YStartUpD->Value;
-	int yend = (int)rdlg->YEndUpD->Value;
-
-	if (xstart == 0 && ystart == 0 && xend == 0 && yend == 0)
-		return;
-
-	SetReg("CCDLAB", "CROPXSTART", xstart);
-	SetReg("CCDLAB", "CROPXEND", xend);
-	SetReg("CCDLAB", "CROPYSTART", ystart);
-	SetReg("CCDLAB", "CROPYEND", yend);
-
-	CROPPING = gcnew array<int>(4) { xstart, xend, ystart, yend };
 
 	Form1::Enabled = false;
 	WAITBAR = gcnew JPWaitBar::WaitBar();
 	WAITBAR->ProgressBar->Maximum = FileListDrop->Items->Count;
-	WAITBAR->Text = "Image Cropping...";
+	WAITBAR->Text = "Excising region...";
 	ImageOpsWrkr->RunWorkerAsync(9);
 	WAITBAR->ShowDialog();
 }
@@ -6851,13 +6875,13 @@ void Form1::FileDirectoryTxtContextMenuDelDirRmImg_Click(System::Object^  sender
 		BatchViewPanel->Enabled = false;
 		TBSaveBatch->Enabled = false;
 		TBSaveBatchOver->Enabled = false;
+		TBSaveSetExtensions->Enabled = false;
 		TBZipAllBtn->Enabled = false;
 		ImageBatchRedxnPnl->Enabled = false;
 		BatchCorrectionChck->Enabled = false;
 		BatchCorrectionChck->Checked = false;
 		HCInsertBatch->Enabled = false;
 		HCRemoveBatch->Enabled = false;
-		HCExtract->Enabled = false;
 		HCExtractKeyValue->Enabled = false;
 	}
 
@@ -6919,30 +6943,16 @@ void Form1::FMOpenImageExtensions_Click(System::Object^ sender, System::EventArg
 	if (ofd->ShowDialog() == ::DialogResult::Cancel)
 		return;
 
-	array<String^>^ extlist = JPFITS::FITSImage::GetAllExtensionNames(ofd->FileName);
-
-	if (extlist->Length == 0)
-	{
-		MessageBox::Show("No image extensions found in the file...", "Error");
-		return;
-	}
-
-	FMImageExtensionsLoader^ iel = gcnew FMImageExtensionsLoader();
-	
-	int n = 1;
-	for (int i = 0; i < extlist->Length; i++)
-		if (extlist[i] == "")
-		{
-			iel->ExtensionChckdListBox->Items->Add("Unnamed extension: " + n, true);
-			n++;
-		}
-		else
-			iel->ExtensionChckdListBox->Items->Add(extlist[i], true);
+	ImageExtensionsLoader^ iel = gcnew ImageExtensionsLoader(ofd->FileName);
 	
 	if (iel->ShowDialog() == ::DialogResult::Cancel)
 		return;
 
 	IMAGESET = gcnew JPFITS::FITSImageSet();
+
+	if (iel->IncludePrimaryChck->Checked)
+		IMAGESET->Add(gcnew JPFITS::FITSImage(ofd->FileName, nullptr, true, true, true, true));
+
 	for (int i = 0; i < iel->ExtensionChckdListBox->Items->Count; i++)
 		if (iel->ExtensionChckdListBox->GetItemChecked(i))
 			IMAGESET->Add(gcnew JPFITS::FITSImage(ofd->FileName, i + 1, nullptr, true, true, true, true));
@@ -6950,5 +6960,17 @@ void Form1::FMOpenImageExtensions_Click(System::Object^ sender, System::EventArg
 	AUTOLOADIMAGES = true;
 	AUTOLOADIMAGESFILES = gcnew array<String^>(1) { "SingleOut" };
 	FMLoad_Click(sender, e);
+}
+
+void Form1::TBSaveSetExtensions_Click(System::Object^ sender, System::EventArgs^ e)
+{
+	ImageExtensionsSaver^ ies = gcnew ImageExtensionsSaver(IMAGESET, HeaderTxt);
+
+	ies->ShowDialog();
+	
+	if (ies->DialogResult == ::DialogResult::Cancel)
+		MessageBox::Show("here");//return;
+
+	//IMAGESET->WriteAsExtensions(ies->FILENAME, ies->FirstAsPrimaryChck->Checked, nullptr, ies->EXTENSIONNAMES, ies->PRECISIONTYPECODES);
 }
 

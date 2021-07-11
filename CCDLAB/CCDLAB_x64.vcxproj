@@ -275,9 +275,10 @@
     <ClCompile Include="EditKeyDlg.cpp" />
     <ClCompile Include="EditValueDlg.cpp" />
     <ClCompile Include="FitParametersWindow.cpp" />
-    <ClCompile Include="FMImageExtensionsLoader.cpp" />
+    <ClCompile Include="ImageExtensionsLoader.cpp" />
     <ClCompile Include="GSEExtractImg.cpp" />
     <ClCompile Include="HeaderKey.cpp" />
+    <ClCompile Include="ImageExtensionsSaver.cpp" />
     <ClCompile Include="JPPlot.cpp" />
     <ClCompile Include="PSETableViewer.cpp" />
     <ClCompile Include="RADecBox.cpp" />
@@ -309,7 +310,7 @@
     <ClInclude Include="FitParametersWindow.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="FMImageExtensionsLoader.h">
+    <ClInclude Include="ImageExtensionsLoader.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Form1.h">
@@ -319,6 +320,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="HeaderKey.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="ImageExtensionsSaver.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="JPPlot.h">
@@ -386,8 +390,8 @@
       <DependentUpon>FitParametersWindow.h</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FMImageExtensionsLoader.resx">
-      <DependentUpon>FMImageExtensionsLoader.h</DependentUpon>
+    <EmbeddedResource Include="ImageExtensionsLoader.resx">
+      <DependentUpon>ImageExtensionsLoader.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resX">
       <DependentUpon>Form1.h</DependentUpon>
@@ -400,6 +404,9 @@
     <EmbeddedResource Include="HeaderKey.resx">
       <DependentUpon>HeaderKey.h</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageExtensionsSaver.resx">
+      <DependentUpon>ImageExtensionsSaver.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="JPPlot.resx">
       <DependentUpon>JPPlot.h</DependentUpon>

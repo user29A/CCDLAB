@@ -240,12 +240,15 @@ namespace CCDLAB {
 			this->Controls->Add(this->label1);
 			this->Controls->Add(this->KeyNameTxt);
 			this->Controls->Add(this->CommentKeyLineTxt);
-			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedToolWindow;
+			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
 			this->Name = L"EditKeyDlg";
 			this->RightToLeftLayout = true;
+			this->ShowIcon = false;
+			this->ShowInTaskbar = false;
 			this->SizeGripStyle = System::Windows::Forms::SizeGripStyle::Hide;
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
 			this->Text = L"Edit/Create Key...";
+			this->TopMost = true;
 			this->Load += gcnew System::EventHandler(this, &EditKeyDlg::EditKeyDlg_Load);
 			this->ResumeLayout(false);
 			this->PerformLayout();

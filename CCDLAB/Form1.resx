@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <metadata name="ImageWindowCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1946, 95</value>
+    <value>17, 134</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="ViewNextBtn.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -226,7 +226,7 @@
 </value>
   </data>
   <metadata name="ImageFingerPointContext.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1223, 134</value>
+    <value>1382, 134</value>
   </metadata>
   <data name="CutSubImBtn2.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -251,7 +251,7 @@
     <value>636, 17</value>
   </metadata>
   <metadata name="SIZECntxtMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1551, 134</value>
+    <value>1710, 134</value>
   </metadata>
   <metadata name="InfoCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1856, 56</value>
@@ -260,7 +260,7 @@
     <value>1473, 17</value>
   </metadata>
   <metadata name="ScanBtnContext.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1413, 134</value>
+    <value>1572, 134</value>
   </metadata>
   <metadata name="SubImageCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>955, 17</value>
@@ -473,6 +473,16 @@
         wlssz0/+92X/iBmM+dw13KXN09hs/7WpLeoVNAw/EjhzcvG0ZlAAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="TBSaveSetExtensions.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADdSURBVEhL7ZLBDcIwDEUzGqMwSkbpKBmEQ0fgzgHsH8cx
+        jaliqdALX/oHW/l+bZz0M+WSnkdZRnZxs9yKmutZedkBoofWDIcBkgNgIQBZRldx4w1ANfS475uE7OmA
+        6wbANQu9HbOQNQCu2TK6qy3nCMvILm7aL+N6Vl52gOgh+dUwwFyRuwMsygKohrzFWpOQPR3wf0Xb7ADR
+        Q/KrYYC5IncHWJQFUA15i7UmIXs64OuvqAGW9QJHAS3HvRigfdkHs2KAQgfJYYDkwoAZzQFyXZQCqI5Y
+        ATSj9erklF7FAq1N8Sz/9wAAAABJRU5ErkJggg==
+</value>
+  </data>
   <data name="TBFileSavePrecOpts.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -565,7 +575,7 @@
 </value>
   </data>
   <metadata name="PSEFitResultsCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1071, 134</value>
+    <value>1230, 134</value>
   </metadata>
   <metadata name="PSEDropContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 173</value>
@@ -759,6 +769,17 @@
         oDl9ZU5f+nO/LS3d05uUd6/6FIIAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="ExciseImageBtn.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAV
+        /QAAFf0BzXBRYQAAAHdJREFUSEvtkjEKgDAMReNRil7D4/UKLg4O3jCuQmwlk34IgQgF++BN/fRRkZok
+        LYc81aMY/hYQGbzCANjdppVntyAAd0WadhGvKIB2Vfg9I/0+MG5yekUXoV21vICz33cA7zjrv+oDBfQo
+        hh4w6QGTHjBpKEB0AceWc44iWYPqAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <metadata name="ExciseBtnContxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>857, 95</value>
+  </metadata>
   <metadata name="UVAlgorithmCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>967, 56</value>
   </metadata>
@@ -770,7 +791,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADY
-        EAAAAk1TRnQBSQFMAgEBCAEAATQBGAE0ARgBEAEAARABAAT/ARkBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        EAAAAk1TRnQBSQFMAgEBCAEAAYwBGAGMARgBEAEAARABAAT/ARkBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABMAMAAQEBAAEYBgABJP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AB4Ak/8D8STdA+oJ/wPAG5kBpAKg
         Bv8D8Qb/A+oY3QPjA90D4w//A9cehgPdA/8D+AJmAcwCMwGZAjMBmQIzAZkCMwGZAjMBmQIzAZkCMwGZ
         AjMBmQIzAZkCMwGZAjMBmQIzAZkDlgPqBv8DQgNmGIYDAAP/A+oDdwP/A+MDXxIABhwGFgMpA+MJ/wPd
@@ -1446,10 +1467,10 @@
     <value>698, 95</value>
   </metadata>
   <metadata name="CCDLABTaskBarIcon.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>857, 95</value>
+    <value>995, 95</value>
   </metadata>
   <metadata name="TaskBarCntxt.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1018, 95</value>
+    <value>1156, 95</value>
   </metadata>
   <data name="CCDLABTaskBarIcon.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1494,40 +1515,40 @@
 </value>
   </data>
   <metadata name="TBDestructTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1140, 95</value>
+    <value>1278, 95</value>
   </metadata>
   <metadata name="UVOpenUCFDlg.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>131, 17</value>
   </metadata>
   <metadata name="ImageOpsWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1282, 95</value>
+    <value>1420, 95</value>
   </metadata>
   <metadata name="UVCentroidWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1557, 95</value>
+    <value>1695, 95</value>
   </metadata>
   <metadata name="SurfWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>855, 17</value>
   </metadata>
   <metadata name="FormLoadBGW.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1698, 95</value>
+    <value>1836, 95</value>
   </metadata>
   <metadata name="UVHistWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1831, 95</value>
+    <value>1969, 95</value>
   </metadata>
   <metadata name="ImageCntxtViewWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 134</value>
+    <value>176, 134</value>
   </metadata>
   <metadata name="PSEFitWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>184, 134</value>
+    <value>343, 134</value>
   </metadata>
   <metadata name="BatchBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>295, 134</value>
+    <value>454, 134</value>
   </metadata>
   <metadata name="WriteImageSetBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>419, 134</value>
+    <value>578, 134</value>
   </metadata>
   <metadata name="BatchMovieTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>743, 134</value>
+    <value>902, 134</value>
   </metadata>
   <metadata name="ParcelUVCentroidWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1549, 56</value>
@@ -1548,7 +1569,7 @@
     <value>1683, 17</value>
   </metadata>
   <metadata name="DiscardL1DuplicateWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>889, 134</value>
+    <value>1048, 134</value>
   </metadata>
   <metadata name="ConvertUVCentroidListToImgWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1090, 17</value>
@@ -1566,7 +1587,7 @@
     <value>522, 95</value>
   </metadata>
   <metadata name="SIZECntxtBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1686, 134</value>
+    <value>1845, 134</value>
   </metadata>
   <metadata name="ExtractL1ArchiveBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>270, 17</value>
@@ -1575,16 +1596,16 @@
     <value>1942, 17</value>
   </metadata>
   <metadata name="CleanVISBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1416, 95</value>
+    <value>1554, 95</value>
   </metadata>
   <metadata name="WCSAutoBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1327, 17</value>
   </metadata>
   <metadata name="DriftFromPCPSTrackBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1831, 134</value>
+    <value>1990, 134</value>
   </metadata>
   <metadata name="UVFinalizeBGWrkr.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>593, 134</value>
+    <value>752, 134</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>191</value>

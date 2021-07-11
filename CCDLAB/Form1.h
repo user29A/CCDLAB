@@ -36,7 +36,8 @@ See http://www.gnu.org/licenses/. */
 #include "RADecBox.h"
 #include "PSETableViewer.h"
 #include "WCSAutoCVALList1.h"
-#include "FMImageExtensionsLoader.h"
+#include "ImageExtensionsLoader.h"
+#include "ImageExtensionsSaver.h"
 
 namespace CCDLAB {
 
@@ -126,8 +127,9 @@ namespace CCDLAB {
 	private: System::Windows::Forms::Button^  CutSubImBtn;
 	private: System::Windows::Forms::NumericUpDown^  ScmTxt;
 	private: System::Windows::Forms::CheckBox^  SCMChck;
-	private: System::Windows::Forms::ToolStripMenuItem^  HCExtract;
-	private: System::Windows::Forms::ToolStripMenuItem^  HCExtractKeyValue;
+        private: System::Windows::Forms::ToolStripMenuItem^ HCExtractKeyValue;
+
+
     private: System::Windows::Forms::MenuStrip^  MainMenu;
 	private: System::Windows::Forms::ToolStripMenuItem^  FileMenu;
 	private: System::Windows::Forms::ToolStripMenuItem^  FMLoad;
@@ -674,10 +676,11 @@ private: System::Windows::Forms::Button^  FlipVertBtn;
 private: System::Windows::Forms::Button^  RotCCWBtn;
 private: System::Windows::Forms::Button^  RotCWBtn;
 
-private: System::Windows::Forms::ToolStripMenuItem^  HCExtractListValues;
-private: System::Windows::Forms::ToolStripMenuItem^  HCPlot;
-private: System::Windows::Forms::ToolStripMenuItem^  HCPlotKeyValues;
-private: System::Windows::Forms::ToolStripMenuItem^  HCPlotListValues;
+
+    private: System::Windows::Forms::ToolStripMenuItem^ HCPlotKeyValues;
+
+
+
 private: System::Windows::Forms::TabPage^  BatchStackingTab;
 private: System::Windows::Forms::Label^  label18;
 
@@ -844,7 +847,7 @@ private: System::Windows::Forms::ToolStripMenuItem^  ImageWndwCntxtPlotCol;
 
 
 
-private: System::Windows::Forms::ToolStripMenuItem^  EMCopyHeader;
+
 private: System::Windows::Forms::DataVisualization::Charting::Chart^  Chart1;
 private: System::ComponentModel::BackgroundWorker^  ManRegWrkr;
 private: System::Windows::Forms::NumericUpDown^  ManRegSrcHWUpD;
@@ -928,12 +931,13 @@ private: System::Windows::Forms::ToolStripMenuItem^  CorrectBackgroundCountsChck
 private: System::Windows::Forms::ToolStripTextBox^  BackgroundCountsPixelFrameTxt;
 private: System::Windows::Forms::Label^  SubImageSizeTxt;
 private: System::Windows::Forms::ToolStripMenuItem^  ExtractROICentroidListMenuItem;
+    private: System::Windows::Forms::ToolStripMenuItem^ HCCopyKeyValue;
 
 
 
-private: System::Windows::Forms::ToolStripMenuItem^  HCCopy;
-private: System::Windows::Forms::ToolStripMenuItem^  HCCopyKeyValue;
-private: System::Windows::Forms::ToolStripMenuItem^  HCCopyListValue;
+
+
+
 private: System::Windows::Forms::ToolStripMenuItem^  OptInvertImageView;
 private: System::Windows::Forms::ToolStripMenuItem^  HCInsertSelectedToOthers;
 private: System::Windows::Forms::ToolStripMenuItem^  perFrameMenuItem;
@@ -1109,7 +1113,8 @@ private: System::Windows::Forms::ToolStripMenuItem^  WCSRADecShowChck;
 private: System::Windows::Forms::ToolStripMenuItem^  copyToolStripMenuItem;
 private: System::Windows::Forms::ToolStripMenuItem^  WCSCopyToLoadedImgs;
 private: System::Windows::Forms::ToolStripMenuItem^  WCSCopyToDiskFiles;
-private: System::Windows::Forms::ToolStripMenuItem^  WCSPlotSolutionPtsBtn;
+    private: System::Windows::Forms::ToolStripMenuItem^ WCSSolutionPtsBtn;
+
 private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator30;
 private: System::Windows::Forms::ToolStripMenuItem^  WCSRADecManual;
 
@@ -1305,7 +1310,9 @@ private: System::Windows::Forms::ToolStripMenuItem^  UVAutoPSFPostMergeChck;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextPlotAll;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextPlotNone;
 	private: System::Windows::Forms::ToolStripMenuItem^  PSEDropContextSave;
-	private: System::Windows::Forms::ListBox^  HeaderTxt;
+    public: System::Windows::Forms::ListBox^ HeaderTxt;
+    private:
+
 	private: System::Windows::Forms::ComboBox^  PSEFitStatsTypeDrop;
 	private: System::Windows::Forms::ComboBox^  ROIFitStatsTypeDrop;
     private: System::Windows::Forms::ToolStripMenuItem^ L1SpecifySourceNameChck;
@@ -1320,6 +1327,26 @@ private: System::Windows::Forms::ToolStripMenuItem^  UVAutoPSFPostMergeChck;
     private: System::Windows::Forms::ToolStripMenuItem^ L1MachineStandardChck;
     private: System::Windows::Forms::ToolStripMenuItem^ L1MachineExtremeChck;
     private: System::Windows::Forms::ToolStripMenuItem^ FMOpenImageExtensions;
+    private: System::Windows::Forms::ToolStripButton^ TBSaveSetExtensions;
+    private: System::Windows::Forms::Button^ ExciseImageBtn;
+    private: System::Windows::Forms::ContextMenuStrip^ ExciseBtnContxt;
+    private: System::Windows::Forms::ToolStripMenuItem^ ExciseBtnContxtColumnsChck;
+    private: System::Windows::Forms::ToolStripMenuItem^ ExciseBtnContxtRowsChck;
+    private: System::Windows::Forms::ToolStripMenuItem^ EditHeadersMenu;
+    private: System::Windows::Forms::ToolStripMenuItem^ EMCopyHeader;
+    private: System::Windows::Forms::ToolStripMenuItem^ foundFileListToolStripMenuItem;
+        private: System::Windows::Forms::ToolStripMenuItem^ HCCopyListValue;
+    private: System::Windows::Forms::ToolStripMenuItem^ HCPlotListValues;
+    private: System::Windows::Forms::ToolStripMenuItem^ HCExtractListValues;
+    private: System::Windows::Forms::Button^ PSEGroupizeBtn;
+    private: System::Windows::Forms::ToolStripMenuItem^ WCSPlotSolutionPtnBtn;
+    private: System::Windows::Forms::ToolStripSeparator^ toolStripSeparator26;
+        private: System::Windows::Forms::ToolStripMenuItem^ WCSSolutionPtsCopyTableBtn;
+
+
+
+
+
 
 
 
@@ -1791,6 +1818,7 @@ private: System::ComponentModel::IContainer^  components;
             this->TBSaveOver = (gcnew System::Windows::Forms::ToolStripButton());
             this->TBSaveBatch = (gcnew System::Windows::Forms::ToolStripButton());
             this->TBSaveBatchOver = (gcnew System::Windows::Forms::ToolStripButton());
+            this->TBSaveSetExtensions = (gcnew System::Windows::Forms::ToolStripButton());
             this->TBFileSavePrecOpts = (gcnew System::Windows::Forms::ToolStripDropDownButton());
             this->TBOptFileSavePrecDbl = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->TBOptFileSavePrecInt32 = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -1872,6 +1900,7 @@ private: System::ComponentModel::IContainer^  components;
             this->label21 = (gcnew System::Windows::Forms::Label());
             this->label27 = (gcnew System::Windows::Forms::Label());
             this->label22 = (gcnew System::Windows::Forms::Label());
+            this->PSEGroupizeBtn = (gcnew System::Windows::Forms::Button());
             this->CutSubImBtn = (gcnew System::Windows::Forms::Button());
             this->RotCCWBtn = (gcnew System::Windows::Forms::Button());
             this->RotCWBtn = (gcnew System::Windows::Forms::Button());
@@ -1900,6 +1929,10 @@ private: System::ComponentModel::IContainer^  components;
             this->KeyValNormBtn = (gcnew System::Windows::Forms::Button());
             this->PadImageBtn = (gcnew System::Windows::Forms::Button());
             this->BatchQuadratureChck = (gcnew System::Windows::Forms::CheckBox());
+            this->ExciseImageBtn = (gcnew System::Windows::Forms::Button());
+            this->ExciseBtnContxt = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
+            this->ExciseBtnContxtColumnsChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->ExciseBtnContxtRowsChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->MainTab = (gcnew System::Windows::Forms::TabControl());
             this->ProcessingTab = (gcnew System::Windows::Forms::TabPage());
             this->ImageBatchRedxnPnl = (gcnew System::Windows::Forms::GroupBox());
@@ -2072,15 +2105,9 @@ private: System::ComponentModel::IContainer^  components;
             this->HCRemove = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->HCRemoveCurrent = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->HCRemoveBatch = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCCopy = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->HCCopyKeyValue = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCCopyListValue = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCExtract = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->HCExtractKeyValue = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCExtractListValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCPlot = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->HCPlotKeyValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->HCPlotListValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->MainMenu = (gcnew System::Windows::Forms::MenuStrip());
             this->FileMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->FMLoad = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2100,11 +2127,16 @@ private: System::ComponentModel::IContainer^  components;
             this->toolStripSeparator4 = (gcnew System::Windows::Forms::ToolStripSeparator());
             this->FMQuit = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->EditMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->EMCopyHeader = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->EditRGBMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->RGBNormalizeMenuBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->RGBCombineMenuBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->RBGSaveMenuBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->EditHeadersMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->EMCopyHeader = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->foundFileListToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->HCCopyListValue = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->HCExtractListValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->HCPlotListValues = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->OptsMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->fileSavingPrecisionToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->OptFileSavePrecDbl = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2123,7 +2155,7 @@ private: System::ComponentModel::IContainer^  components;
             this->WCSCopyToDiskFiles = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->WCSClearMenuBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->WCSClearAllChck = (gcnew System::Windows::Forms::ToolStripMenuItem());
-            this->WCSPlotSolutionPtsBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->WCSSolutionPtsBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->WCSClearPlotSolutionPtsBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->toolStripSeparator30 = (gcnew System::Windows::Forms::ToolStripSeparator());
             this->WCSRADecManual = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -2409,6 +2441,9 @@ private: System::ComponentModel::IContainer^  components;
             this->DriftFromPCPSTrackBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
             this->UVFinalizeBGWrkr = (gcnew System::ComponentModel::BackgroundWorker());
             this->HeaderTxt = (gcnew System::Windows::Forms::ListBox());
+            this->WCSPlotSolutionPtnBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->toolStripSeparator26 = (gcnew System::Windows::Forms::ToolStripSeparator());
+            this->WCSSolutionPtsCopyTableBtn = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->ImageWindowCntxt->SuspendLayout();
             this->ImageFingerPointContext->SuspendLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->HalfWidthXUpD))->BeginInit();
@@ -2447,6 +2482,7 @@ private: System::ComponentModel::IContainer^  components;
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->RotateAngleUpD))->BeginInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NShiftHorzUpD))->BeginInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NShiftVertUpD))->BeginInit();
+            this->ExciseBtnContxt->SuspendLayout();
             this->MainTab->SuspendLayout();
             this->ProcessingTab->SuspendLayout();
             this->ImageBatchRedxnPnl->SuspendLayout();
@@ -4561,17 +4597,17 @@ private: System::ComponentModel::IContainer^  components;
             this->ToolBar->BackColor = System::Drawing::Color::Gainsboro;
             this->ToolBar->Dock = System::Windows::Forms::DockStyle::None;
             this->ToolBar->GripStyle = System::Windows::Forms::ToolStripGripStyle::Hidden;
-            this->ToolBar->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(18) {
+            this->ToolBar->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(19) {
                 this->TBLoad, this->TBLoadSubFrame,
                     this->TBAdd, this->TBReload, this->toolStripSeparator5, this->TBRecentFiles, this->TBFind, this->TBViewFound, this->TBOpenFound,
-                    this->toolStripSeparator6, this->TBSave, this->TBSaveOver, this->TBSaveBatch, this->TBSaveBatchOver, this->TBFileSavePrecOpts,
-                    this->TBZipAllBtn, this->toolStripSeparator1, this->TBQuit
+                    this->toolStripSeparator6, this->TBSave, this->TBSaveOver, this->TBSaveBatch, this->TBSaveBatchOver, this->TBSaveSetExtensions,
+                    this->TBFileSavePrecOpts, this->TBZipAllBtn, this->toolStripSeparator1, this->TBQuit
             });
             this->ToolBar->LayoutStyle = System::Windows::Forms::ToolStripLayoutStyle::VerticalStackWithOverflow;
             this->ToolBar->Location = System::Drawing::Point(0, 24);
             this->ToolBar->Name = L"ToolBar";
             this->ToolBar->RenderMode = System::Windows::Forms::ToolStripRenderMode::Professional;
-            this->ToolBar->Size = System::Drawing::Size(33, 365);
+            this->ToolBar->Size = System::Drawing::Size(33, 388);
             this->ToolBar->TabIndex = 37;
             this->ToolBar->Text = L"toolStrip1";
             // 
@@ -4721,6 +4757,18 @@ private: System::ComponentModel::IContainer^  components;
             this->TBSaveBatchOver->Text = L"toolStripButton1";
             this->TBSaveBatchOver->ToolTipText = L"Overwrite All Files";
             this->TBSaveBatchOver->Click += gcnew System::EventHandler(this, &Form1::TBSaveBatchOver_Click);
+            // 
+            // TBSaveSetExtensions
+            // 
+            this->TBSaveSetExtensions->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Image;
+            this->TBSaveSetExtensions->Enabled = false;
+            this->TBSaveSetExtensions->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"TBSaveSetExtensions.Image")));
+            this->TBSaveSetExtensions->ImageTransparentColor = System::Drawing::Color::Magenta;
+            this->TBSaveSetExtensions->Name = L"TBSaveSetExtensions";
+            this->TBSaveSetExtensions->Size = System::Drawing::Size(31, 20);
+            this->TBSaveSetExtensions->Text = L"toolStripButton1";
+            this->TBSaveSetExtensions->ToolTipText = L"Save Set as Extensions";
+            this->TBSaveSetExtensions->Click += gcnew System::EventHandler(this, &Form1::TBSaveSetExtensions_Click);
             // 
             // TBFileSavePrecOpts
             // 
@@ -5190,6 +5238,7 @@ private: System::ComponentModel::IContainer^  components;
             this->FindSourcesPnl->Controls->Add(this->label21);
             this->FindSourcesPnl->Controls->Add(this->label27);
             this->FindSourcesPnl->Controls->Add(this->label22);
+            this->FindSourcesPnl->Controls->Add(this->PSEGroupizeBtn);
             this->FindSourcesPnl->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
             this->FindSourcesPnl->Location = System::Drawing::Point(6, 6);
@@ -5655,6 +5704,18 @@ private: System::ComponentModel::IContainer^  components;
             this->label22->TabIndex = 3;
             this->label22->Text = L"Max:";
             // 
+            // PSEGroupizeBtn
+            // 
+            this->PSEGroupizeBtn->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->PSEGroupizeBtn->Location = System::Drawing::Point(110, 95);
+            this->PSEGroupizeBtn->Name = L"PSEGroupizeBtn";
+            this->PSEGroupizeBtn->Size = System::Drawing::Size(57, 22);
+            this->PSEGroupizeBtn->TabIndex = 65;
+            this->PSEGroupizeBtn->Text = L"Groupize";
+            this->PSEGroupizeBtn->UseVisualStyleBackColor = true;
+            this->PSEGroupizeBtn->Click += gcnew System::EventHandler(this, &Form1::PSEGroupizeBtn_Click);
+            // 
             // CutSubImBtn
             // 
             this->CutSubImBtn->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"CutSubImBtn.BackgroundImage")));
@@ -5668,7 +5729,6 @@ private: System::ComponentModel::IContainer^  components;
             this->Tooltip->SetToolTip(this->CutSubImBtn, L"Cut out selected region of interest (cursor box).  RIGHT CLICK to specify range.");
             this->CutSubImBtn->UseVisualStyleBackColor = true;
             this->CutSubImBtn->Click += gcnew System::EventHandler(this, &Form1::CutSubImBtn_Click);
-            this->CutSubImBtn->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::CutSubImBtn_MouseClick);
             this->CutSubImBtn->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::CutSubImBtn_MouseUp);
             // 
             // RotCCWBtn
@@ -6004,6 +6064,46 @@ private: System::ComponentModel::IContainer^  components;
             this->Tooltip->SetToolTip(this->BatchQuadratureChck, L"Compute the Quadrature Sum Image of the Image Set");
             this->BatchQuadratureChck->CheckedChanged += gcnew System::EventHandler(this, &Form1::BatchQuadratureChck_CheckedChanged);
             // 
+            // ExciseImageBtn
+            // 
+            this->ExciseImageBtn->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"ExciseImageBtn.BackgroundImage")));
+            this->ExciseImageBtn->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+            this->ExciseImageBtn->ContextMenuStrip = this->ExciseBtnContxt;
+            this->ExciseImageBtn->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->ExciseImageBtn->Location = System::Drawing::Point(131, 122);
+            this->ExciseImageBtn->Name = L"ExciseImageBtn";
+            this->ExciseImageBtn->Size = System::Drawing::Size(29, 29);
+            this->ExciseImageBtn->TabIndex = 69;
+            this->Tooltip->SetToolTip(this->ExciseImageBtn, L"Excise Image(s) Region");
+            this->ExciseImageBtn->UseVisualStyleBackColor = true;
+            this->ExciseImageBtn->Click += gcnew System::EventHandler(this, &Form1::ExciseImageBtn_Click);
+            // 
+            // ExciseBtnContxt
+            // 
+            this->ExciseBtnContxt->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
+                this->ExciseBtnContxtColumnsChck,
+                    this->ExciseBtnContxtRowsChck
+            });
+            this->ExciseBtnContxt->Name = L"ExciseBtnContxt";
+            this->ExciseBtnContxt->Size = System::Drawing::Size(153, 48);
+            // 
+            // ExciseBtnContxtColumnsChck
+            // 
+            this->ExciseBtnContxtColumnsChck->CheckOnClick = true;
+            this->ExciseBtnContxtColumnsChck->Name = L"ExciseBtnContxtColumnsChck";
+            this->ExciseBtnContxtColumnsChck->Size = System::Drawing::Size(152, 22);
+            this->ExciseBtnContxtColumnsChck->Text = L"ROI Column(s)";
+            this->ExciseBtnContxtColumnsChck->Click += gcnew System::EventHandler(this, &Form1::ExciseBtnContxtColumnsChck_Click);
+            // 
+            // ExciseBtnContxtRowsChck
+            // 
+            this->ExciseBtnContxtRowsChck->CheckOnClick = true;
+            this->ExciseBtnContxtRowsChck->Name = L"ExciseBtnContxtRowsChck";
+            this->ExciseBtnContxtRowsChck->Size = System::Drawing::Size(152, 22);
+            this->ExciseBtnContxtRowsChck->Text = L"ROI Row(s)";
+            this->ExciseBtnContxtRowsChck->Click += gcnew System::EventHandler(this, &Form1::ExciseBtnContxtRowsChck_Click);
+            // 
             // MainTab
             // 
             this->MainTab->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
@@ -6171,6 +6271,7 @@ private: System::ComponentModel::IContainer^  components;
             // 
             // ImageCorrxnPnl
             // 
+            this->ImageCorrxnPnl->Controls->Add(this->ExciseImageBtn);
             this->ImageCorrxnPnl->Controls->Add(this->PadImageBtn);
             this->ImageCorrxnPnl->Controls->Add(this->KeyValNormBtn);
             this->ImageCorrxnPnl->Controls->Add(this->NShiftVertUpD);
@@ -6429,9 +6530,10 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->MathOpDrop->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
             this->MathOpDrop->FormattingEnabled = true;
-            this->MathOpDrop->Items->AddRange(gcnew cli::array< System::Object^  >(15) {
+            this->MathOpDrop->Items->AddRange(gcnew cli::array< System::Object^  >(17) {
                 L"Round", L"Floor", L"Ceil", L"Abs", L"BelowOne",
-                    L"Normalize", L"Sqrt", L"Log", L"10^", L"Ln", L"e^", L"deGradient-X", L"deGradient-Y", L"Hanning Window", L"Sort (asc.)"
+                    L"Normalize", L"Sqrt", L"Log", L"10^", L"Ln", L"e^", L"deGradient-X", L"deGradient-Y", L"Hanning Window", L"Sort (asc.)", L"de-NaN",
+                    L"de-Inf"
             });
             this->MathOpDrop->Location = System::Drawing::Point(206, 3);
             this->MathOpDrop->Name = L"MathOpDrop";
@@ -7843,12 +7945,12 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->HeaderCntxt->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(6) {
                 this->HCEdit, this->HCInsert,
-                    this->HCRemove, this->HCCopy, this->HCExtract, this->HCPlot
+                    this->HCRemove, this->HCCopyKeyValue, this->HCExtractKeyValue, this->HCPlotKeyValues
             });
             this->HeaderCntxt->Name = L"HeaderCntxtMenu";
             this->HeaderCntxt->RenderMode = System::Windows::Forms::ToolStripRenderMode::Professional;
             this->HeaderCntxt->ShowImageMargin = false;
-            this->HeaderCntxt->Size = System::Drawing::Size(205, 136);
+            this->HeaderCntxt->Size = System::Drawing::Size(252, 136);
             this->HeaderCntxt->Click += gcnew System::EventHandler(this, &Form1::HeaderCntxtMenu_Click);
             // 
             // HCEdit
@@ -7860,7 +7962,7 @@ private: System::ComponentModel::IContainer^  components;
             this->HCEdit->Name = L"HCEdit";
             this->HCEdit->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::E));
             this->HCEdit->ShowShortcutKeys = false;
-            this->HCEdit->Size = System::Drawing::Size(204, 22);
+            this->HCEdit->Size = System::Drawing::Size(251, 22);
             this->HCEdit->Text = L"Edit Key";
             this->HCEdit->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
             // 
@@ -7885,7 +7987,7 @@ private: System::ComponentModel::IContainer^  components;
                     this->HCInsertBatch, this->HCInsertSelectedToOthers
             });
             this->HCInsert->Name = L"HCInsert";
-            this->HCInsert->Size = System::Drawing::Size(204, 22);
+            this->HCInsert->Size = System::Drawing::Size(251, 22);
             this->HCInsert->Text = L"Insert";
             this->HCInsert->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
             // 
@@ -7918,7 +8020,7 @@ private: System::ComponentModel::IContainer^  components;
                     this->HCRemoveBatch
             });
             this->HCRemove->Name = L"HCRemove";
-            this->HCRemove->Size = System::Drawing::Size(204, 22);
+            this->HCRemove->Size = System::Drawing::Size(251, 22);
             this->HCRemove->Text = L"Remove";
             // 
             // HCRemoveCurrent
@@ -7936,77 +8038,26 @@ private: System::ComponentModel::IContainer^  components;
             this->HCRemoveBatch->Text = L"Selected Key(s) from All Headers";
             this->HCRemoveBatch->Click += gcnew System::EventHandler(this, &Form1::HCRemoveBatch_Click);
             // 
-            // HCCopy
-            // 
-            this->HCCopy->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
-                this->HCCopyKeyValue,
-                    this->HCCopyListValue
-            });
-            this->HCCopy->Name = L"HCCopy";
-            this->HCCopy->Size = System::Drawing::Size(204, 22);
-            this->HCCopy->Text = L"Copy Key Values to Clipboard";
-            // 
             // HCCopyKeyValue
             // 
             this->HCCopyKeyValue->Name = L"HCCopyKeyValue";
-            this->HCCopyKeyValue->Size = System::Drawing::Size(212, 22);
-            this->HCCopyKeyValue->Text = L"Loaded Images Key Values";
+            this->HCCopyKeyValue->Size = System::Drawing::Size(251, 22);
+            this->HCCopyKeyValue->Text = L"Copy Selected Key Values to Clipboard";
             this->HCCopyKeyValue->Click += gcnew System::EventHandler(this, &Form1::HCCopyKeyValue_Click);
-            // 
-            // HCCopyListValue
-            // 
-            this->HCCopyListValue->Name = L"HCCopyListValue";
-            this->HCCopyListValue->Size = System::Drawing::Size(212, 22);
-            this->HCCopyListValue->Text = L"Found File List Key Values";
-            this->HCCopyListValue->Click += gcnew System::EventHandler(this, &Form1::HCCopyListValue_Click);
-            // 
-            // HCExtract
-            // 
-            this->HCExtract->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
-                this->HCExtractKeyValue,
-                    this->HCExtractListValues
-            });
-            this->HCExtract->Name = L"HCExtract";
-            this->HCExtract->Size = System::Drawing::Size(204, 22);
-            this->HCExtract->Text = L"Extract Key Values to File";
             // 
             // HCExtractKeyValue
             // 
             this->HCExtractKeyValue->Name = L"HCExtractKeyValue";
-            this->HCExtractKeyValue->Size = System::Drawing::Size(212, 22);
-            this->HCExtractKeyValue->Text = L"Loaded Images Key Values";
+            this->HCExtractKeyValue->Size = System::Drawing::Size(251, 22);
+            this->HCExtractKeyValue->Text = L"Extract Selected Key Values to File";
             this->HCExtractKeyValue->Click += gcnew System::EventHandler(this, &Form1::HCExtractKeyValue_Click);
-            // 
-            // HCExtractListValues
-            // 
-            this->HCExtractListValues->Name = L"HCExtractListValues";
-            this->HCExtractListValues->Size = System::Drawing::Size(212, 22);
-            this->HCExtractListValues->Text = L"Found File List Key Values";
-            this->HCExtractListValues->Click += gcnew System::EventHandler(this, &Form1::HCExtractListValues_Click);
-            // 
-            // HCPlot
-            // 
-            this->HCPlot->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
-                this->HCPlotKeyValues,
-                    this->HCPlotListValues
-            });
-            this->HCPlot->Name = L"HCPlot";
-            this->HCPlot->Size = System::Drawing::Size(204, 22);
-            this->HCPlot->Text = L"Plot Key Values";
             // 
             // HCPlotKeyValues
             // 
             this->HCPlotKeyValues->Name = L"HCPlotKeyValues";
-            this->HCPlotKeyValues->Size = System::Drawing::Size(212, 22);
-            this->HCPlotKeyValues->Text = L"Loaded Images Key Values";
+            this->HCPlotKeyValues->Size = System::Drawing::Size(251, 22);
+            this->HCPlotKeyValues->Text = L"Plot Selected Key Values";
             this->HCPlotKeyValues->Click += gcnew System::EventHandler(this, &Form1::HCPlotKeyValues_Click);
-            // 
-            // HCPlotListValues
-            // 
-            this->HCPlotListValues->Name = L"HCPlotListValues";
-            this->HCPlotListValues->Size = System::Drawing::Size(212, 22);
-            this->HCPlotListValues->Text = L"Found File List Key Values";
-            this->HCPlotListValues->Click += gcnew System::EventHandler(this, &Form1::HCPlotListValues_Click);
             // 
             // MainMenu
             // 
@@ -8166,19 +8217,12 @@ private: System::ComponentModel::IContainer^  components;
             // EditMenu
             // 
             this->EditMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
-                this->EMCopyHeader,
-                    this->EditRGBMenu
+                this->EditRGBMenu,
+                    this->EditHeadersMenu
             });
             this->EditMenu->Name = L"EditMenu";
             this->EditMenu->Size = System::Drawing::Size(39, 20);
             this->EditMenu->Text = L"&Edit";
-            // 
-            // EMCopyHeader
-            // 
-            this->EMCopyHeader->Name = L"EMCopyHeader";
-            this->EMCopyHeader->Size = System::Drawing::Size(143, 22);
-            this->EMCopyHeader->Text = L"Copy Header";
-            this->EMCopyHeader->Click += gcnew System::EventHandler(this, &Form1::EMCopyHeader_Click);
             // 
             // EditRGBMenu
             // 
@@ -8187,7 +8231,7 @@ private: System::ComponentModel::IContainer^  components;
                     this->RGBCombineMenuBtn, this->RBGSaveMenuBtn
             });
             this->EditRGBMenu->Name = L"EditRGBMenu";
-            this->EditRGBMenu->Size = System::Drawing::Size(143, 22);
+            this->EditRGBMenu->Size = System::Drawing::Size(117, 22);
             this->EditRGBMenu->Text = L"RGB";
             // 
             // RGBNormalizeMenuBtn
@@ -8210,6 +8254,54 @@ private: System::ComponentModel::IContainer^  components;
             this->RBGSaveMenuBtn->Size = System::Drawing::Size(226, 22);
             this->RBGSaveMenuBtn->Text = L"Save RGB Color Image";
             this->RBGSaveMenuBtn->Click += gcnew System::EventHandler(this, &Form1::RGBSaveBtn_Click);
+            // 
+            // EditHeadersMenu
+            // 
+            this->EditHeadersMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {
+                this->EMCopyHeader,
+                    this->foundFileListToolStripMenuItem
+            });
+            this->EditHeadersMenu->Name = L"EditHeadersMenu";
+            this->EditHeadersMenu->Size = System::Drawing::Size(117, 22);
+            this->EditHeadersMenu->Text = L"Headers";
+            // 
+            // EMCopyHeader
+            // 
+            this->EMCopyHeader->Name = L"EMCopyHeader";
+            this->EMCopyHeader->Size = System::Drawing::Size(191, 22);
+            this->EMCopyHeader->Text = L"Copy Header From/To";
+            this->EMCopyHeader->Click += gcnew System::EventHandler(this, &Form1::EMCopyHeader_Click);
+            // 
+            // foundFileListToolStripMenuItem
+            // 
+            this->foundFileListToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
+                this->HCCopyListValue,
+                    this->HCExtractListValues, this->HCPlotListValues
+            });
+            this->foundFileListToolStripMenuItem->Name = L"foundFileListToolStripMenuItem";
+            this->foundFileListToolStripMenuItem->Size = System::Drawing::Size(191, 22);
+            this->foundFileListToolStripMenuItem->Text = L"Found File List";
+            // 
+            // HCCopyListValue
+            // 
+            this->HCCopyListValue->Name = L"HCCopyListValue";
+            this->HCCopyListValue->Size = System::Drawing::Size(276, 22);
+            this->HCCopyListValue->Text = L"Copy Selected Key Values to Clipboard";
+            this->HCCopyListValue->Click += gcnew System::EventHandler(this, &Form1::HCCopyListValue_Click);
+            // 
+            // HCExtractListValues
+            // 
+            this->HCExtractListValues->Name = L"HCExtractListValues";
+            this->HCExtractListValues->Size = System::Drawing::Size(276, 22);
+            this->HCExtractListValues->Text = L"Extract Selected Key Values to File";
+            this->HCExtractListValues->Click += gcnew System::EventHandler(this, &Form1::HCExtractListValues_Click);
+            // 
+            // HCPlotListValues
+            // 
+            this->HCPlotListValues->Name = L"HCPlotListValues";
+            this->HCPlotListValues->Size = System::Drawing::Size(276, 22);
+            this->HCPlotListValues->Text = L"Plot Selected Key Values";
+            this->HCPlotListValues->Click += gcnew System::EventHandler(this, &Form1::HCPlotListValues_Click);
             // 
             // OptsMenu
             // 
@@ -8318,7 +8410,7 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->WCSMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(9) {
                 this->WCSRADecShowChck,
-                    this->copyToolStripMenuItem, this->WCSClearMenuBtn, this->WCSPlotSolutionPtsBtn, this->toolStripSeparator30, this->WCSRADecManual,
+                    this->copyToolStripMenuItem, this->WCSClearMenuBtn, this->WCSSolutionPtsBtn, this->toolStripSeparator30, this->WCSRADecManual,
                     this->toolStripSeparator31, this->AutoWCSMenuItem, this->AutoWCSXCorr
             });
             this->WCSMenu->Name = L"WCSMenu";
@@ -8329,7 +8421,7 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->WCSRADecShowChck->CheckOnClick = true;
             this->WCSRADecShowChck->Name = L"WCSRADecShowChck";
-            this->WCSRADecShowChck->Size = System::Drawing::Size(178, 22);
+            this->WCSRADecShowChck->Size = System::Drawing::Size(180, 22);
             this->WCSRADecShowChck->Text = L"Show";
             this->WCSRADecShowChck->Click += gcnew System::EventHandler(this, &Form1::WCSRADecShowChck_Click);
             // 
@@ -8340,7 +8432,7 @@ private: System::ComponentModel::IContainer^  components;
                     this->WCSCopyToDiskFiles
             });
             this->copyToolStripMenuItem->Name = L"copyToolStripMenuItem";
-            this->copyToolStripMenuItem->Size = System::Drawing::Size(178, 22);
+            this->copyToolStripMenuItem->Size = System::Drawing::Size(180, 22);
             this->copyToolStripMenuItem->Text = L"Copy";
             // 
             // WCSCopyToLoadedImgs
@@ -8361,7 +8453,7 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->WCSClearMenuBtn->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->WCSClearAllChck });
             this->WCSClearMenuBtn->Name = L"WCSClearMenuBtn";
-            this->WCSClearMenuBtn->Size = System::Drawing::Size(178, 22);
+            this->WCSClearMenuBtn->Size = System::Drawing::Size(180, 22);
             this->WCSClearMenuBtn->Text = L"Clear WCS";
             this->WCSClearMenuBtn->Click += gcnew System::EventHandler(this, &Form1::WCSClearMenuBtn_Click);
             // 
@@ -8369,41 +8461,43 @@ private: System::ComponentModel::IContainer^  components;
             // 
             this->WCSClearAllChck->CheckOnClick = true;
             this->WCSClearAllChck->Name = L"WCSClearAllChck";
-            this->WCSClearAllChck->Size = System::Drawing::Size(171, 22);
+            this->WCSClearAllChck->Size = System::Drawing::Size(180, 22);
             this->WCSClearAllChck->Text = L"All Loaded Images";
             this->WCSClearAllChck->Click += gcnew System::EventHandler(this, &Form1::WCSClearAllChck_Click);
             // 
-            // WCSPlotSolutionPtsBtn
+            // WCSSolutionPtsBtn
             // 
-            this->WCSPlotSolutionPtsBtn->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->WCSClearPlotSolutionPtsBtn });
-            this->WCSPlotSolutionPtsBtn->Name = L"WCSPlotSolutionPtsBtn";
-            this->WCSPlotSolutionPtsBtn->Size = System::Drawing::Size(178, 22);
-            this->WCSPlotSolutionPtsBtn->Text = L"Plot Solution Points";
-            this->WCSPlotSolutionPtsBtn->Click += gcnew System::EventHandler(this, &Form1::WCSPlotSolutionPtsBtn_Click);
+            this->WCSSolutionPtsBtn->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(4) {
+                this->WCSPlotSolutionPtnBtn,
+                    this->WCSClearPlotSolutionPtsBtn, this->toolStripSeparator26, this->WCSSolutionPtsCopyTableBtn
+            });
+            this->WCSSolutionPtsBtn->Name = L"WCSSolutionPtsBtn";
+            this->WCSSolutionPtsBtn->Size = System::Drawing::Size(180, 22);
+            this->WCSSolutionPtsBtn->Text = L"Solution Points";
             // 
             // WCSClearPlotSolutionPtsBtn
             // 
             this->WCSClearPlotSolutionPtsBtn->Name = L"WCSClearPlotSolutionPtsBtn";
-            this->WCSClearPlotSolutionPtsBtn->Size = System::Drawing::Size(101, 22);
+            this->WCSClearPlotSolutionPtsBtn->Size = System::Drawing::Size(237, 22);
             this->WCSClearPlotSolutionPtsBtn->Text = L"Clear";
             this->WCSClearPlotSolutionPtsBtn->Click += gcnew System::EventHandler(this, &Form1::WCSClearPlotSolutionPtsBtn_Click);
             // 
             // toolStripSeparator30
             // 
             this->toolStripSeparator30->Name = L"toolStripSeparator30";
-            this->toolStripSeparator30->Size = System::Drawing::Size(175, 6);
+            this->toolStripSeparator30->Size = System::Drawing::Size(177, 6);
             // 
             // WCSRADecManual
             // 
             this->WCSRADecManual->Name = L"WCSRADecManual";
-            this->WCSRADecManual->Size = System::Drawing::Size(178, 22);
+            this->WCSRADecManual->Size = System::Drawing::Size(180, 22);
             this->WCSRADecManual->Text = L"Manual Solution";
             this->WCSRADecManual->Click += gcnew System::EventHandler(this, &Form1::WCSRADecManual_Click);
             // 
             // toolStripSeparator31
             // 
             this->toolStripSeparator31->Name = L"toolStripSeparator31";
-            this->toolStripSeparator31->Size = System::Drawing::Size(175, 6);
+            this->toolStripSeparator31->Size = System::Drawing::Size(177, 6);
             // 
             // AutoWCSMenuItem
             // 
@@ -8417,7 +8511,7 @@ private: System::ComponentModel::IContainer^  components;
                     this->WCSAutoConditionArraysChck, this->WCSAutoRefineChck, this->toolStripSeparator35, this->WCSRefineSolutionBtn, this->toolStripSeparator29
             });
             this->AutoWCSMenuItem->Name = L"AutoWCSMenuItem";
-            this->AutoWCSMenuItem->Size = System::Drawing::Size(178, 22);
+            this->AutoWCSMenuItem->Size = System::Drawing::Size(180, 22);
             this->AutoWCSMenuItem->Text = L"Auto WCS";
             this->AutoWCSMenuItem->DropDownOpening += gcnew System::EventHandler(this, &Form1::AutoWCSMenuItem_DropDownOpening);
             this->AutoWCSMenuItem->DropDownOpened += gcnew System::EventHandler(this, &Form1::AutoWCSMenuItem_DropDownOpened);
@@ -9027,7 +9121,7 @@ private: System::ComponentModel::IContainer^  components;
             // AutoWCSXCorr
             // 
             this->AutoWCSXCorr->Name = L"AutoWCSXCorr";
-            this->AutoWCSXCorr->Size = System::Drawing::Size(178, 22);
+            this->AutoWCSXCorr->Size = System::Drawing::Size(180, 22);
             this->AutoWCSXCorr->Text = L"Auto WCS XCorr";
             this->AutoWCSXCorr->Visible = false;
             this->AutoWCSXCorr->Click += gcnew System::EventHandler(this, &Form1::AutoWCSXCorr_Click);
@@ -10879,6 +10973,25 @@ private: System::ComponentModel::IContainer^  components;
             this->HeaderTxt->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::HeaderKeyTxt_KeyDown);
             this->HeaderTxt->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::HeaderKeyTxt_MouseUp);
             // 
+            // WCSPlotSolutionPtnBtn
+            // 
+            this->WCSPlotSolutionPtnBtn->Name = L"WCSPlotSolutionPtnBtn";
+            this->WCSPlotSolutionPtnBtn->Size = System::Drawing::Size(237, 22);
+            this->WCSPlotSolutionPtnBtn->Text = L"Plot";
+            this->WCSPlotSolutionPtnBtn->Click += gcnew System::EventHandler(this, &Form1::WCSPlotSolutionPtsBtn_Click);
+            // 
+            // toolStripSeparator26
+            // 
+            this->toolStripSeparator26->Name = L"toolStripSeparator26";
+            this->toolStripSeparator26->Size = System::Drawing::Size(234, 6);
+            // 
+            // WCSSolutionPtsCopyTableBtn
+            // 
+            this->WCSSolutionPtsCopyTableBtn->Name = L"WCSSolutionPtsCopyTableBtn";
+            this->WCSSolutionPtsCopyTableBtn->Size = System::Drawing::Size(237, 22);
+            this->WCSSolutionPtsCopyTableBtn->Text = L"Copy Points to Clipboard Table";
+            this->WCSSolutionPtsCopyTableBtn->Click += gcnew System::EventHandler(this, &Form1::WCSSolutionPtsCopyTableBtn_Click);
+            // 
             // Form1
             // 
             this->AccessibleRole = System::Windows::Forms::AccessibleRole::Application;
@@ -10921,6 +11034,7 @@ private: System::ComponentModel::IContainer^  components;
             this->MainMenuStrip = this->MainMenu;
             this->MinimumSize = System::Drawing::Size(200, 200);
             this->Name = L"Form1";
+            this->SizeGripStyle = System::Windows::Forms::SizeGripStyle::Show;
             this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
             this->Text = L"CCDLAB";
             this->WindowState = System::Windows::Forms::FormWindowState::Maximized;
@@ -10974,6 +11088,7 @@ private: System::ComponentModel::IContainer^  components;
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->RotateAngleUpD))->EndInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NShiftHorzUpD))->EndInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NShiftVertUpD))->EndInit();
+            this->ExciseBtnContxt->ResumeLayout(false);
             this->MainTab->ResumeLayout(false);
             this->ProcessingTab->ResumeLayout(false);
             this->ImageBatchRedxnPnl->ResumeLayout(false);
@@ -11136,6 +11251,7 @@ Bitmap^ SUBIMAGEBMP;
 Bitmap^ IMAGEBMP;
 UVIT^ UVIT_Data;
 array<unsigned __int16,2>^ UVBGArray;
+String^ NORMKEY;
 
 array<JPFITS::SourceExtractor^>^ PSES;
 int PSESINDEX = -1;
@@ -11146,6 +11262,7 @@ void MAKEPSERECTS();
 void MAKEMARKCOORDRECTS();
 bool PSESPLOTALL = false;
 int PSECOUNT = 0;
+bool PSEDRAWGROUPREGIONS = false;
 
 //PSETableViewer^ PSETABLEVIEWER;
 TypeCode FILESAVEPREC;
@@ -11738,8 +11855,7 @@ String^ PSESAVEKERNELPATH;
         private: System::Void ApplyExpArrayToImageChck_Click(System::Object^  sender, System::EventArgs^  e);
         private: System::Void SubImCntxtCopyImage_Click(System::Object^  sender, System::EventArgs^  e);
         private: System::Void SubImageWindow_MouseDoubleClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-        private: System::Void PadImageBtn_Click(System::Object^  sender, System::EventArgs^  e);
-        private: System::Void CutSubImBtn_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+        private: System::Void PadImageBtn_Click(System::Object^ sender, System::EventArgs^ e);
         private: System::Void CutSubImBtn_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
         private: System::Void ImageSizeTxt_MouseEnter(System::Object^  sender, System::EventArgs^  e);
         private: System::Void ImageSizeTxt_MouseLeave(System::Object^  sender, System::EventArgs^  e);
@@ -11939,5 +12055,11 @@ String^ PSESAVEKERNELPATH;
         private: System::Void L1MachineStandardChck_Click(System::Object^ sender, System::EventArgs^ e);
         private: System::Void L1MachineExtremeChck_Click(System::Object^ sender, System::EventArgs^ e);
         private: System::Void FMOpenImageExtensions_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void TBSaveSetExtensions_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void ExciseImageBtn_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void ExciseBtnContxtColumnsChck_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void ExciseBtnContxtRowsChck_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void PSEGroupizeBtn_Click(System::Object^ sender, System::EventArgs^ e);
+        private: System::Void WCSSolutionPtsCopyTableBtn_Click(System::Object^ sender, System::EventArgs^ e);
 };
 }
