@@ -1,0 +1,1948 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JPFITS</name>
+    </assembly>
+    <members>
+        <member name="T:JPFITS.FITSBinTable">
+            <summary> FITSBinTable class to create, read, interact with, modify components of, and write FITS BINTABLE binary table data extensions.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.NumberOfTableEntriesTFIELDS">
+            <summary>NumberOfTableEntries reports the number of fields in the extension, i.e. the TFIELDS value.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.TableDataRepeats">
+            <summary>TableDataTypes reports the number of columns or repeats in each table entry. Variable repeat (heap data) entries only report 1...use GetTTYPERowRepeatsHeapEntry to get the number of repeats for a given row.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.TableDataLabelsTTYPE">
+            <summary>TableDataLabels reports the name of each table entry, i.e. the TTYPE values.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.ExtensionEntryUnits">
+            <summary>ExtensionEntryUnits reports the units of each table entry, i.e. the TUNITS values.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.Header">
+            <summary>Return the binary table header as an array of Strings for each line of the header.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.ExtensionNameEXTNAME">
+            <summary>Return the name of the extension.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.Naxis1">
+            <summary>Return the width, in bytes, of the table.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.Naxis2">
+            <summary>Return the height, number of rows, of the table.</summary>
+        </member>
+        <member name="P:JPFITS.FITSBinTable.BINTABLEByteArray">
+            <summary>Return the BINTABLE data block, excluding header, as a (unsigned) byte array.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.#ctor">
+            <summary>Create an empty FITSBinTable object. TTYPE entries may be added later via SetTTYPEEntries or AddTTYPEEntry. An extension name can be added at writetime.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.#ctor(System.String,System.String)">
+            <summary>Create a FITSBinTable object from an existing extension.</summary>
+            <param name="fileName">The full path filename.</param>
+            <param name="extensionName">The BINTABLE EXTNAME name of the extension. If an empty string is passed the first nameless extension will be found, if one exists.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.TTYPEEntryExists(System.String)">
+            <summary>Check if a TTYPE entry exists within the bintable.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTYPEEntry(System.String)">
+            <summary>Return a binary table entry as a double 1-D array, assuming it is a single colunmn entry. If the entry has more than one column, use the overload function to get its dimensions.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTYPEEntry(System.String,System.Int32[]@)">
+            <summary>Return a binary table entry as a double 1-D array.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+            <param name="dimNElements">A vector to return the number of elements along each dimension of the Object. 
+            <para>Contains the TDIM key values for an n &gt; 2 dimensional array, otherwise contains the instances (repeats, i.e. columns) and NAXIS2. Its length gives the rank of the array Object. If rank = 1 then it contains only NAXIS2.</para></param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTYPEEntry(System.String,System.TypeCode@,System.Int32[]@)">
+            <summary>Return a binary table entry as an Object. Its type and rank are given to the user. If you just need a double precision array to work on, use the overload for that.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+            <param name="objectTypeCode">The TypeCode precision of the underlying array in the object.</param>
+            <param name="dimNElements">A vector to return the number of elements along each dimension of the Object. 
+            <para>Contains the TDIM key values for an n &gt; 2 dimensional array, otherwise contains the instances (repeats, i.e. columns) and NAXIS2. Its length gives the rank of the array Object. If rank = 1 then it contains only NAXIS2.</para></param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTypeEntryRow(System.String,System.Int32)">
+            <summary>Use this to access individual elements of the table with a String return. Useful for looking at TTYPEs with multiple instances.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+            <param name="rowindex">The row index of the column.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.RemoveTTYPEEntry(System.String)">
+            <summary>Remove one of the entries from the binary table. Inefficient if the table has a very large number of entries with very large number of elements. Operates on heap-stored data if required.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.AddTTYPEEntry(System.String,System.Boolean,System.String,System.Object)">
+            <summary>Add an entry to the binary table. Useful when dealing with a small table. Use SetTTYPEEntries for a large table to set all entries at once.</summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+            <param name="replaceIfExists">Replace the TTYPE entry if it already exists. If it already exists and the option is given to not replace, then an exception will be thrown.</param>
+            <param name="entryUnits">The physical units of the values of the array. Pass empty string if not required.</param>
+            <param name="entryArray">The vector or 2D array to enter into the table.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.AddTTYPEEntry(System.String,System.Boolean,System.String,System.Object,System.Int32[],System.Boolean,System.Boolean)">
+            <summary>Add an n &gt; 2 dimensional and/or complex entry to the binary table or heap area. If entries already exist then the user must have formatted the n &gt; 2 dimensional array to match the existing table height NAXIS2.
+            <para>Otherwise it is recommended to create this table with ONLY the n &gt; 2 dimensional entry formatted simply as a vector, non-repeated instance. The height or NAXIS2 will then be the number of elements of the n &gt; 2 dimensional array.</para>
+            <para>If dimensions need to be recorded then supply the dimNelements argument.</para>
+            <para>If adding a complex number array to the binary table, the entryArray must be either single or double floating point.</para>
+            <para>If complex the entryArray must be a factor of two columns repeats where the 1st and odd numbered columns are the spatial part, and the 2nd and even numbered columns are the temporal part.</para>
+            <para>If it is a variable repeat heap array then the entry must be supplied as an array of arrays, or an array of Strings; if complex each subarray must contain an even pairing of values.</para></summary>
+            <param name="ttypeEntry">The name of the binary table extension entry, i.e. the TTYPE value.</param>
+            <param name="replaceIfExists">Replace the TTYPE entry if it already exists. If it already exists and the option is given to not replace, then an exception will be thrown.</param>
+            <param name="entryUnits">The physical units of the values of the array. Pass empty string if not required.</param>
+            <param name="entryArray">The array to enter into the table.</param>
+            <param name="dimNElements">A vector giving the number of elements along each dimension of the array, to write as the TDIM key for the entry IF the entry is n &gt; 2 dimensional; pass null if the entry is not n &gt; 2 dimensional.</param>
+            <param name="isComplex">A boolean to set whether the array should be interpreted as complex value pairings.</param>
+            <param name="addAsHeapVarRepeatArray">A boolean to set whether to save the array as a variable repeat array in the heap area. If true, the entryArray must be an array of arrays or an array of Strings.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.SetTTYPEEntries(System.String[],System.String[],System.Object[])">
+            <summary>Set the bintable full of entries all at once. More efficient than adding a large number of entries once at a time. Useful to use with a brand new and empty FITSBinTable. NOTE: THIS CLEARS ANY EXISTING ENTRIES INCLUDING THE HEAP.
+            <para>Do not use for n &gt; 2 dimensional and/or complex entries.</para></summary>
+            <param name="ttypeEntries">The names of the binary table extension entries, i.e. the TTYPE values.</param>
+            <param name="entryUnits">The physical units of the values of the arrays. Pass null if not needed, or with null elements or empty elements where not required, etc.</param>
+            <param name="entryArrays">An array of vectors or 2D arrays to enter into the table.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTableDataTypes(System.Int32)">
+            <summary>TableDataTypes reports the .NET typecodes for each entry in the table.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTYPEIsHeapVariableRepeatEntry(System.Int32)">
+            <summary>Returns wheather the TTYPE entry at the given entry index is a variable repeat array.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetTTYPERowRepeatsHeapEntry(System.Int32,System.Int32)">
+            <summary>Returns the number of elements (repeats) for a given heap entry at a given row.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.AddExtraHeaderKey(System.String,System.String,System.String)">
+            <summary>Add an extra key to the extension header. If it is to be a COMMENT, just fill the keyValue with eighteen characters, and the keyComment with 54 characters.</summary>
+            <param name="keyName">The name of the key.</param>
+            <param name="keyValue">The value of the key. Pass numeric types as a string.</param>
+            <param name="keyComment">The comment of the key.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetExtraHeaderKeyValue(System.String)">
+            <summary>Get the value of an extra Key. If the key doesn't exist, an empty String is returned.</summary>
+            <param name="keyName">The name of the key.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.RemoveExtraHeaderKey(System.String,System.String)">
+            <summary>Remove the extra header key with the given name and value.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.RemoveAllExtraHeaderKeys">
+            <summary>Clear all extra header keys.</summary>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.Write(System.String,System.String,System.Boolean)">
+            <summary>Write the binary table into a new or existing FITS file. If the binary table already exists in an existing FITS file, it can optionally be replaced.</summary>
+            <param name="FileName">The full file name to write the binary table into. The file can either be new or already exist.</param>
+            <param name="ExtensionName">The EXTNAME name of the extension. Can be empty (unnamed) but this is poor practice.</param>
+            <param name="OverWriteExtensionIfExists">If the binary table already exists it can be overwritten. If it exists and the option is given to not overwrite it, then an exception will be thrown.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.GetAllExtensionNames(System.String)">
+            <summary>Returns an array of all binary table extension names in a FITS file. If there are no binary table extensions, returns an empty array.</summary>
+            <param name="FileName">The full file name to read from disk.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.RemoveExtension(System.String,System.String)">
+            <summary>Remove a binary table extension from the given FITS file.</summary>
+            <param name="FileName">The full-path file name.</param>
+            <param name="ExtensionName">The name of the binary table extension. If the extension isn't found, an exception is thrown.</param>
+        </member>
+        <member name="M:JPFITS.FITSBinTable.ExtensionExists(System.String,System.String)">
+            <summary>Checks if the binary extension exists inside the given FITS file.</summary>
+            <param name="FileName">The full-path file name.</param>
+            <param name="ExtensionName">The name of the binary table extension.</param>
+        </member>
+        <member name="T:JPFITS.FitsBinTableViewer">
+            <summary>FitsExtensionTableViewer class for viewing any of the FITS binary table extensions which may exist in a file as a table.</summary>
+        </member>
+        <member name="M:JPFITS.FitsBinTableViewer.#ctor(System.String)">
+            <summary>FitsExtensionTableViewer class constructor.</summary>
+            <param name="FileName">The fill file name to open the extensions from.</param>
+        </member>
+        <member name="F:JPFITS.FitsBinTableViewer.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FitsBinTableViewer.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FitsBinTableViewer.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:JPFITS.FITSFinder">
+            <summary>FITSFinder class for seaching for FITS files given filename and FITS keyword characteristics.</summary>
+        </member>
+        <member name="M:JPFITS.FITSFinder.#ctor">
+            <summary>FITSFinder class constructor.</summary>
+        </member>
+        <member name="P:JPFITS.FITSFinder.FoundFiles">
+            <summary>FoundFiles gets or sets the list of files found by the FITSFinder.</summary>
+        </member>
+        <member name="F:JPFITS.FITSFinder.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSFinder.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSFinder.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:JPFITS.FITSFound">
+            <summary>FITSFound class to manage a list of FITS files on disk.</summary>
+        </member>
+        <member name="M:JPFITS.FITSFound.#ctor(System.String[])">
+            <summary> Constructor </summary>
+            <param name="foundFiles">A list of files found on disk.</param>
+        </member>
+        <member name="M:JPFITS.FITSFound.#ctor(System.String)">
+            <summary> Constructor </summary>
+            <param name="fullFileNameFoundList">A FITSFound list filename containing the list of FITS files, beginning with the number of files (lines) as the first line of the file.</param>
+        </member>
+        <member name="F:JPFITS.FITSFound.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSFound.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSFound.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.FITSHeaderViewer.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSHeaderViewer.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeaderViewer.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.FITSImageExtensionsLister.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSImageExtensionsLister.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageExtensionsLister.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.FITSImageExtensionsSaver.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSImageExtensionsSaver.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageExtensionsSaver.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.FITSHeaderKeyDialog.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSHeaderKeyDialog.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeaderKeyDialog.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:JPFITS.FITSImageSetSaver">
+            <summary>
+            Provides functionality to save FITSImageSets with manipulation and modification of their file names and locations, and also as ZIP archives or as JPG images.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSetSaver.#ctor(JPFITS.FITSImageSet)">
+            <summary>
+            Constructor is given an existing FITSImageSet
+            </summary>
+        </member>
+        <member name="F:JPFITS.FITSImageSetSaver.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSetSaver.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSetSaver.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.Plotter.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.Plotter.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.Plotter.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:JPFITS.FITSFILEOPS">
+            <summary>FITSFILEOPS static class for facilitating interaction with FITS data on disk.</summary>
+        </member>
+        <member name="M:JPFITS.FITSFILEOPS.SCANPRIMARYUNIT(System.IO.FileStream,System.Boolean,System.Collections.ArrayList@,System.Boolean@)">
+            <summary>Scans the primary header unit and data of a FITS file. Returns false if the file is not a FITS file.</summary>
+            <param name="fs">The FileStream of the FITS file.</param>
+            <param name="scanpastprimarydata">True to set the FileStream fs position to the end of the data block, otherwise the fs position will be at the end of the primary header block, i.e. at the beginning of the primary data.</param>
+            <param name="header_return">Returns the header of the extension as an ArrayList with each 80-character header line being a String^ member of this list. Pass nullptr if not required.</param>
+            <param name="has_extensions">Returns whether or not the FITS file may contain extensions.</param>
+        </member>
+        <member name="M:JPFITS.FITSFILEOPS.SEEKEXTENSION(System.IO.FileStream,System.String,System.String,System.Collections.ArrayList@,System.Int64@,System.Int64@,System.Int64@,System.Int64@,System.Int64@)">
+            <summary>Find the FITS extension table of the given type and name. Returns false if the XTENSION type of the specified EXTNAME is not found. If extension_name is found the FileStream fs will be placed at the beginning of the extension's main data table block.</summary>
+            <param name="fs">The FileStream of the FITS file.
+            <para>If EXTNAME is found the FileStream fs will be placed at the beginning of the extension's main data table block.</para>
+            <para>If EXTNAME is NOT found it will be at the end of the file.</para></param>
+            <param name="extension_type">The XTENSION extension type, either: &quot;BINTABLE&quot;, &quot;TABLE&quot;, or &quot;IMAGE&quot;.</param>
+            <param name="extension_name">The EXTNAME extension name. If the extension is known to have no EXTNAME keyword and name, then pass an empty String and the first nameless extension of the specified type will be seeked.</param>
+            <param name="header_return">Returns the header of the extension as an ArrayList with each 80-character header line being a String^ member of this list. Pass nullptr if not required.</param>
+            <param name="extensionStartPosition">Returns the start position within the FileStream of the extension...i.e. at the block boundary at the start of its header.</param>
+            <param name="extensionEndPosition">Returns the end position within the FileStream of the extension, including after any heap, rounded up to a multiple of 2880 bytes at the last block boundary.</param>
+            <param name="tableEndPosition">Returns the end position within the FileStream of the main data table, NOT rounded to a data block boundary.</param>
+            <param name="pcount">Returns the number of bytes of any remaining fill plus supplemental heap data area after the main table endposition, IF any heap data exists. Does not represent fill bytes after the main table if no heap exists. Does not include fill bytes after the heap.</param>
+            <param name="theap">Returns the position within the filestream of the beginning of the heap relative to the beginning of the main table. Nominally equal to NAXIS1 * NAXIS2 unless THEAP keyword specifies a larger value.</param>
+        </member>
+        <member name="M:JPFITS.FITSFILEOPS.SEEKEXTENSION(System.IO.FileStream,System.String,System.Int32,System.Collections.ArrayList@,System.Int64@,System.Int64@,System.Int64@,System.Int64@,System.Int64@)">
+            <summary>Find the FITS extension table of the given type and position index number. Returns false if the XTENSION type of the specified number is not found. If the index number is found the FileStream fs will be placed at the beginning of the extension's main data table block.</summary>
+            <param name="fs">The FileStream of the FITS file.
+            <para>If the extension number is found the FileStream fs will be placed at the beginning of the extension's main data table block.</para>
+            <para>If the extension number is NOT found it will be at the end of the file.</para></param>
+            <param name="extension_type">The XTENSION extension type, either: &quot;BINTABLE&quot;, &quot;TABLE&quot;, or &quot;IMAGE&quot;.</param>
+            <param name="extension_number">The ONE-BASED extension number. This can be used when extensions aren't named with the EXTNAME keyword; alternatively if they are named this still returns the XTENSION extension type of the specified number.</param>
+            <param name="header_return">Returns the header of the extension as an ArrayList with each 80-character header line being a String^ member of this list. Pass nullptr if not required.</param>
+            <param name="extensionStartPosition">Returns the start position within the FileStream of the extension...i.e. at the block boundary at the start of its header.</param>
+            <param name="extensionEndPosition">Returns the end position within the FileStream of the extension, including after any heap, rounded up to a multiple of 2880 bytes at the last block boundary.</param>
+            <param name="tableEndPosition">Returns the end position within the FileStream of the main data table, NOT rounded to a data block boundary.</param>
+            <param name="pcount">Returns the number of bytes of any remaining fill plus supplemental heap data area after the main table endposition, IF any heap data exists. Does not represent fill bytes after the main table if no heap exists. Does not include fill bytes after the heap.</param>
+            <param name="theap">Returns the position within the filestream of the beginning of the heap relative to the beginning of the main table. Nominally equal to NAXIS1 * NAXIS2 unless THEAP keyword specifies a larger value.</param>
+        </member>
+        <member name="M:JPFITS.FITSFILEOPS.GETALLEXTENSIONNAMES(System.String,System.String)">
+            <summary>Gets all extension names of a specified extension type in the FITS file.</summary>
+            <param name="FileName">The full file name to read from disk.</param>
+            <param name="extension_type">The XTENSION extension type, either: &quot;BINTABLE&quot;, &quot;TABLE&quot;, or &quot;IMAGE&quot;.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeaderKey.#ctor(System.String)">
+            <summary>Constructor. Creates an instance of a FITSHeaderKey, out of a supplied String line. The line may be empty, but not more than 80 elements length. The key will be formatted as a FITS comment line if its internal structure appears to be configured as such.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeaderKey.#ctor(System.String,System.String,System.String)">
+            <summary>Constructor. Creates an instance of a FITSHeaderKey, out of a supplied key name, key value, and key comment. If name is either "COMMENT" or an empty String the key will be formatted as a FITS comment line.</summary>
+        </member>
+        <member name="P:JPFITS.FITSHeaderKey.Name">
+            <summary>The name of the key (elements 1 through 8).</summary>
+        </member>
+        <member name="P:JPFITS.FITSHeaderKey.Value">
+            <summary>The value of the key (elements 11 through 30 typically).</summary>
+        </member>
+        <member name="P:JPFITS.FITSHeaderKey.Comment">
+            <summary>The comment of the key (elements 34 through 80 typically). If the key is a comment then Comment contains the entire key line.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeaderKey.GetFullyFomattedFITSLine">
+            <summary>Generates and returns a fully formatted FITS key as an 80-element String. Can be used to build a header.</summary>
+        </member>
+        <member name="T:JPFITS.FITSImage">
+            <summary> FITSImage class to create, read, interact with, modify components of, and write FITS Primary image data and its Header.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Item(System.Int32)">
+            <summary>Default indexer accesses the image element of the primary image of the FITSImage object.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Item(System.Int32,System.Int32)">
+            <summary>Default indexer accesses the image element of the primary image of the FITSImage object.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Min">
+            <summary>Min returns the minimum of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Max">
+            <summary>Max returns the maximum of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Median">
+            <summary>Median returns the median of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Mean">
+            <summary>Mean returns the average of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Std">
+            <summary>Std returns the standard deviation of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Sum">
+            <summary>Sum returns the sum of the FITS image data array.  Returns zero if there is no array loaded or if stats have not been performed.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Width">
+            <summary>Width returns the width of the FITS image data array.  Returns zero if there is no array loaded.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Height">
+            <summary>Height returns the height of the FITS image data array.  Returns zero if there is no array loaded.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Length">
+            <summary>Length returns the total number of elements of the FITS image data array.  Returns zero if there is no array loaded.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.FileName">
+            <summary>FileName accesses just the file name of the FITS object.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.FilePath">
+            <summary>FilePath accesses just the file path of the FITS object.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.FullFileName">
+            <summary>FullFileName accesses the full file path + name of the FITS object.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Image">
+            <summary>Image accesses the 2-D double array of the primary FITS object image.
+            <para>Individual elements of the array can be accessed by indexing -&gt;Image[x,y].</para>
+            <para>Property setter automatically performs image stats when Image is set.  Use -&gt;SetImage instead for option to not perform stats.</para></summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.Header">
+            <summary>Provides access to the image header.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImage.WCS">
+            <summary>Provides access to the image WCS.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImage.StatsUpD(System.Boolean)">
+            <summary>StatsUpD updates the statistics for the primary image: maximum, minimum, mean, median, and standard deviation.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImage.SetImage(System.Double[0:,0:],System.Boolean,System.Boolean)">
+            <summary>Use SetImage to replace the existing double array for the FITSImage object with a new double array.</summary>
+            <param name="imageArrayData">The 2-D double array to set for the FITSImage object.</param>
+            <param name="Do_Stats">Optionally update the stats for the new array.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.GetSubImage(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>Returns a double array of a subset of coordinates from the primary image.</summary>
+            <param name="X_Center">The zero-based center-position of the primary x-axis of the subimage.</param>
+            <param name="Y_Center">The zero-based center-position of the primary y-axis of the subimage.</param>
+            <param name="X_HalfWidth">The +- half-width of the x-axis of the subimage.</param>
+            <param name="Y_HalfWidth">The +- half-width of the y-axis of the subimage.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.GetSubImage(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32[]@,System.Int32[]@)">
+            <summary>Returns a double array of a subset of coordinates from the primary image.</summary>
+            <param name="X_Center">The zero-based center-position of the primary x-axis of the subimage.</param>
+            <param name="Y_Center">The zero-based center-position of the primary y-axis of the subimage.</param>
+            <param name="X_HalfWidth">The +- half-width of the x-axis of the subimage.</param>
+            <param name="Y_HalfWidth">The +- half-width of the y-axis of the subimage.</param>
+            <param name="xdata">The x-indices of the subimage.</param>
+            <param name="ydata">The y-indices of the subimage.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.GetSubImage(System.Int32[])">
+            <summary>Returns a double array of a subset of coordinates from the primary image.</summary>
+            <param name="Range">The zero-based start and end coordinates of the subimage in the primary image. Range is: [xmin xmax ymin ymax].</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.RotateCW(System.Boolean)">
+            <summary>RotateCW rotates the primary image by 90 degrees.</summary>
+            <param name="CW">True to rotate clockwise, false to rotate counter-clock-wise.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.FlipVertical">
+            <summary>FlipVertical flips the image across the horizontal axis, i.e. up to down.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImage.FlipHorizontal">
+            <summary>FlipVertical flips the image across the vertical axis, i.e. left to right.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImage.ConvertTxtToDblArray(System.String,System.String)">
+            <summary>Convert a (possibly poorly formatted) delimited text file to a double array.
+            <para>If the text file is large (>2MB) the program may seem to hang...just let it run until control is returned.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="delimit">The field delimiter. If unknown pass empty string.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.ReadImageArrayOnly(System.String,System.Int32[],System.Boolean)">
+            <summary>Return the primary image of the FITS file as a double 2-D array.</summary>
+            <param name="fullFileName">The full file name to read from disk.</param>
+            <param name="Range">Range is ZERO based 1-D int array [xmin xmax ymin ymax]. Pass null or Range[0] = -1 to default to full image size.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.ReadImageVectorOnly(System.String,System.Int32[],System.Boolean)">
+            <summary>Return the primary image of the FITS file as a double 1-D array.</summary>
+            <param name="fullFileName">The full file name to read from disk.</param>
+            <param name="Range">Range is ZERO based 1-D int array [xmin xmax ymin ymax]. One of the axes ranges must be length equal to 1.
+            <para> Pass null or Range[0] = -1 to default to full image size, assuming the image data is a vector.</para></param>
+        </member>
+        <member name="M:JPFITS.FITSImage.ReadPrimaryNDimensionalData(System.String,System.Int32[]@)">
+            <summary>Reads an N-dimensional array and returns the results as a double array. User may reorginize the array based on the return variable axis lengths vector nAxisN.</summary>
+            <param name="nAxisN">An declared, but not instantiated, int vector to return the axis lengths for each axis.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.ExtendizePrimaryImageLayerCube(System.String,System.String,System.String[])">
+            <summary>If a Primary data unit is saved as a layered image cube where each layer is unique, separate the layers into individual named extensions instead.</summary>
+            <param name="sourceFullFileName">The file name of the FITS file with the layered primary data unit.</param>
+            <param name="destFullFileName">The file name to write the extensions to. If it is the same name as the source, then the source will be completely overwritten, including any other existing extensions which that file may have had.</param>
+            <param name="layerExtensionNames">The names for each layer extension. Must be equal in length to the number of layers to pull out of the primary data unit; all extenions must have a unique name.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.GetAllExtensionNames(System.String)">
+            <summary>Returns an array of all image table extension names in a FITS file. If there are no image table extensions, returns an empty array.</summary>
+            <param name="FileName">The full file name to read from disk.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.DeHotPixel(JPFITS.FITSImage,System.Double)">
+            <summary>Identifies and removes hot pixels from an image. The algorithm is not a simple find and replace, but assesses whether a pixel is part of a source<br />
+            with legitimate high values or is a solitary or paired high value which is simply hot.</summary>
+            <param name="image">A FITS image with hot pixels.</param>
+            <param name="countThreshold">The pixel value above which a pixel might be considered to be hot.</param>
+            <returns></returns>
+        </member>
+        <member name="M:JPFITS.FITSImage.WriteImage(System.TypeCode,System.Boolean)">
+            <summary>Write a FITS image to disk as a primary header and primary image from the FITSImage object with its existing file name.
+            <para>If the file name already exists on disk, the primary unit will be overwritten, and any existing extensions will be appended to conserve the data file.</para></summary>
+            <param name="precision">Byte precision at which to write the image data.</param>
+            <param name="doParallel">Populate the underlying byte arrays for writing with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.WriteImage(System.String,System.TypeCode,System.Boolean)">
+            <summary>Write a FITS image to disk as a primary header and primary image from the FITSImage object with a given file name.
+            <para>If the file name already exists on disk, the primary unit will be overwritten, and any existing extensions will be appended to conserve the data file.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="precision">Byte precision at which to write the image data.</param>
+            <param name="doParallel">Populate the underlying byte arrays for writing with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.WriteImage(System.String,System.String,System.Boolean,System.TypeCode,System.Boolean)">
+            <summary>Write a FITS image to disk as an extension from the FITSImage object with a given file name.</summary>
+            <param name="fullFileName">File name. Pass the object&apos;s own FullFileName to write to its existing file name.
+            <para>If the file doesn't yet exist on disk, then a new file will be created with an empty Primary Unit, and the image will be written as an extension.</para>
+            <para>If the file does exist, then the extension will be written with the logic for the overwriteIfExists parameter, and</para>
+            <para>the existing primary unit and any other extensions will be conserved to the file.</para></param>
+            <param name="extensionName">The EXTNAME extension name of the IMAGE extension. 
+            <para>If an empty string is passed, the first nameless IMAGE extension will be written to.</para>
+            <para>If no such extension exists, the extension will be written as a new extension to the FITS file.</para></param>
+            <param name="overwriteExtensionIfExists">If the image extension already exists it can be overwritten. If it exists and the option is given to not overwrite it, then an exception will be thrown.</param>
+            <param name="precision">Byte precision at which to write the image data.</param>
+            <param name="doParallel">Populate the underlying byte arrays for writing with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.Boolean)">
+            <summary>Create a dummy FITSImage object with a simple primary header.</summary>
+            <param name="fullFileName">File name. May be anything for this dummy object, but if provided should follow a normal directory structure with file name and extension. Otherwise pass empty string.</param>
+            <param name="mayContainExtensions">Sets the EXTEND keyword if true for the dummy header of this FITSImage.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.Object,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object from an array object containing existing data.
+            <para>Image data is maintained at or converted to double precision.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="imageArrayVectorData">The data array or vector to use for the FITS image data. The precision and rank of the underlying array will be automatically determined. Vectors will be converted to an array with column-rank.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and standard deviation of the image data - saves time if you don't need those.</param>
+            <param name="doParallel">Populate the FITSImage object ImageData and perform stats (if true) with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.Int32[],System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with Primary image data loaded to RAM memory from disk.
+            <para>Image data is loaded as double precision independent of storage precision on disk.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="range">Range is ZERO based 1-D int array [xmin xmax ymin ymax].  Pass null or Range[0] = -1 to default to full image size.</param>
+            <param name="populateHeader">Optionally populate the header - sometimes you just want the data, and can skip reading the non-essential header lines.</param>
+            <param name="populateData">Optionally populate the image data array - sometimes you just want the header and don't need the data.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and standard deviation of the image data (if populated) - saves time if you don't need those.</param>
+            <param name="doParallel">Populate the FITSImage object ImageData and perform stats (if true) with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.String,System.Int32[],System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with extension image data loaded to RAM memory from disk.
+            <para>Image data is loaded as double precision independent of storage precision on disk.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="extensionName">The EXTNAME extension name of the image. If an empty string is passed, the first nameless IMAGE extension will be read. Exception if no such extension exits.</param>
+            <param name="range">Range is ZERO based 1-D int array [xmin xmax ymin ymax].  Pass null or Range[0] = -1 to default to full image size.</param>
+            <param name="populateHeader">Optionally populate the header - sometimes you just want the data, and can skip reading the non-essential header lines.</param>
+            <param name="populateData">Optionally populate the image data array - sometimes you just want the header and don't need the data.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and standard deviation of the image data (if populated) - saves time if you don't need those.</param>
+            <param name="doParallel">Populate the FITSImage object ImageData and perform stats (if true) with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.Int32,System.Int32[],System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with extension image data loaded to RAM memory from disk. <br />Useful when extensions are not named with EXTNAME keyword. Will return the image at the extension number if they are named regardless.
+            <para>Image data is loaded as double precision independent of storage precision on disk.</para></summary>
+            <param name="fullFileName">File name.</param>
+            <param name="extensionNumber">The ONE-BASED extension number of the image.</param>
+            <param name="range">Range is ZERO based 1-D int array [xmin xmax ymin ymax].  Pass null or Range[0] = -1 to default to full image size.</param>
+            <param name="populateHeader">Optionally populate the header - sometimes you just want the data, and can skip reading the non-essential header lines.</param>
+            <param name="populateData">Optionally populate the image data array - sometimes you just want the header and don't need the data.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and standard deviation of the image data (if populated) - saves time if you don't need those.</param>
+            <param name="doParallel">Populate the FITSImage object ImageData and perform stats (if true) with parallelization.</param>
+        </member>
+        <member name="M:JPFITS.FITSImage.#ctor(System.String,System.String,System.TypeCode,System.Int32,System.Int32)">
+            <summary>Create a FITSImage object referencing raw UChar data on disk. Image data is loaded as double precision independent of storage precision on disk.</summary>
+            <param name="fullFileName">File name for the FITS object.</param>
+            <param name="DiskUCharBufferName">File name of the disk byte data.</param>
+            <param name="Precision">Precision of the data stored in the disk char array.</param>
+            <param name="NAxis1">Length of the 1st axis (x-axis)</param>
+            <param name="NAxis2">Length of the 2nd axis (y-axis)</param>
+        </member>
+        <member name="T:JPFITS.FITSHeader">
+            <summary>FITSImageHeader class for managing FITS file Primary Image headers.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeader.#ctor(System.Boolean,System.Double[0:,0:])">
+            <summary>Constructor. Creates an instance of a FITSImageHeader, with options to indicate whether extensions are present, and sets essential keywords for a given image it will be the header for.
+            <para>If the image is to be an extension, then use GetFormattedHeaderBlock to pull the header out with SIMPLE = T changed to XTENSION = IMAGE for writing.</para></summary>
+            <param name="mayContainExtensions">If true, heyword EXTEND = T is added, otherwise it is left out.</param>
+            <param name="image">If image is nullptr, then NAXIS = 0 and there are no NAXISn keywords or BSCALE or BZERO. Otherwise NAXIS, NAXISn, BSCALE and BZERO are set as per the image dimensions.
+            <para>If the image will be saved at a different precision than double, use SetBITPIXNAXISBSCZ(precision, image) at write time.</para></param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.#ctor(System.Collections.ArrayList,System.Boolean)">
+            <summary>Constructor. Creates an instance of a FITSImageHeader out of a list of header lines. Typically the headerlines would be returned from FITSFILEOPS.SCANPRIMARYUNIT.</summary>
+            <param name="headerlines">A String list of header lines to be extrated and formatted into keys, values, and comments, or as comment lines.</param>
+            <param name="populate_nonessential">If false, non-essential key lines will be ignored. Saves a little bit of construction time if you don't need those, but they'll be lost if you re-write the file without them.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyName(System.Int32)">
+            <summary>GetKeyName returns the key of the primary header line at index. Throws an exception if the index exceeds the number of header lines.</summary>
+            <param name="index">The zero-based line number to get the key name from.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyValue(System.Int32)">
+            <summary>GetKeyValue returns the value of the primary header line at index. Throws an exception if the index exceeds the number of header lines.</summary>
+            <param name="index">The zero-based line number to get the key value from.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyComment(System.Int32)">
+            <summary>GetKeyComment returns the comment of the primary header line at index. Throws an exception if the index exceeds the number of header lines.</summary>
+            <param name="index">The zero-based line number to get the key comment from.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyValue(System.String)">
+            <summary>GetKeyValue returns the value of the primary header key named Key. Returns empty String if the key is not found.</summary>
+            <param name="key">The header key to find the value of.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyComment(System.String)">
+            <summary>GetKeyComment returns the comment of the primary header key named Key. Returns empty String if the key is not found.</summary>
+            <param name="key">The header key to find the comment of.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyIndex(System.String,System.Boolean)">
+            <summary>GetKeyIndex returns the zero-based index in the primary header of the key named Key. Returns -1 if the key is not found.</summary>
+            <param name="key">The header key to find the index of.</param>
+            <param name="KeyIsFullLineFormatted">If true then the entire formatted 80-element long line is compared - helpful if multiple keys have the same name or are formatted as comment lines. If false then only the key name is used.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyIndex(System.String,System.String)">
+            <summary>GetKeyIndex returns the zero-based index in the primary header of the key with matching value. Returns -1 if the key and value combination is not found.</summary>
+            <param name="key">The header key to find the index of.</param>
+            <param name="keyvalue">The header key value to find the index of.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetKeyIndex(System.String,System.String,System.String)">
+            <summary>GetKeyIndex returns the zero-based index in the primary header of the key with matching value and comment. Returns -1 if the key, value and comment combination is not found.</summary>
+            <param name="key">The header key to find the index of.</param>
+            <param name="keyvalue">The header key value to find the index of.</param>
+            <param name="keycomment">The header key comment to find the index of.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.SetKey(System.String,System.String,System.Boolean,System.Int32)">
+            <summary>SetKey sets the value of the key. If the key already exists then the value will be replaced but the comment will remain the same.</summary>
+            <param name="Key">The header key to access.</param>
+            <param name="Value">The header key value to set.</param>
+            <param name="AddIfNotFound">Optionally add the key to the header if it isn't found.</param>
+            <param name="AddAtIndex">If the key wasn't found, add at this zero-based index. Use -1 to append to the end of the header (before END key).</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.SetKey(System.String,System.String,System.String,System.Boolean,System.Int32)">
+            <summary>SetKey sets the value and comment of the key. If the key already exists then the value and comment will be replaced.</summary>
+            <param name="Key">The header key to access.</param>
+            <param name="Value">The header key value to set.</param>
+            <param name="Comment">The header key comment to set.</param>
+            <param name="AddIfNotFound">Optionally add the key to the header if it isn't found.</param>
+            <param name="AddAtIndex">If the key wasn't found, add at this zero-based index. Use -1 to append to the end of the header (before END key).</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.SetKey(System.Int32,System.String,System.String,System.String)">
+            <summary>SetKey sets the key, value and comment of the key at the given header index. This will overwrite whatever key exists at that index.</summary>
+            <param name="index">The 0-based index of the header key to access. If the index does not occur within the header, then nothing happens.</param>
+            <param name="Key">The header key to set.</param>
+            <param name="Value">The header key value to set.</param>
+            <param name="Comment">The header key comment to set.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.AddKey(JPFITS.FITSHeaderKey,System.Int32)">
+            <summary>AddKey adds a new key to the primary header.</summary>
+            <param name = "keyLine">The header key line to add.</param>
+            <param name="keyIndex">Add at this zero-based index. Use -1 to append to the end of the header (before END key).</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.AddKey(System.String,System.String,System.String,System.Int32)">
+            <summary>AddKey adds a new key with value and comment to the primary header.</summary>
+            <param name="NewKey">The header key to add.</param>
+            <param name="NewValue">The header key value to add.</param>
+            <param name="NewComment">The header key comment to add.</param>
+            <param name="KeyIndex">Add at this zero-based index. Use -1 to append to the end of the header (before END key).</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.AddCommentKeyLine(System.String,System.Int32)">
+            <summary>AddCommentKey adds a new key line formatted as a comment.
+            <para>If the length of the commentKeyLine is more than 80 elements, the comment will be continued on subsequent lines until depleted.</para>
+            <para>If the user wishes the line to begin with COMMENT, then write the input commentKeyLine beginning as such.</para>
+            <para>If the user wishes the line to be blank, then pass commentKeyLine as an empty string or as only containing blanks (whitespace).</para></summary>
+            <param name="commentKeyLine">The comment line.</param>
+            <param name="keyIndex">Insert at this zero-based index. Use -1 to append to the end of the header (before END key). If keyIndex exceeds the header, the line is appended to the end of the header (before END key).</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.MoveKey(System.Int32,System.Int32)">
+            <summary>Move a key line to another position in the header.</summary>
+            <param name="currentIndex">The key at this zero-based index will be moved.</param>
+            /// <param name="newIndex">The key at currentIndex index will be moved to this zero-based index position.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.RemoveKey(System.Int32)">
+            <summary>RemoveKey removes the key at the given index from the primary header.</summary>
+            <param name="KeyIndex">The zero-based index of the key to remove. If the index is outside of the range of the header nothing happens.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.RemoveKey(System.String)">
+            <summary>RemoveKey removes the given key from the primary header. If there is more than one key with the given name, only the first occurence will be removed.</summary>
+            <param name="Key">The name of the header key to remove.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.RemoveKey(System.String,System.String)">
+            <summary>RemoveKey removes the given key with matching value from the primary header. If there is more than one key with the given name and value, only the first occurence will be removed.</summary>
+            <param name="Key">The name of the header key to remove.</param>
+            <param name="Value">The corresponding header key value to remove.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.RemoveAllKeys(System.Double[0:,0:])">
+            <summary>RemoveAllKeys clears all keys from the primary header. Essential keywords will remain. image is supplied to re-create essential keywords, or pass nullptr to set NAXIS = 0.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeader.CopyHeaderFrom(JPFITS.FITSHeader)">
+            <summary>Copies a header from another FITSImageHeader into this one. Restricted keywords are neither copied nor overwritten.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeader.SetBITPIXNAXISBSCZ(System.TypeCode,System.Double[0:,0:])">
+            <summary>This sets the BITPIX, NAXIS, NAXISn, BSCALE and BZERO keywords of the header given the TypeCode and the image. If the image is null then NAXIS = 0 and any NAXISn keywords are removed as well as BSCALE and BZERO.</summary>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetFormattedHeaderBlock(System.Boolean,System.Boolean)">
+            <summary>Returns a formatted header block with the existing keys, and sets the first key to either SIMPLE = T or XTENSION = IMAGE. If a full 2880-multiple block is needed, set keysOnly to false.</summary>
+            <param name="isExtension">If true then the first keyword is set to XTENSION = IMAGE, otherwise it is SIMPLE = T.</param>
+            <param name="keysOnly">If true then only the existing keywords are returned formatted, otherwise if you need the entire 2880-multiple block pass false. True typically needed for display, false typically needed for writing.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.ValidKeyEdit(System.String,System.Boolean)">
+            <summary>ValidKeyEdit returns whether the given key is an essential key and shouldn't be user-modified.</summary>
+            <param name="key">The name of the header key.</param>
+        </member>
+        <member name="M:JPFITS.FITSHeader.GetAllKeyNames">
+            <summary>Returns all of the key names from the header.</summary>
+        </member>
+        <member name="P:JPFITS.FITSHeader.Item(System.Int32)">
+            <summary>Returns the FITSHeaderKey object at a given zero-based index in the header.</summary>
+        </member>
+        <member name="P:JPFITS.FITSHeader.Length">
+            <summary>Returns the number of header key lines in the header, excluding any assumed padding after END key.</summary>
+        </member>
+        <member name="T:JPFITS.FITSImageSet">
+            <summary>FITSImageSet class is an ArrayList object to hold, manage, and perform operations on a set of FITSImage objects.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.#ctor">
+            <summary>Constructor. Images can be added via .Add.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.Item(System.Int32)">
+            <summary>FITSImageSet indexer accesses the FITSImage object in the FITSImageSet at a given index, i.e. FITSImage f = FITSImageSet[i].</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.Count">
+            <summary>Returns the number of FITSImage objects currently held within the FITSImageSet.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.CoDimensional">
+            <summary>Returns whether all primary images in the current FITSImageSet have the same dimension.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.FullFileNames">
+            <summary>Returns a String array of the full file names (path + file name) of all FITSImage objects in the current FITSImageSet.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.FileNames">
+            <summary>Returns a String array of the file names (excluding file path) of all FITSImage objects in the current FITSImageSet.</summary>
+        </member>
+        <member name="P:JPFITS.FITSImageSet.FilePaths">
+            <summary>Returns a String array of the file paths (excluding file names) of all FITSImage objects in the current FITSImageSet.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Load(System.String[],System.Int32[],System.Boolean,System.Boolean,System.Boolean,System.String)">
+            <summary>Loads FITS objects into the FITSImageSet. If the FITSImageSet already has members (not previously cleared), then the new memers are added (appended) to this FITSImageSet.</summary>
+            <param name="fullFileNames">The full path list of files to load into the set.</param>
+            <param name="range">Range is ZERO based 1-D int array [xmin xmax ymin ymax].  Pass null or Range[0] = -1 to default to full image size.</param>
+            <param name="doStats">Determine stats for each FITS object when loaded.</param>
+            <param name="doParallel">Load the FITS files in parallel.</param>
+            <param name="waitbar">Optionally show a cancellable waitbar when loading. If cancelled, return value is false.</param>
+            <param name="waitbarMessage">Message to display on Waitbar progress if it is shown.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Write(System.TypeCode,System.Boolean,System.Boolean,System.String)">
+            <summary>Write the FITSImage objects from the FITSImageSet to disk.</summary>
+            <param name="precision">The precision at which to write the image data.</param>
+            <param name="doParallel">Write the images with parallelism. In the past with platter drives this would have been impossible, but fast solid state drives can handle it. If there's only a few images then don't bother, but useful when writing hundreds.</param>
+            <param name="waitbar">Optionally show a cancellable waitbar when saving. If cancelled, return value is false.</param>
+            <param name="waitbarMessage">Message to display on Waitbar progress if it is shown.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.WriteAsExtensions(System.String,System.Boolean,System.Boolean,JPFITS.FITSHeader,System.String[],System.TypeCode[])">
+            <summary>Write the FITSImage objects from the FITSImageSet as extensions.</summary>
+            <param name="fileName">The file name to write to.</param>
+            <param name="appendToExistingFile">Option to write extensions into existing FITS file. Throws an exception if firstAsPrimary is true.</param>
+            <param name="firstAsPrimary">Option to write the first image in the set as the primary data block, otherwise all images to be written as extensions. If true, will overwrite any existing file.</param>
+            <param name="primaryHeader">If the first image is not to be written as the primary data block, then a header may be supplied for the primary block. Pass null for default header. Throws an exception if firstAsPrimary is true and primaryHeader is not null.</param>
+            <param name="extensionNames">The names of the extensions. No elements may be empty strings; all elements must be unique. Pass null for automatic incremenetal naming as number ######.</param>
+            <param name="imagePrecisions">The precisions at which to write the image data. If a single element array is passed then this precision is applied to all images.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Add(JPFITS.FITSImage)">
+            <summary>Appends a FITSImage object to the ArrayList FITSImageSet object.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.AddAt(System.Int32,JPFITS.FITSImage)">
+            <summary>Inserts a FITSImage object to the ArrayList FITSImageSet object at a given index.
+            <para>If index is larger than the FITSImageSet count, the FITS object will be appended to the end.</para></summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.RemoveAt(System.Int32)">
+            <summary>Removes the FITSImage object at index from the FITSImageSet.
+            <para>If index is beyond the set size, nothing happens.</para></summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.RemoveFrom(System.Int32)">
+            <summary>Removes the FITSImage objects starting at index from the FITSImageSet.
+            <para>If index is beyond the set size, nothing happens.</para></summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.RemoveRange(System.Int32,System.Int32)">
+            <summary>Removes the count range of FITSImage objects starting at index from the FITSImageSet.
+            <para>If index is beyond the set size, nothing happens.</para>
+            <para>If index plus count is beyond the set size, all elements from index are removed.</para></summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.GetCommonDirectory">
+            <summary>Gets the common directory of the FITSImage objects in the FITSImageSet based on their file paths.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.GetCommonDirectory(System.String[])">
+            <summary>Gets the common directory of a series of file names, based on their file paths.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Clear">
+            <summary>Clears the ArrayList FITSImageSet object of all members.</summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Sort(System.String)">
+            <summary>Sort sorts the FITSImageSet list given the key. Returns -1 if there was an error with the sort.</summary>
+            <param name="key">If key is &quot;filename&quot; then the FITSImageSet list is sorted according to the member file names.
+            <para> For example if the file names are alphabetical or numeric then the FITSImageSet list will be sorted by increasing file name.</para>
+            <para> Otherwise key is a primary header key and then their corresponding values will be used to sort by increasing value the FITSImageSet list.</para></param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Mean(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise mean of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.MeanClipped(JPFITS.FITSImageSet,System.Boolean,System.Double)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise sigma-clipped mean of the FITSImageSet primary images.
+            <para>The computation is iterative and may take a long time in some situations and so a cancellable WaitBar is mandatory.</para>
+            <para>If the computation is cancelled the function will return with the most recent iteration of the sigma-clipped stack.</para></summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="sigma">The maximum standard deviation allowed for each pixel column; values beyond sigma are clipped and replaced with the median of the pixel column.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Median(JPFITS.FITSImageSet,System.Boolean,System.Boolean,System.String)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise median of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+            <param name="waitbarMessage">Message to display on Waitbar progress if it is shown.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Sum(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise sum of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Quadrature(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise quadrature sum of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Max(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise maximum of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Min(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise minimum of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Stdv(JPFITS.FITSImageSet,System.Boolean,System.Boolean)">
+            <summary>Create a FITSImage object with primary image that is the pixel-wise standard deviation of the FITSImageSet primary images.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the FITSImage result - saves time if you don't need those.</param>
+            <param name="waitbar">Optionally compute the function with a cancellable Waitbar. If cancelled, return value is null.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.Register(JPFITS.FITSImageSet,System.Int32,System.Boolean)">
+            <summary>Auto-register non-rotational primary images from the FITSImageSet. Only works when there is no field rotation in the image set, only translational shifts, and the shifts are less than half of the field.</summary>
+            <param name="fitsImageSet">The FITSImageSet object.</param>
+            <param name="refImgIndex">The index in the FitSet list of the reference image to register all the other images to.</param>
+            <param name="doStats">Optionally perform the statistics to determine min, max, mean, median, and stdv of the registered images - saves time if you don't need those.</param>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.GatherHeaders(JPFITS.FITSImageSet,JPFITS.FITSImage)">
+            <summary>Scans all primary FITS headers in the FITSImageSet for identical lines and copies such lines to the specified FITSImage destination primary header.
+            <para>Usage is that perhaps you form the mean of the FITSImageSet as a new FITSImage, and this new FITSImage should contain all the primary header</para>
+            <para> lines which are identical in the FITSImageSet.</para>
+            <para>The existing primary header of the FITS_destination is cleared before the operation, except for essential keywords.</para></summary>
+        </member>
+        <member name="M:JPFITS.FITSImageSet.GatherHeaders(System.String[],JPFITS.FITSImage)">
+            <summary>Scans all primary FITS headers from the file names for identical lines and copies such lines to the specified FITSImage destination primary header.
+            <para>Usage is that perhaps you form the mean of the FITSImageSet as a new FITSImage, and this new FITSImage should contain all the primary header</para>
+            <para> lines which are identical in the file names.</para>
+            <para>The existing primary header of the FITSImage is cleared before the operation, except for essential keywords.</para></summary>
+        </member>
+        <member name="T:JPFITS.JPBitMap">
+            <summary>
+            Class for converting 2D image data arrays to bitmaps, including three layer images for color image bitmaps, and single layers as grayscale.
+            </summary>
+        </member>
+        <member name="M:JPFITS.JPBitMap.ArrayToBmp(System.Double[0:,0:],System.Int32,System.Int32,System.Boolean,System.Double[],System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Convert a single layer 2D image to grayscale bitmap object.
+            </summary>
+            <param name="image">The image data array.</param>
+            <param name="scaling">Data scaling: 0 = linear; 1 = square root; 2 = squared; 3 = log.</param>
+            <param name="colour">Artificial color mapping: 0 = grayscale; 1 = jet; 2 = winter; 3 = lines (detects contours and edges).</param>
+            <param name="invert">Invert tone...i.e. black becomes white.</param>
+            <param name="DImCLim">The image contrast limits. A 2-element vector which clips the low (element 1) and high (element 2) values of the image array when forming the bitmap. Suggest [mean(image)-0.5*stdv(image) mean(image)+5*stdv(image)]</param>
+            <param name="WinWidth">If it is a small image required, the function will bin if necessary. If no binning desired then set to Int32.Maxvalue.</param>
+            <param name="WinHeight">If it is a small image required, the function will bin if necessary. If no binning desired then set to Int32.Maxvalue.</param>
+            <param name="invertYaxis">Flip the image vertically...i.e. about the central horizontal axis.</param>
+        </member>
+        <member name="M:JPFITS.JPBitMap.RGBBitMap(System.Double[0:,0:],System.Double[0:,0:],System.Double[0:,0:])">
+            <summary>
+            Convert three 2D arrays representing R (reg), G (green), and B (blue) channels to a color image Bitmap. The R,G,B arrays must already be scaled to 24Bpp Bitmap range, i.e. values between 0 - 255.
+            </summary>
+            <param name="R">The RED channel array</param>
+            <param name="G">The GREEN channel array</param>
+            <param name="B">The BLUE channel array</param>
+        </member>
+        <member name="M:JPFITS.JPMath.PointD.DistanceTo(JPFITS.JPMath.PointD)">
+            <summary>Computes the distance from the current point to another point.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Gaussian1d(System.Double[],System.Double[],System.Double[]@,System.Double[],System.Double[],System.Double[]@,System.Double[]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a positively-oriented Gaussian curve G(x|p)
+            <para>G(x|p) = p(0) * exp( -(x - p(1))^2 / (2*p(2)^2) ) + p(3)</para></summary>
+            <param name="xdata">The x-data grid positions of the Gaussian data. If nullptr is passed a vector will automatically be created of appropriate size, centered on zero.</param>
+            <param name="Gdata">The values of the data to be fitted to the Gaussian.</param>
+            <param name="p">The initial and return parameters of the Gaussian. If p is only initialized and input with all zeros, initial estimates will automatically be computed.
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = sigma; p[3] = bias.</para></param>
+            <param name="p_lbnd">The lower-bound on the fit parameters. If nullptr is passed they will automatically be set by the Gdata dimensions with allowance.</param>
+            <param name="p_ubnd">The upper-bound on the fit parameters. If nullptr is passed they will automatically be set by the Gdata dimensions with allowance.</param>
+            <param name="p_err">The returned errors on the fitted parameters. Pass nullptr if not required.</param>
+            <param name="fit_residuals">The returned residuals of the fit: Gdata[x] - fit[x].  Pass nullptr if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Moffat1d(System.Double[],System.Double[],System.Double[]@,System.Double[],System.Double[],System.Double[]@,System.Double[]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a 1D Moffat curve M(x|p)
+            <para>M(x|p) = p(0) * ( 1 + (x - p(1))^2 / p(2)^2 )^(-p(3)) + p(4)</para></summary>
+            <param name="xdata">The x data grid positions of the Moffat data. If nullptr is passed a vector will automatically be created of appropriate size, centered on zero.</param>
+            <param name="Mdata">The values of the data to be fitted to the Moffat.</param>
+            <param name="p">The initial and return parameters of the Moffat. If p is only initialized and input with all zeros, initial estimates will automatically be computed.
+            <para>p[0] = amplitude, p[1] = x-center, p[2] = theta, p[3] = beta, p[4] = bias.</para></param>
+            <param name="p_err">The errors on the fitted parameters. Pass nullptr if not required.</param>
+            <param name="fit_residuals">The residuals of the fit: Mdata[x] - M(x|p). Pass nullptr if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Gaussian2d(System.Int32[],System.Int32[],System.Double[0:,0:],System.Double[]@,System.Double[],System.Double[],System.Double[]@,System.Double[0:,0:]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a positively-oriented 2-d Gaussian surface G(x,y|p)
+            <para>G(x,y|p) = p(0) * exp(-((x - p(1))^2 + (y - p(2))^2) / (2*p(3)^2)) + p(4)</para>
+            <para>or</para>
+            <para>G(x,y|p) = p(0) * exp(-((x - p(1))*cosd(p(3)) + (y - p(2))*sind(p(3)))^2 / (2*p(4)^2) - (-(x - p(1))*sind(p(3)) + (y - p(2))*cosd(p(3))).^2 / (2*p(5)^2) ) + p(6)</para>
+            <para>The form of G(x,y|p) used is determined by the length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Gaussian data.</param>
+            <param name="ydata">The y-data grid positions of the Gaussian data.</param>
+            <param name="Gdata">The values of the data to be fitted to the Gaussian.</param>
+            <param name="p">The initial and return parameters of the Gaussian fit. The length of p determines which type of fit occurs. If p is only initialized and input with all zeros, initial estimates will automatically be computed. Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = sigma; p[4] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-sigma; p[5] = y-sigma; p[6] = bias.</para></param>
+            <param name="p_LB">The lower bound contraints on the fit parameters. Pass nullptr or an array of length 0 if not required.</param>
+            <param name="p_UB">The upper bound contraints on the fit parameters. Pass nullptr or an array of length 0 if not required.</param>
+            <param name="p_err">The return errors on the fitted parameters. Pass null or an array of length 0 if not required.</param>
+            <param name="fit_residuals">The return residuals of the fit: Gdata[x, y] - fit[x, y].  Pass null or an array of length 0 if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Moffat2d(System.Int32[],System.Int32[],System.Double[0:,0:],System.Double[]@,System.Double[],System.Double[],System.Double[]@,System.Double[0:,0:]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a 2-d Moffat surface M(x,y|p)
+            <para>M(x,y|p) = p(0) * ( 1 + { (x - p(1))^2 + (y - p(2))^2 } / p(3)^2 )^(-p(4)) + p(5)</para>
+            <para>or</para>
+            <para>M(x,y|p) = p(0) * ( 1 + { ((x - p(1))*cosd(p(3)) + (y - p(2))*sind(p(3)))^2 } / p(4)^2 + { (-(x - p(1))*sind(p(3)) + (y - p(2))*cosd(p(3)))^2 } / p(5)^2 )^(-p(6)) + p(7)</para>
+            <para>The form of M(x,y|p) used is determined by the length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Moffat data.</param>
+            <param name="ydata">The y-data grid positions of the Moffat data.</param>
+            <param name="Mdata">The values of the data to be fitted to the Moffat.</param>
+            <param name="p">The initial and return parameters of the Moffat. If p is only initialized and input with all zeros, initial estimates will automatically be computed. Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = theta; p[4] = beta; p[5] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-theta; p[5] = y-theta; p[6] = beta; p[7] = bias</para></param>
+            <param name="p_LB">The lower bound contraints on the fit parameters. Pass nullptr or an array of length 0 if not required.</param>
+            <param name="p_UB">The upper bound contraints on the fit parameters. Pass nullptr or an array of length 0 if not required.</param>
+            <param name="p_err">The return errors on the fitted parameters. Pass null or an array of length 0 if not required.</param>
+            <param name="fit_residuals">The return residuals of the fit: Mdata[x, y] - fit[x, y].  Pass null or an array of length 0 if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Gaussian2d_Compound(System.Int32[],System.Int32[],System.Double[0:,0:],System.Double[0:,0:]@,System.Double[0:,0:],System.Double[0:,0:],System.Double[0:,0:]@,System.Double[0:,0:]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a field of n positively-oriented 2-d Gaussian surfaces G(x,y|p_n)
+            <para>G(x,y|p_n) = Sum[p_n(0) * exp(-((x - p_n(1))^2 + (y - p_n(2))^2) / (2*p_n(3)^2))] + p(4)</para>
+            <para>or</para>
+            <para>G(x,y|p_n) =  Sum[p_n(0) * exp(-((x - p_n(1))*cosd(p_n(3)) + (y - p_n(2))*sind(p_n(3)))^2 / (2*p_n(4)^2) - (-(x - p_n(1))*sind(p_n(3)) + (y - p_n(2))*cosd(p_n(3))).^2 / (2*p_n(5)^2) )] + p(6)</para>
+            <para>The form of G(x,y|p_n) used is determined by the horizontal length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Gaussian data.</param>
+            <param name="ydata">The y-data grid positions of the Gaussian data.</param>
+            <param name="Gdata">The values of the data to be fitted to the Gaussian.</param>
+            <param name="p">The initial and return parameters of the Gaussian. If p is only initialized and input with all zeros, initial estimates will automatically be computed. Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = sigma; p[4] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-sigma; p[5] = y-sigma; p[6] = bias.</para></param>
+            <param name="p_LB">The lower bound contraints on the fit parameters.</param>
+            <param name="p_UB">The upper bound contraints on the fit parameters.</param>
+            <param name="p_err">The return errors on the fitted parameters. Pass an array of length 0 if not required.</param>
+            <param name="fit_residuals">The return residuals of the fit: Gdata[x, y] - fit[x, y].  Pass an array of length 0 if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Moffat2d_Compound(System.Int32[],System.Int32[],System.Double[0:,0:],System.Double[0:,0:]@,System.Double[0:,0:],System.Double[0:,0:],System.Double[0:,0:]@,System.Double[0:,0:]@)">
+            <summary>Determines the non-linear least-squares fit parameters for a 2-d Moffat surface M(x,y|p)
+            <para>M(x,y|p_n) = sum[p_n(0) * ( 1 + { (x - p_n(1))^2 + (y - p_n(2))^2 } / p_n(3)^2 )^(-p_n(4))] + p(5)</para>
+            <para>or</para>
+            <para>M(x,y|p_n) = sum[p_n(0) * ( 1 + { ((x - p_n(1))*cosd(p_n(3)) + (y - p_n(2))*sind(p_n(3)))^2 } / p_n(4)^2 + { (-(x - p_n(1))*sind(p_n(3)) + (y - p_n(2))*cosd(p_n(3)))^2 } / p_n(5)^2 )^(-p_n(6))] + p_n(7)</para>
+            <para>The form of M(x,y|p_n) used is determined by the length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Moffat data.</param>
+            <param name="ydata">The y-data grid positions of the Moffat data.</param>
+            <param name="Mdata">The values of the data to be fitted to the Moffat.</param>
+            <param name="p">The initial and return parameters of the Moffat. If p is only initialized and input with all zeros, initial estimates will automatically be computed. Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = theta; p[4] = beta; p[5] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-theta; p[5] = y-theta; p[6] = beta; p[7] = bias</para></param>
+            <param name="p_LB">The lower bound contraints on the fit parameters.</param>
+            <param name="p_UB">The upper bound contraints on the fit parameters.</param>
+            <param name="p_err">The return errors on the fitted parameters. Pass an array of length 0 if not required.</param>
+            <param name="fit_residuals">The return residuals of the fit: Mdata[x, y] - fit[x, y].  Pass an array of length 0 if not required.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_WCSTransform2d(System.Double[],System.Double[],System.Double[],System.Double[],System.Double[]@,System.Double[],System.Double[],System.Double[])">
+             <summary>Computes the 2-D transformation elements between intermediate catalogue coordinates and image pixel coordinates.</summary>
+             <param name="x_intrmdt">The x-axis reference points of which to determine the transformation to.</param>
+             <param name="y_intrmdt">The y-axis reference points of which to determine the transformation to.</param>
+             <param name="x_pix">The x-axis points for which to determine the transformation of.</param>
+             <param name="y_pix">The y-axis points for which to determine the transformation of.</param>
+             <param name="p">The initial and return parameters of the tranformation. Options are
+             <para>p[0] = scale, p[1] = phi (radians), p[2] = x-axis pixel coordinate reference, p[3] = y-axis pixel coordinate reference,</para>
+            <para>or</para>
+            <para>p[0] = Matrix coeff [0, 0], p[1] = Matrix coeff [1, 0], p[2] = Matrix coeff [0, 1], p[3] = Matrix coeff [1, 1], p[4] = x-axis pixel coordinate reference, p[5] = y-axis pixel coordinate reference,</para></param>
+             <param name="p_lbnd">The lower-bound on the fit parameters.</param>
+             <param name="p_ubnd">The upper-bound on the fit parameters.</param>
+             <param name="p_scale">The order of magnitude scale (positive) of the fit parameters.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_GeneralTransform2d(System.Double[],System.Double[],System.Double[],System.Double[],System.Double[]@,System.Double[],System.Double[],System.Double[])">
+             <summary>Computes the 2-D transformation elements between two sets of coordinates.</summary>
+             <param name="x_ref">The x-axis reference points of which to determine the transformation to.</param>
+             <param name="y_ref">The y-axis reference points of which to determine the transformation to.</param>
+             <param name="x_tran">The x-axis points for which to determine the transformation of.</param>
+             <param name="y_tran">The y-axis points for which to determine the transformation of.</param>
+             <param name="p">The initial and return parameters of the tranformation. Options are
+             <para>p[0] = scale, p[1] = phi (radians), p[2] = x-tran pixel coordinate rotation reference, p[3] = y-tran pixel coordinate rotation reference, p[4] = x-tran pixel coordinate shift, p[5] = x-tran pixel coordinate shift</para>
+            <para>or</para>
+            <para>p[0] = Matrix coeff [0, 0], p[1] = Matrix coeff [1, 0], p[2] = Matrix coeff [0, 1], p[3] = Matrix coeff [1, 1], p[4] = x-tran pixel coordinate rotation reference, p[5] = y-tran pixel coordinate rotation reference, p[6] = x-tran pixel coordinate shift, p[7] = x-tran pixel coordinate shift</para></param>
+             <param name="p_lbnd">The lower-bound on the fit parameters.</param>
+             <param name="p_ubnd">The upper-bound on the fit parameters.</param>
+             <param name="p_scale">The order of magnitude scale (positive) of the fit parameters.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Fit_Poly1d(System.Double[],System.Double[],System.Int32,System.Boolean,System.Double[]@)">
+            <summary>Fits a polynomial to x, y data.</summary>
+            <param name="xdata">The x-axis data points.</param>
+            <param name="ydata">The y-axis data points.</param>
+            <param name="poly_degree">The degree of polynomial to fit: 1 = linear, 2 = quadratic, etc.</param>
+            <param name="robust">If true, weights will automatically be determined which supress outliers.</param>
+            <param name="poly_coeffs">The coefficients of the polynomial ordered by increasing power.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Radial_Profile_Normalized(System.Double[0:,0:],System.Int32[],System.Int32[],System.Double,System.Double[]@,System.Double[]@)">
+            <summary>Computes the normalized radial profile.</summary>
+            <param name="Mdata">The 2D profile to create the radial plot from. Maximum value must be the center pixel, and Mdata array [x, y] size must be odd and square. If the size Mdata is less than 16 elements, the profile is spline-interpolated by a factor of 5.</param>
+            <param name="xdata">The abscissa values for the Mdata array.</param>
+            <param name="ydata">The ordinate values for the Mdata array.</param>
+            <param name="axisscale">The unit scale per pixel of the axes, assuming both axes are equal. Pass 0 or 1 for no scale, or any other value greater than zero for scaling.</param>
+            <param name="radial_x">The radial profile abscissa values (returned).</param>
+            <param name="radial_y">The radial profile abscissa values (returned).</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Smooth(System.Double[],System.Double,System.Boolean,System.String)">
+            <summary>Smooths a data series with optional methods.</summary>
+            <param name="data">The data to smooth.</param>
+            <param name="kernelsize">For simple or linear must be an integer; for centered must be an odd integer; for expoenential must be greater than zero and less than or equal to 1.</param>
+            <param name="do_parallel">Optionally perform array operations in parallel. False when parallelizing upstream.</param>
+            <param name="method">The mathematical method to use for smoothing:
+            <para> &quot;simple&quot; - simple moving average</para>
+            <para> &quot;centered&quot; - centered moving average</para>
+            <para> &quot;linear&quot; - linear regresion moving average</para>
+            <para> &quot;exponential&quot; - exponential moving average</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Interpolate1d(System.Double[],System.Double[],System.Double[],System.String,System.Boolean)">
+            <summary>Returns an interpolation of the specified data at the given interpolation points.</summary>
+            <param name="xdata">The x-positions of the ydata points to interpolate.</param>
+            <param name="ydata">The y-values of the data to interpolate.</param>
+            <param name="xinterp">The x-positions at which to interpolate y-values.</param>
+            <param name="style">The type of interpolation to compute:
+            <para> &quot;linear&quot; - linear interpolation</para>
+            <para> &quot;cubic&quot;  - cubic spline interpolation</para>
+            <para> &quot;mono&quot;   - monotone cubic spline which preserves monoticity of the data</para>
+            <para> &quot;catmullrom&quot;   - default Catmull-Rom spline</para>
+            <para> &quot;akima&quot;  - Akima is a cubic spline which is stable to the outliers, avoiding the oscillations of a cubic spline</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Interpolate2d(System.Double[],System.Double[],System.Double[0:,0:],System.Int32,System.Int32,System.Double[]@,System.Double[]@,System.Boolean)">
+            <summary>Returns an interpolation of the specified surface data at the given interpolation points with bicubic spline.</summary>
+            <param name="xdata">The x-positions of the surface points to interpolate. If nullptr is passed a vector will automatically be created of appropriate length.</param>
+            <param name="ydata">The y-positions of the surface points to interpolate. If nullptr is passed a vector will automatically be created of appropriate length.</param>
+            <param name="surfdata">The surface data to interpolate.</param>
+            <param name="xinterpdelta_inv">The inverse of the interpolation delta.  That is, &quot;10&quot; means the grid will interpolated at 1/10th grid scale.</param>
+            <param name="yinterpdelta_inv">The inverse of the interpolation delta.  That is, &quot;10&quot; means the grid will interpolated at 1/10th grid scale.</param>
+            <param name="xinterp">The returned interpolated xdata vector. Pass nullptr if not required. If required, must be initialized as an xdata->Length*xinterpdelta_inv length vector.</param>
+            <param name="yinterp">The returned interpolated ydata vector. Pass nullptr if not required. If required, must be initialized as an ydata->Length*yinterpdelta_inv length vector.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.alglib_Gauss_2d(System.Double[],System.Double[],System.Double@,System.Object)">
+            <summary>Calculates a single point of a 2-d Gaussian surface G(x,y|p)
+            <para>G(x,y|p) = p(0)*exp(-((x-p(1))^2 + (y - p(2))^2)/(2*p(3)^2)) + p(4)</para>
+            <para>or</para>
+            <para>G(x,y|p) = p(0)*exp(-((x-p(1))*cos(p(3)) + (y-p(2))*sin(p(3)))^2 / (2*p(4)^2) - (-(x-p(1))*sin(p(3)) + (y-p(2))*cos(p(3))).^2 / (2*p(5)^2) ) + p(6)</para>
+            <para>where x[0] is a position on X-axis x, and x[1] is a position on Y-axis y.</para>
+            <para>The form of G(x,y|p) used is determined by the length of the parmater vector p</para></summary>
+            <param name="p">The initial parameters of the Gaussian fit.  Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = sigma; p[4] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = theta; p[4] = x-sigma; p[5] = y-sigma; p[6] = bias</para></param>
+            <param name="x">The x,y position to calculate the value val of the Gaussian G(x,y|p): x[0] = x, x[1] = y</param>
+            <param name="val">The calculated value of the Gaussian.</param>
+            <param name="obj">obj.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.alglib_Moffat_2d(System.Double[],System.Double[],System.Double@,System.Object)">
+            <summary>Calculates a single point of a 2-d Moffat surface M(x,y|p)
+            <para>M(x,y|p) = p(0) * ( 1 + { (x-p(1))^2 + (y-p(2))^2 } / p(3)^2 ) ^ (-p(4)) + p(5)</para>
+            <para>or</para>
+            <para>M(x,y|p) = p(0) * ( 1 + { ((x-p(1))*cos(p(3)) + (y-p(2))*sin(p(3)))^2 } / p(4)^2 + { (-(x-p(1))*sin(p(3)) + (y-p(2))*cos(p(3)))^2 } / p(5)^2 ) ^ (-p(6)) + p(7)</para>
+            <para>where x[0] is a position on X-axis x, and x[1] is a position on Y-axis y.</para>
+            <para>The form of M(x,y|p) used is determined by the length of the parmater vector "p"</para></summary>
+            <param name="p">The initial parameters of the Moffat fit.  Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = theta; p[4] = beta; p[5] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-theta; p[5] = y-theta; p[6] = beta; p[7] = bias</para></param>
+            <param name="x">The x,y position to calculate the value val of the Moffat M(x,y|p): x[0] = x, x[1] = y</param>
+            <param name="val">The calculated value of the Moffat.</param>
+            <param name="obj">obj.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Find(System.Double[0:,0:],System.Double,System.String,System.Boolean,System.Int32[]@,System.Int32[]@)">
+            <summary>Returns an array with the indeces at which the 2D data array satisfies the matching style for the given value.
+            <para>The return array is an n x 2 array giving the row [n, 0] and column [n, 1] indices of the match.</para></summary>
+            <param name="data">The data array to check for matches.</param>
+            <param name="val">The value with which to check for a match in the data array.</param>
+            <param name="style">The matching style can be &lt;, &lt;=, ==, &gt;=, &gt;, !=.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Find(System.Double[],System.Double,System.String)">
+            <summary>Returns an array with the indeces at which the 1D data array satisfies the matching style for the given value.</summary>
+            <param name="data">The data array to check for matches.</param>
+            <param name="val">The value with which to check for a match in the data array.</param>
+            <param name="style">The matching style can be &lt;, &lt;=, ==, &gt;=, &gt;, !=.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Find(System.Double[],System.Double,System.String,System.Int32)">
+            <summary>Returns an array with the indeces at which the 1D data array satisfies the matching style for the given value.</summary>
+            <param name="data">The data array to check for matches.</param>
+            <param name="val">The value with which to check for a match in the data array.</param>
+            <param name="style">The matching style can be &lt;, &lt;=, ==, &gt;=, &gt;, !=.</param>
+            <param name="startindex">The starting index at which to begin checking for matches.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Find(System.Double[],System.Double,System.String,System.Int32,System.Int32)">
+            <summary>Returns an array with the indeces at which the 1D data array satisfies the matching style for the given value.</summary>
+            <param name="data">The data array to check for matches.</param>
+            <param name="val">The value with which to check for a match in the data array.</param>
+            <param name="style">The matching style can be &lt;, &lt;=, ==, &gt;=, &gt;, !=.</param>
+            <param name="startindex">The starting index at which to begin checking for matches.</param>
+            <param name="endindex">The ending index at which to stop checking for matches.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Find(System.Double[],System.Double,System.String,System.Boolean)">
+            <summary>Returns either the first or last index in the data array that satisfies the match.</summary>
+            <param name="data">The data array to check for matches.</param>
+            <param name="val">The value with which to check for a match in the data array.</param>
+            <param name="style">The matching style can be &lt;, &lt;=, ==, &gt;=, &gt;, !=.</param>
+            <param name="return_first_true_last_false">Return first index of the match (true) or the last index (false).</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Replace(System.Double[0:,0:],System.Int32[],System.Int32[],System.Double,System.Boolean)">
+            <summary>Returns a new array with all values at the given indeces replaced with the given value.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="xcoords">The horizontal indexes of the values to be replaced.</param>
+            /// <param name="ycoords">The vertical indexes of the values to be replaced.</param>
+            <param name="val">The value with which to replace at the given indices.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Replace(System.Double[],System.Int32[],System.Double)">
+            <summary>Returns a new array with all values at the given indeces replaced with the given value.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="coords">An array giving the indices at which to replace the values.</param>
+            <param name="val">The value with which to replace at the given indices.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.XCorrImageLagShifts(System.Double[0:,0:],System.Double[0:,0:],System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Double@,System.Double@,System.Boolean)">
+            <summary>Determines the cross correlation lags between two images using the image-reduction-to-vector method.</summary>
+            <param name="reference">The reference data array against which to create the cross correlation.</param>
+            <param name="COMPARISON">The comparison data array with which to create the cross correlation.</param>
+            <param name="autoDeBias_refX">Option to automatically de-gradient the reference image along the x-dimension (horizontal degradient).</param>
+            <param name="autoDeBias_refY">Option to automatically de-gradient the reference image along the y-dimension (vertical degradient).</param>
+            <param name="autoDeBias_COMX">Option to automatically de-gradient the comparison image along the x-dimension (horizontal degradient).</param>
+            <param name="autoDeBias_COMY">Option to automatically de-gradient the comparison image along the y-dimension (vertical degradient).</param>
+            <param name="autoHanning_ref">Option to automatically Hanning-window the reference image.</param>
+            <param name="autoHanning_COM">Option to automatically Hanning-window the comparison image.</param>
+            <param name="xshift">The sub-integer x-shift of the comparison with respect to the reference, passed by reference.</param>
+            <param name="yshift">The sub-integer y-shift of the comparison with respect to the reference, passed by reference.</param>
+            <param name="do_parallel">Optionally perform all array operations in parallel. False when parallelizing upstream.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.XCorrImageLagShifts(System.Double[],System.Double[],System.Double[0:,0:],System.Boolean,System.Boolean,System.Boolean,System.Double@,System.Double@,System.Boolean)">
+            <summary>Determines the cross correlation lags between two images using the image-reduction-to-vector method where the reference image has already been reduced to X and Y vectors.</summary>
+            <param name="referenceX">The reference horizontal vector against which to create the cross correlation.</param>
+            <param name="referenceY">The reference vertical vector against which to create the cross correlation.</param>
+            <param name="COMPARISON">The comparison data array with which to create the cross correlation.</param>
+            <param name="autoDeBias_COMX">Option to automatically de-gradient the comparison image along the x-dimension (horizontal degradient).</param>
+            <param name="autoDeBias_COMY">Option to automatically de-gradient the comparison image along the y-dimension (vertical degradient).</param>
+            <param name="xshift">The sub-integer x-shift of the comparison with respect to the reference, passed by reference.</param>
+            <param name="yshift">The sub-integer y-shift of the comparison with respect to the reference, passed by reference.</param>
+            <param name="do_parallel">Optionally perform all array operations in parallel. False when parallelizing upstream.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.DeGradient(System.Double[0:,0:],System.Int32,System.Boolean)">
+            <summary>Returns the 2-D array with gradients removed from a specified dimension.</summary>
+            <param name="data">The data array to degradient.</param>
+            <param name="dim">The dimension to degradient: 0 = x, 1 = y.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.RotateShiftArray(System.Double[0:,0:],System.Double,System.Double,System.Double,System.String,System.Int32,System.Int32,System.Boolean)">
+            <summary>Rotates an array about its center.</summary>
+            <param name="data">The array to rotate.</param>
+            <param name="radians">The angle to rotate the array, positive counter-clockwise.</param>
+            <param name="x_center">The rotation center on the x-axis to rotate the array about. Pass Double.MaxValue for array center.</param>
+            <param name="y_center">The rotation center on the y-axis to rotate the array about. Pass Double.MaxValue for array center.</param>
+            <param name="style">&quot;nearest&quot; - nearest-neighbor pixel, or, &quot;bilinear&quot; - for 2x2 interpolation, or, &quot;lanc_n&quot; - for Lanczos interpolation of order n = 3, 4, 5.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.VectorDotProdVector(System.Double[],System.Double[],System.Boolean)">
+            <summary>Returns the dot-product of two equal-length vectors.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.XCorr(System.Double[],System.Double[],System.Int32[]@,System.Boolean)">
+            <summary>Returns the cross correlation of two equal-length vectors and its lag shifts.</summary>
+            <param name="reference">The reference data array against which to create the cross correlation.</param>
+            <param name="relative">The comparison data array with which to create the cross correlation.</param>
+            <param name="lags">An array passed (arrays pass by reference) to populate the cross correlation lags.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.MatrixConvolveMatrix(System.Double[0:,0:],System.Double[0:,0:],System.Boolean)">
+            <summary>Convolves a kernel array into a primary array.  The kernel must have a an odd-numbered with and height.</summary>
+            <param name="primary">The primary array into which the kernel is convolved.</param>
+            <param name="kernel">The kernel with which the primary array is convolved.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Sum(System.Object,System.Boolean)">
+            <summary>Returns the sum over all elements in the data array.</summary>
+            <param name="vectorOrArray">A vecor or 2-D array.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Sum(System.Double[0:,0:],System.Int32,System.Boolean)">
+            <summary>Sum a 2-D array along one dimension, resulting in a 1-D vector array.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="dim">The dimension along which to sum.  
+            <para>0 (zero) sums along the horizontal axis, resulting in a vertical vector.</para>
+            <para>1 (one) sums along the vertical axis, resulting in a horizontal vector.</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Sum(System.Int32[0:,0:],System.Int32,System.Boolean)">
+            <summary>Sum a 2-D array along one dimension, resulting in a 1-D vector array.</summary>
+            <param name="data">A 2-D int array.</param>
+            <param name="dim">The dimension along which to sum.  
+            <para>0 (zero) sums along the horizontal axis, resulting in a vertical vector.</para>
+            <para>1 (one) sums along the vertical axis, resulting in a horizontal vector.</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Mean(System.Double[0:,0:],System.Int32,System.Boolean)">
+            <summary>Average a 2-D array along one dimension, resulting in a 1-D vector array.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="dim">The dimension along which to average.  
+            <para>0 (zero) averages along the horizontal axis, resulting in a vertical vector.</para>
+            <para>1 (one) averages along the vertical axis, resulting in a horizontal vector.</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Mean(System.Object,System.Boolean)">
+            <summary>Returns the mean over all elements in the data array.</summary>
+            <param name="vectorOrArray">A vecor or 2-D array.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Stdv(System.Double[0:,0:],System.Int32,System.Boolean)">
+            <summary>Average a 2D array along one dimension, resulting in a 1D vector array.</summary>
+            <param name="data">A 2D double array.</param>
+            <param name="dim">The dimension along which to average.  
+            <para>0 (zero) averages along the horizontal axis, resulting in a vertical vector.</para>
+            <para>1 (one) averages along the vertical axis, resulting in a horizontal vector.</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Min(System.Double[0:,0:],System.Int32,System.Int32[]@,System.Boolean)">
+            <summary>Returns the minima and their indices along a given dimension of the data array.
+            <para> If dim = 0, the minima are row-wise.</para>
+            <para> If dim = 1, the minima are column-wise.</para></summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="dim">The dimension along which to reduce to minimums:  0 is x (rows), 1 is y (columns).</param>
+            <param name="indices">An array passed to populate the indices at which the minima appear along the dimension.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Min(System.Double[0:,0:],System.Int32@,System.Int32@,System.Boolean)">
+            <summary>Returns the global minimum and its [x, y] index in the 2-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Min(System.Double[],System.Int32@,System.Boolean)">
+            <summary>Returns the global minimum and its index in the 1-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.MinMax(System.Double[0:,0:],System.Double@,System.Double@,System.Boolean)">
+            <summary>Returns the global minimum and maximum of the 2-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.MinMax(System.Double[],System.Double@,System.Double@,System.Boolean)">
+            <summary>Returns the global minimum and maximum of the 1-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.Double[0:,0:],System.Int32,System.Int32[]@,System.Boolean)">
+            <summary>Returns the maxima and their indices along a given dimension of the data array.
+            <para> If dim = 0, the maxima are row-wise.</para>
+            <para> If dim = 1, the maxima are column-wise.</para></summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="dim">The dimension along which to reduce to maximums:  0 is x (rows), 1 is y (columns).</param>
+            <param name="indices">An array passed to populate the indices at which the maxima appear along the dimension.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.Double[0:,0:],System.Int32@,System.Int32@,System.Boolean)">
+            <summary>Returns the global maximum and determines its [x, y] index in the 2-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.Double[],System.Int32@,System.Boolean)">
+            <summary>Returns the global maximum and its index in the 1-D array data.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.Double[],System.Int32,System.Int32,System.Int32@,System.Boolean)">
+            <summary>Returns the global maximum and its index within a subsection of the 1-D array data.</summary>
+            <param name="data">A 1-D double array.</param>
+            <param name="startIndex">The start index at which to begin checking for a maximum value.</param>
+            <param name="endIndex">The end index within which to check for a maximum value.</param>
+            <param name="maxIndex">The index in the array at which the maximum value occurs.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.UInt32[0:,0:],System.Int32@,System.Int32@,System.Boolean)">
+            <summary>Returns the global maximum of the data array and its [x, y] indices.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Min(System.Double[],System.Int32,System.Int32,System.Int32@,System.Boolean)">
+            <summary>Returns the global minimum and its indeces within a subsection of the 1-D array data.</summary>
+            <param name="data">A 1-D double array.</param>
+            <param name="startIndex">The start index at which to begin checking for a minimum value.</param>
+            <param name="endIndex">The end index within which to check for a minimum value.</param>
+            <param name="minIndex">The index in the array at which the minimum value occurs.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Max(System.Int32[],System.Int32@,System.Boolean)">
+            <summary>Returns the global maximum of the data array.</summary>
+            <param name="data">A 1-D int array.</param>
+            <param name="index">The index at which the maximum occurs in the array.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Stdv(System.Double[0:,0:],System.Boolean)">
+            <summary>Returns the standard deviation of all elements in the data array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Stdv(System.Double[0:,0:],System.Double,System.Boolean)">
+            <summary>Returns the standard deviation of all elements in the data array.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="known_mean">If the mean of the data is already known, then save compute time by not having to calculate it first before the stdv is calculated.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Stdv(System.Double[],System.Boolean)">
+            <summary>Returns the standard deviation of all elements in the data array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Stdv(System.Double[],System.Double,System.Boolean)">
+            <summary>Returns the standard deviation of all elements in the data array.</summary>
+            <param name="data">A 1-D double array.</param>
+            <param name="known_mean">If the mean of the data is already known, then save compute time by not having to calculate it first before the stdv is calculated.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Median(System.Double[0:,0:])">
+            <summary>Returns the median of all elements in the data array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Abs(System.Double[],System.Boolean)">
+            <summary>Returns the absolute values of all elements in the data array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Abs(System.Double[0:,0:],System.Boolean)">
+            <summary>Returns the absolute values of all elements in the data array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Round(System.Double[0:,0:],System.Int32,System.Boolean)">
+            <summary>Returns the rounded values of all elements in the data array.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="digits">The number of digits to which to round the data values.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Floor(System.Double[0:,0:],System.Double,System.Boolean)">
+            <summary>Returns an array with all data values less than <i>clip_floor</i> replaced with <i>clip_floor</i>.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="clip_floor">The value below which all data elements will be replaced with.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Log(System.Double[0:,0:],System.Double,System.Boolean)">
+            <summary>Return the custom-base logarithm of an array.</summary>
+            <param name="data">A 2-D double array.</param>
+            <param name="logbase">The base for the logarithm.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Ln(System.Double[0:,0:],System.Boolean)">
+            <summary>Return the natural logarithm of an array.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.BJDC(System.Double[],System.Double,System.Double,System.Boolean)">
+            <summary>Computes the Barycentric Julian Day Correction given a Julian Date and sky pointing coordinates.</summary>
+            <param name="RightAscension_deg">The right ascension in degrees.</param>
+            <param name="Declination_deg">The declination in degrees.</param>
+            <param name="returnCorrectionOnly">Return only the correction values (true), or return the Julian Dates with the correction applied (false) so that they are Barycentric values.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.aTanAbsoluteAngle(System.Double,System.Double)">
+            <summary>Returns the angle between -PI to +PI radians following the CAST convention given the run (x) and rise (y) of the direction vector.</summary>
+            <param name="run">The run (signed horizontal amplitude) of the vector.</param>
+            <param name="rise">The rise (signed vertical amplitude) of the vector.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.IsEven(System.Int32)">
+            <summary>Returns true if an integer is even, false if odd.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.IsNumeric(System.String)">
+            <summary>Returns true if a String can convert to a number, false if it can not.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.IsInteger(System.Double)">
+            <summary>Returns true if a number is an integer, false if it is not.</summary>
+        </member>
+        <member name="M:JPFITS.JPMath.Gaussian(System.Double,System.Double,System.Int32,System.Boolean)">
+            <summary>Returns a circular Gaussian centered on a central pixel in a 2-D array with a given amplitude and Full Width Half Maximum.</summary>
+            <param name="Amplitude">The amplitude of the Gaussian.</param>
+            <param name="FWHM">The Full Width Half Maximum of the Gaussian.</param>
+            <param name="HalfWidth">The half-width or square-radius of the return array at which the Gaussian is calculated.</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Gaussian1d(System.Double[],System.Double[]@,System.Double[])">
+            <summary>Computes the elements for a Gaussian curve G(x|p)
+            <para>G(x|p) = p(0) * exp( -((x - p(1))^2) / (2*p(2)^2) ) + p(3)</para></summary>
+            <param name="xdata">The x-data grid positions of the Gaussian data. If nullptr is passed a vector will be created of appropriate size, centered on zero.</param>
+            <param name="G">The values of the data to be computed for the Gaussian.</param>
+            <param name="p">The parameters of the Gaussian.
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = sigma; p[3] = bias</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Moffat1d(System.Double[],System.Double[]@,System.Double[])">
+            <summary>Computes the elements for a Moffat curve M(x|p)
+            <para>M(x|p) = p(0) * ( 1 + (x - p(1))^2 / p(2)^2 )^(-p(3)) + p(4)</para></summary>
+            <param name="xdata">The x-data grid positions of the Moffat data. If nullptr is passed a vector will be created of appropriate size, centered on zero.</param>
+            <param name="M">The values of the data to be computed for the Moffat.</param>
+            <param name="p">The parameters of the Moffat: p[0] = amplitude; p[1] = x-center; p[2] = theta; p[3] = beta; p[4] = bias</param>
+        </member>
+        <member name="M:JPFITS.JPMath.Gaussian2d(System.Int32[],System.Int32[],System.Double[],System.Boolean)">
+            <summary>Computes the elements for a 2-d Gaussian surface G(x,y|p)
+            <para>G(x,y|p) = p(0)*exp( -((x - p(1))^2 + (y - p(2))^2) / (2*p(3)^2) ) + p(4)</para>
+            <para>or</para>
+            <para>G(x,y|p) = p(0)*exp( -((x - p(1))*cosd(p(3)) + (y - p(2))*sind(p(3)))^2 / (2*p(4)^2) - (-(x - p(1))*sind(p(3)) + (y - p(2))*cosd(p(3))).^2 / (2*p(5)^2) ) + p(6)</para>
+            <para>The form of G(x,y|p) used is determined by the length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Gaussian data.</param>
+            <param name="ydata">The y-data grid positions of the Gaussian data.</param>
+            <param name="p">The parameters of the Gaussian.  Options are:
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = sigma; p[4] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude; p[1] = x-center; p[2] = y-center; p[3] = phi; p[4] = x-sigma; p[5] = y-sigma; p[6] = bias</para></param>
+        </member>
+        <member name="M:JPFITS.JPMath.Moffat2d(System.Int32[],System.Int32[],System.Double[],System.Boolean)">
+            <summary>Computes the elements for a 2-d Moffat surface M(x,y|p)
+            <para>M(x,y|p) = p(0) * ( 1 + { (x-p(1))^2 + (y-p(2))^2 } / p(3)^2 ) ^ (-p(4)) + p(5)</para>
+            <para>or</para>
+            <para>M(x,y|p) = p(0) * ( 1 + { ((x-p(1))*cosd(p(3)) + (y-p(2))*sind(p(3)))^2 } / p(4)^2 + { (-(x-p(1))*sind(p(3)) + (y-p(2))*cosd(p(3)))^2 } / p(5)^2 ) ^ (-p(6)) + p(7)</para>
+            <para>The form of M(x,y|p) used is determined by the length of the parameter vector p</para></summary>
+            <param name="xdata">The x-data grid positions of the Moffat data.</param>
+            <param name="ydata">The y-data grid positions of the Moffat data.</param>
+            <param name="p">The parameters of the Moffat. Options are:
+            <para>p[0] = amplitude, p[1] = x-center, p[2] = y-center, p[3] = theta, p[4] = beta, p[5] = bias</para>
+            <para>or</para>
+            <para>p[0] = amplitude, p[1] = x-center, p[2] = y-center, p[3] = phi, p[4] = x-theta, p[5] = y-theta, p[6] = beta, p[7] = bias</para></param>
+        </member>
+        <member name="T:JPFITS.PointSourceExtractor">
+            <summary>SourceExtractor class provides functionality for extracting sources from image arrays.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Source_Table">
+            <summary>Gets a metadata table of the extracted sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Centroids_X">
+            <summary>Gets or Sets the x-axis centroids of extracted sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Centroids_Y">
+            <summary>Gets or Sets the y-axis centroids of extracted sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Centroids_Volume">
+            <summary>Gets the volume (total count) of extracted sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.N_Sources">
+            <summary>Gets the total number of extracted sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.N_SaturatedSources">
+            <summary>Gets the number of saturated sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Fitted_Parameter_List">
+            <summary>Gets a list of the fitted parameters for all sources.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.LSFit_Equation">
+            <summary>Gets a string of the equation used for least-squares fitting.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.Fitted">
+            <summary>Gets a boolean to indicate whether least-squares fits have been performed.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.SourceBooleanMap">
+            <summary>Returns the boolean source map.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.SourceIndexMap">
+            <summary>Returns the integer index source map.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.PixelSaturation">
+            <summary>Returns the pixel saturation value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.KernelRadius">
+            <summary>Returns the kernel radius value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.SourceSeparation">
+            <summary>Returns the source separation value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.PixelMaximum">
+            <summary>Returns the maximum pixel value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.PixelMinimum">
+            <summary>Returns the minimum pixel value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.KernelMaximum">
+            <summary>Returns the maximum kernel value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.KernelMinimum">
+            <summary>Returns the minimum kernel value which was passed when performing the source extraction</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.AutoBackground">
+            <summary>Returns whether the background was automatically determined when performing the source extraction.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.SavePointSources">
+            <summary>Returns whether the point sources were saved when performing the source extraction.</summary>
+        </member>
+        <member name="P:JPFITS.PointSourceExtractor.SearchROI">
+            <summary>Returns whether a region of interest of the image was only used when performing the source extraction.</summary>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Extract_Sources(System.Double[0:,0:],System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Int32,System.Int32,System.Boolean,System.String,System.Boolean[0:,0:],System.Boolean)">
+            <summary>Searches for sources withn a 2D image array.</summary>
+            <param name="image">The 2D image array to find sources in.</param>
+            <param name="pix_saturation">The saturation threshold of of the image pixels, for finding saturation islands. Set equal to zero (0) if not needed.</param>
+            <param name="pix_min">The minimum pixel threshold value (or SN) to consider a potential source.</param>
+            <param name="pix_max">The maximum pixel threshold value (or SN) to consider a potential source.</param>
+            <param name="kernel_min">The minimum kernel pixel sum threshold value (or SN) to consider a potential source.</param>
+            <param name="kernel_max">The maximum kernel pixel sum threshold value (or SN) to consider a potential source.</param>
+            <param name="threshholds_as_SN">Treat the thresholds as Signal to Noise instead of pixel values.</param>
+            <param name="kernel_radius">The radius (pixels) of the kernel to find sources within. Secondary sources within the radius will be ignored.</param>
+            <param name="source_separation">The separation (pixels) between sources. Only the brightest source within the separation radius is kept.</param>
+            <param name="auto_background">Automatically determine the local background for potential sources.  Not required if background is known to be zeroed, but should have no effect if used in this case.</param>
+            <param name="kernel_filename_template">The template full file name for the kernels to be saved. Sources will be numbered sequentially. Pass empty string for no saving.</param>
+            <param name="ROI_region">A boolean array of valid area to examine. Pass null or array of equal dimension to source image all true for entire image search.</param>
+            <param name="show_waitbar">Show a cancellable wait bar.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Extract_Sources(System.Double[0:,0:],System.Double[],System.Double[],System.Int32,System.Boolean,System.String)">
+            <summary>Determines centroids and other kernel information for known sources at given coordinates.</summary>
+            <param name="image">The 2D image array containing the known sources to extract.</param>
+            <param name="XCoords">The x-axis coordinates of the sources.</param>
+            <param name="YCoords">The y-axis coordinates of the sources.</param>
+            <param name="kernel_radius">The radius (pixels) of the kernel to centroid.</param>
+            <param name="auto_background">Automatically determine the local background for potential sources.  Not required if background is known to be zeroed, but should have no effect if used in this case.</param>
+            <param name="kernel_filename_template">The template full file name for the kernels to be saved. Sources will be numbered sequentially. Pass empty string for no saving.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Extract_Attempt_N_Sources(System.Int32,System.Double[0:,0:],System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Int32,System.Int32,System.Boolean,System.String,System.Boolean[0:,0:],System.Boolean)">
+            <summary>Attempt to find N strongest sources in an image.</summary>
+            <param name="N">The number of strongest sources to try to find.</param>
+            <param name="image">The 2D image array to find sources in.</param>
+            <param name="pix_saturation">The saturation threshold of of the image pixels, for finding saturation islands. Set equal to zero (0) if not needed.</param>
+            <param name="pix_min">The minimum pixel threshold value (or SN) to consider a potential source.</param>
+            <param name="pix_max">The maximum pixel threshold value (or SN) to consider a potential source.</param>
+            <param name="kernel_min">The minimum kernel pixel sum threshold value (or SN) to consider a potential source.</param>
+            <param name="kernel_max">The maximum kernel pixel sum threshold value (or SN) to consider a potential source.</param>
+            <param name="threshholds_as_SN">Treat the thresholds as Signal to Noise instead of pixel values.</param>
+            <param name="kernel_radius">The radius (pixels) of the kernel to find sources within. Secondary sources within the radius will be ignored.</param>
+            <param name="source_separation">The separation (pixels) between sources. Only the brightest source within the separation radius is kept.</param>
+            <param name="auto_background">Automatically determine the local background for potential sources.  Not required if background is known to be zeroed, but should have no effect if used in this case.</param>
+            <param name="kernel_filename_template">The template full file name for the kernels to be saved. Sources will be numbered sequentially. Pass empty string for no saving.</param>
+            <param name="ROI_region">A boolean array of valid area to examine. Pass null or array of equal dimension to source image all true for entire image search.</param>
+            <param name="show_waitbar">Show a cancellable wait bar.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Fit_Sources_Gaussian_Circular(System.Double[],System.Double[],System.Double[])">
+            <summary>Performs a least-squares fit on all sources of the form:
+            <para>G(x,y|P) = P(0) * exp( -((x - P(1)).^2 + (y - P(2)).^2 ) / (2*P(3)^2)) + P(4).</para></summary>
+            <param name="Pinit">Initial guesses for the fit parameters. Only P(3) and P(4) are used, all other parameter initial estimates are determined locally.</param>
+            <param name="LBnds">Lower bounds for the fit parameters. Only LBnds(3) and LBnds(4) are used, all other parameter bound estimates are determined locally.</param>
+            <param name="UBnds">Upper bounds for the fit parameters. Only UBnds(3) and LBnds(4) are used, all other parameter bound estimates are determined locally.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Fit_Sources_Gaussian_Elliptical(System.Double[],System.Double[],System.Double[])">
+            <summary>Performs a least-squares fit on all sources of the form:
+            <para>G(x,y|P) = P(0) * exp( -((x - P(1))*cosd(P(3)) + (y - P(2))*sind(P(3))).^2 / (2*P(4)^2) - ( -(x - P(1))*sind(P(3)) + (y - P(2))*cosd(P(3))).^2 / (2*P(5)^2) ) + P(6).</para></summary>
+            <param name="Pinit">Initial guesses for the fit parameters. Only P(3), P(4), P(5) and P(6) are used, all other parameter initial estimates are determined locally.</param>
+            <param name="LBnds">Lower bounds for the fit parameters. Same restrictions as above.</param>
+            <param name="UBnds">Upper bounds for the fit parameters. Same restrictions as above.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Fit_Sources_Moffat_Circular(System.Double[],System.Double[],System.Double[])">
+            <summary>Performs a least-squares fit on all sources of the form:
+            <para>M(x,y|P) = P(0) * ( 1 + { (x - P(1))^2 + (y - P(2))^2 } / P(3)^2 ) ^ (-P(4)) + P(5).</para></summary>
+            <param name="Pinit">Initial guesses for the fit parameters. Only P(3), P(4), P(5) are used, all other parameter initial estimates are determined locally.</param>
+            <param name="LBnds">Lower bounds for the fit parameters. Same restrictions as above.</param>
+            <param name="UBnds">Upper bounds for the fit parameters. Same restrictions as above.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Fit_Sources_Moffat_Elliptical(System.Double[],System.Double[],System.Double[])">
+            <summary>Performs a least-squares fit on all sources of the form:
+            <para>M(x,y|P) = P(0) * (1 + { ((x - P(1))*cosd(P(3)) + (y - P(2))*sind(P(3))) ^ 2 } / P(4) ^ 2 + { (-(x - P(1))*sind(P(3)) + (y - P(2))*cosd(P(3))) ^ 2 } / P(5) ^ 2) ^ (-P(6)) + P(7).</para></summary>
+            <param name="Pinit">Initial guesses for the fit parameters. Only P(3), P(4), P(5),  P(6) and P(7) are used, all other parameter initial estimates are determined locally.</param>
+            <param name="LBnds">Lower bounds for the fit parameters. Same restrictions as above.</param>
+            <param name="UBnds">Upper bounds for the fit parameters. Same restrictions as above.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Save_Source_Table(System.String)">
+            <summary>Saves the metadata table of the extracted sources as a delimited text file.</summary>
+            <param name="delimit">The delimit argument string: &quot;tab&quot; specifies a tab-delimit, otherwise provide a character (such as the comma &quot;,&quot; etc).</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Generate_Source_RADec_Coords(JPFITS.WorldCoordinateSolution)">
+            <summary>Generates RA and Dec coordinates for the sources in this instance, using the supplied World Coordinate System instance.</summary>
+            <param name="wcs">The world coordinate system to use for converting image pixel locations to world coordinates.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.GetKernel(System.Double[0:,0:],System.Int32,System.Int32,System.Int32)">
+            <summary>Gets a square sub-array kernel from a primary image given a center position and square half-width radius.</summary>
+            <param name="image">The source image to extract the kernel from.</param>
+            <param name="x0">The center pixel of the kernel on the horizontal axis of the image.</param>
+            <param name="y0">The center pixel of the kernel on the vertical axis of the image.</param>
+            <param name="radius">The radius of the kernel.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.Centroid(System.Int32[],System.Int32[],System.Double[0:,0:],System.Double@,System.Double@)">
+            <summary>Determines the [x, y] centroid location of a given kernel.</summary>
+            <param name="xdata">The horizontal axis values of the kernel.</param>
+            <param name="ydata">The vertical axis values of the kernel.</param>
+            <param name="kernel">The kernel to centroid.</param>
+            <param name="x_centroid">The weighed mean centroid of the kernel on the horizontal axis.</param>
+            <param name="y_centroid">The weighed mean centroid of the kernel on the vertical axis.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.COG(System.Double[0:,0:],System.Int32,System.Double[]@,System.Double@,System.Double@)">
+            <summary>Determines the Curve of Growth photometry for a source centered in the ROI image.</summary>
+            <param name="ROI">The region of interest image to determine the curve of growth for.</param>
+            <param name="N_last_fit_pts">The number of tailing points to fit for linear slope - intercept of this line is source counts, slope is the background count per pixel.</param>
+            <param name="N_points_COG">The number of points for each curve of growth point. Used as the abscissa against the return value.</param>
+            <param name="background_signal_per_pix">The slope of the linear fit line to the tailing points, i.e., the counts per pixel background.</param>
+            <param name="source_signal">The intercept of the linear fit line to the tailing points, i.e., the total central source counts.</param>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.#ctor">
+            <summary>The default constructor for the class object, used when an image is to be examined for sources.</summary>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.#ctor(System.Double[],System.Double[])">
+            <summary>The constructor for the class object used when an image already has a given list of coordinate locations for sources in the image.</summary>
+        </member>
+        <member name="M:JPFITS.PointSourceExtractor.#ctor(JPFITS.FITSBinTable)">
+            <summary>The constructor for the class object based on a PointSourceExtractor saved from another session.</summary>
+        </member>
+        <member name="F:JPFITS.WaitBar.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.WaitBar.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.WaitBar.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:JPFITS.WCSAutoSolverReportingForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolverReportingForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolverReportingForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:JPFITS.WCSAutoSolver">
+            <summary>WCS_AutoSolver class provides functionality for automatically solving astrometric solutions for FITS image data.</summary>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.#ctor(System.String,System.Int32,JPFITS.FITSImage,System.Boolean[0:,0:],System.Double,System.Boolean,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.String,System.Boolean)">
+            <summary>Initializes the WCS_AutoSolver class including performing source extraction on a given FITS image.</summary>
+            <param name="WCS_type">The WCS transformation type. Solution only uses TAN at this time.</param>
+            <param name="Number_of_Points">The number of points N to use to compare image coordinates to catalogue coordinates. Suggest N equals 25 for good correspondence, N equals 50 for poor, N equals 100 for very poor.</param>
+            <param name="Fits_Img">The JPFITS.FITSImage containing the primary image data.</param>
+            <param name="Image_ROI">The region of interest of the FITS image to search for point sources, of identical size to the FITS image. Pass null or all true for entire image.</param>
+            <param name="Image_Saturation">The saturation level of the source image for mapping saturated sources. Pass zero if no saturated sources exist.</param>
+            <param name="auto_background">Automatically determine local background for each centroiding kernel.</param>
+            <param name="PSE_kernel_radius">The radius of the point-source-extraction kernel, in pixels. PSEkernel_radius greater than or equal to 1.</param>
+            <param name="PSE_separation_radius">The minimum separation of point sources, in pixels. PSESeparation_radius greater than or equal to PSEkernel_radius.</param>
+            <param name="Fits_Catalogue_BinTable_File">The full path file name of the FITS binary table containing the catalogue data.</param>
+            <param name="Catalogue_Extension_Name">The extension name of the FITS binary table which contains the catalogue data. If empty string is passed then the first binary table extension is assumed.</param>
+            <param name="Catalogue_CVAL1_Name">The name of the entry inside the binary table which lists the CVAL1 (i.e. right ascension) coordinates.</param>
+            <param name="Catalogue_CVAL2_Name">The name of the entry inside the binary table which lists the CVAL2 (i.e. declination) coordinates.</param>
+            <param name="Catalogue_Magnitude_Name">The name of the entry inside the binary table which lists the source magnitudes.</param>
+            <param name="Refine">Option to automatically refine the solution further with additional points after the initial solution is found.</param>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.#ctor(System.String,JPFITS.JPMath.PointD[],System.Boolean,System.Int32,System.Int32,System.Int32,JPFITS.JPMath.PointD[])">
+            <summary>Initializes the WCS_AutoSolver class for an existing pair of pixel source and catalogue coordinates.</summary>
+            <param name="WCS_type">The WCS transformation type. Solution only uses TAN at this time.</param>
+            <param name="pixels">The source pixel positions in computer graphics coordinate orientation, i.e., origin top left of image.</param>
+            <param name="zero_based_pixels">If the source pixel positions are zero-based.</param>
+            <param name="pixels_tolerance_radius">The tolerance of the source positions, identical to usage as the PSE_kernel_radius in the other constructor. Typically 2 (pixels).</param>
+            <param name="image_width">The 1-based width of the source image from where the source pixels points originate.</param>
+            <param name="image_height">The 1-based height of the source image from where the source pixels points originate.</param>
+            <param name="wcspoints">The catalogue sky coordinate values, in degrees, corresponding to the region in the image of the source pixel positions.</param>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.WCS_Solution">
+            <summary>Returns the World Coordinate Solution</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.PSE_Extraction">
+            <summary>Returns the most recent Point Source Extraction</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Status_Log">
+            <summary>Gets or Sets the Status Log</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Cancelled">
+            <summary>Gets or Sets the Cancel State of the Solver</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Solving">
+            <summary>Gets the Solving State of the Solver</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Solved">
+            <summary>Gets the Solution State of the Solver</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Progress">
+            <summary>Gets Progress percentage of the Solver</summary>
+        </member>
+        <member name="P:JPFITS.WCSAutoSolver.Solver_Parallelized">
+            <summary>Gets or Sets the Solver to run parallelized (default is true)</summary>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.Status_Log_Clear">
+            <summary>Clears the Status Log</summary>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.SolveAsync(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>Executes the auto-solver algorithm.</summary>
+            <param name="scale_init">The initial scale guess, in arcseconds per pixel.</param>
+            <param name="scale_lb">The lower bound of the scale range, in arcseconds per pixel.</param>
+            <param name="scale_ub">The upper bound of the scale range, in arcseconds per pixel.</param>
+            <param name="rotation_init">The initial field rotation guess, in degrees.</param>
+            <param name="rotation_lb">The lower bound of the field rotation range, in degrees, greater than or equal to -180</param>
+            <param name="rotation_ub">The upper bound of the field rotation range, in degrees, less than or equal to 180</param>
+            <param name="vertex_tolerance">The tolerance of the vertex angles when comparing triangles, in degrees. Suggest 0.25.</param>
+            <param name="N_matches_stop">Stop and solve solution when N matches are found between image and catalogue coordinates. N_matches_stop greater than or equal to 3. Suggest 6. Solution likely requires confirmation at 3 or 4.</param>
+            <param name="Percentage_matches_stop">Stop and solve solution when Percentage matches are found between image and catalogue coordinates. Suggest 25.</param>
+            <param name="condition_arrays">Optionally condition the triangle arrays. Suggest true.</param>
+            <param name="show_report_form">Optionally shows a cancellable Form which displays the solution progress.</param>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.ConditionTriangleArrayBrightnessThreads(JPFITS.JPMath.Triangle[],System.Int32,System.Boolean)">
+            <summary>Conditions the traingle array so that all threads begin with the brightest triangles.</summary>
+            <param name="triarray">An array of triangles.</param>
+            <param name="Nthreads">The number of threads to condition the array for.</param>
+            <param name="ascending">Brightness is ascending values (i.e. magnitudes) = true, otherwise brightness is descending values (i.e. counts) = false.</param>
+        </member>
+        <member name="M:JPFITS.WCSAutoSolver.AstroQuery(System.String,System.String,System.String,System.String@,System.String,System.String)">
+            <summary>Queries the Gaia catalogue for entries within a specified region. Returns 0 if the query was successful.</summary>
+            <param name="catalogue">A string for the catalogue to query. Options are (case insensitive): "Gaia"</param>
+            <param name="ra_deg">A string of the right ascension in degrees.</param>
+            <param name="dec_deg">A string of the declination in degrees.</param>
+            <param name="result_savepathfilename">The filename to save the query catalogue. If saving is not required, pass an empty string.</param>
+            <param name="radius">A string of the region radius in arcminutes.</param>
+            <param name="square">Pass 1 if the region is square, 0 for circle.</param>
+        </member>
+        <member name="T:JPFITS.WorldCoordinateSolution">
+            <summary>WorldCoordinateSolution class for creating, interacting with, and solving the paramaters for World Coordinate Solutions for the FITS image standard.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.#ctor">
+            <summary>Default constructor.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.#ctor(JPFITS.FITSHeader)">
+            <summary>Constructor based on an existing FITS primary image header which contains FITS standard keywords for a WCS solution.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_RightAscensionLabelLocations">
+            <summary>Returns an array of PointF locations created within Grid_MakeWCSGrid for printing labels to the window.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_DeclinationLabelLocations">
+            <summary>Returns an array of PointF locations created within Grid_MakeWCSGrid for printing labels to the window.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_RightAscensionLabels">
+            <summary>Returns an array of Right Ascension sexagesimal values for each grid line from Grid_RightAscensionPoints.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_DeclinationLabels">
+            <summary>Returns an array of Declination sexagesimal values for each grid line from Grid_DeclinationPoints.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_RightAscensionPoints">
+            <summary>Returns an array of arrays of PointF's each of which represent grid lines at intervals of Right Ascension.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.Grid_DeclinationPoints">
+            <summary>Returns an array of arrays of PointF's each of which represent grid lines at intervals of Declination.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.CD_Matrix">
+            <summary>Gets or Sets the column-major CD matrix for this class instance.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.CD_Matrix_Inverse">
+            <summary>Gets the inverse of the CD matrix.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.WCSFitResidual_MeanPix">
+            <summary>Gets the mean of the residuals of the WCS solution in pixel units; should be very small as per least squares minimization.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.WCSFitResidual_StdvPix">
+            <summary>Gets the standard deviation of the residuals of the WCS solution in pixel units; gives the average WCS solution error in pixels.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.WCSFitResidual_MeanSky">
+            <summary>Gets the mean of the residuals of the WCS solution in arcseconds; should be very small as per least squares minimization.</summary>
+        </member>
+        <member name="P:JPFITS.WorldCoordinateSolution.WCSFitResidual_StdvSky">
+            <summary>Gets the standard deviation of the residuals of the WCS solution in arcseconds; gives the average WCS solution error in arcseconds.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Grid_Invalidate">
+            <summary>Invalidates the existing grid so that it can be updated for new display settings.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCDi_j(System.Int32,System.Int32)">
+            <summary>Gets the one-based row-major element from the CD matrix CDi_j[int i, int j], where i is the row index, and j is the column index.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SetCDi_j(System.Int32,System.Int32,System.Double)">
+            <summary>Sets the one-based row-major element from the CD matrix CDi_j[int i, int j], where i is the row index, and j is the column index.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCVALValues(System.Int32)">
+            <summary>Gets the array of coordinate values on one-based axis i used for this World Coordinate Solution.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SetCVALValues(System.Int32,System.Double[])">
+            <summary>Sets the array of coordinate values on one-based axis i used for this World Coordinate Solution.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCPIXPixels(System.Int32)">
+            <summary>Gets the array of one-based coordinate pixels on one-based axis n (Coordinate_Pixels[n]) used for this World Coordinate Solution.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SetCPIXPixels(System.Int32,System.Double[])">
+            <summary>Sets the array of one-based coordinate pixels on one-based axis n (Coordinate_Pixels[n]) used for this World Coordinate Solution.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCRVALn(System.Int32)">
+            <summary>Gets the Coordinate Reference Value for the one-based axis n: CRVALn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SetCRVALn(System.Int32,System.Double)">
+            <summary>Sets the Coordinate Reference Value for the one-based axis n: CRVALn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCRPIXn(System.Int32)">
+            <summary>Gets the one-based Coordinate Reference Pixel for the one-based axis n: CRPIXn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SetCRPIXn(System.Int32,System.Double)">
+            <summary>Sets the one-based Coordinate Reference Pixel for the one-based axis n: CRPIXn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCDELTn(System.Int32)">
+            <summary>Gets the world coordinate solution plate scale (arcseconds per pixel) for one-based axis n: CDELTn(int n).</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCROTAn(System.Int32)">
+            <summary>Gets the world coordinate solution field rotation (degrees) for one-based axis n: WCSROTn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.GetCTYPEn(System.Int32)">
+            <summary>Gets the world coordinate solution type for one-based axis n: CTYPEn[int n].</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Solve_WCS(System.String,System.Double[],System.Double[],System.Boolean,System.Double[],System.Double[],JPFITS.FITSHeader)">
+            <summary>Solves the projection parameters for a given list of pixel and coordinate values. Pass nullptr for FITS if writing WCS parameters to a primary header not required.</summary>
+            <param name="WCS_Type">The world coordinate solution type. For example: TAN, for tangent-plane or Gnomic projection. Only TAN is currently supported.</param>
+            <param name="X_pix">An array of the image x-axis pixel locations.</param>
+            <param name="Y_pix">An array of the image y-axis pixel locations.</param>
+            <param name="zero_based_pixels">A boolean to indicate if the X_Pix and Y_Pix are zero-based coordinates. They will be converted to one-based if true.</param>
+            <param name="cval1">An array of coordinate values in degrees on coordinate axis 1.</param>
+            <param name="cval2">An array of coordinate values in degrees on coordinate axis 2.</param>
+            <param name="header">An FITSImageHeader instance to write the solution into. Pass null if not required.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Pixel(System.Double,System.Double,System.String,System.Double@,System.Double@,System.Boolean)">
+            <summary>Gets the image [x, y] pixel position for a given world coordinate in degrees at cval1 and cval2.</summary>
+            <param name="cval1">A coordinate values in degrees on coordinate axis 1 (i.e. right ascension).</param>
+            <param name="cval2">A coordinate values in degrees on coordinate axis 2 (i.e. declination).</param>
+            <param name="WCS_Type">The type of WCS solution: "TAN" for tangent-plane or Gnomic projection. Only "TAN" supported at this time.</param>
+            <param name="X_pix">The x-pixel position of the sky coordinate.</param>
+            <param name="Y_pix">The y-pixel position of the sky coordinate.</param>
+            <param name="return_zero_based_pixels">If the pixels for the image should be interpreted as zero-based, pass true.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Pixels(System.Double[],System.Double[],System.String,System.Double[]@,System.Double[]@,System.Boolean)">
+            <summary>Gets arrays of image [x, y] pixel positions for a list of given world coordinates in degrees at cval1 and cval2.</summary>
+            <param name="cval1">An array of coordinate values in degrees on coordinate axis 1.</param>
+            <param name="cval2">An array of coordinate values in degrees on coordinate axis 2.</param>
+            <param name="WCS_Type">The type of WCS solution: "TAN" for tangent-plane or Gnomic projection. Only "TAN" supported at this time.</param>
+            <param name="X_pix">An array of the image x-axis pixel locations.</param>
+            <param name="Y_pix">An array of the image y-axis pixel locations.</param>
+            <param name="return_zero_based_pixels">If the pixels for the image should be interpreted as zero-based, pass true.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinate(System.Double,System.Double,System.Boolean,System.String,System.Double@,System.Double@)">
+            <summary>Gets the cval1 and cval2 world coordinate in degrees for a given image [x, y] pixel position.</summary>
+            <param name="X_pix">The x-pixel position of the sky coordinates.</param>
+            <param name="Y_pix">The y-pixel position of the sky coordinates.</param>
+            <param name="zero_based_pixels">True if the pixels coordinates for the image are zero-based.</param>
+            <param name="WCS_Type">The type of WCS solution: "TAN" for tangent-plane or Gnomic projection. Only "TAN" supported at this time.</param>
+            <param name="cval1">A coordinate value in degrees on coordinats axis 1 (i.e. right ascension).</param>
+            <param name="cval2">A coordinate value in degrees on coordinats axis 2 (i.e. declination).</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinate(System.Double,System.Double,System.Boolean,System.String,System.String@,System.String@)">
+            <summary>Gets the cval1 and cval2 world coordinate in sexagesimal for a given image [x, y] pixel position.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinate(System.Double,System.Double,System.Boolean,System.String,System.Double@,System.Double@,System.String@,System.String@)">
+            <summary>Gets the cval1 and cval2 world coordinate in degrees and sexagesimal for a given image [x, y] pixel position.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinates(System.Double[],System.Double[],System.Boolean,System.String,System.Double[]@,System.Double[]@)">
+            <summary>Gets arrays of cval1 and cval2 world coordinates in degrees for a list of given image [x, y] pixel positions.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinates(System.Double[],System.Double[],System.Boolean,System.String,System.String[]@,System.String[]@)">
+            <summary>Gets arrays of cval1 and cval2 world coordinates in sexagesimal for a list of given image [x, y] pixel positions.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Get_Coordinates(System.Double[],System.Double[],System.Boolean,System.String,System.Double[]@,System.Double[]@,System.String[]@,System.String[]@)">
+            <summary>Gets arrays of cval1 and cval2 world coordinates in degrees and sexagesimal for a list of given image [x, y] pixel positions.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.CopyFrom(JPFITS.WorldCoordinateSolution)">
+            <summary>Copy WCS parameters from another WCS solution into the current instance.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.CopyTo(JPFITS.FITSHeader)">
+            <summary>Copy WCS parameters from the current instance into another FITSHeader.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Clear">
+            <summary>
+            Clear all WCS parameters from this instance.
+            </summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Exists">
+            <summary>Checks if a WCS solution has been computed for this instance.</summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Grid_MakeWCSGrid(System.Int32,System.Int32,System.Single,System.Single)">
+            <summary>Generates arrays of PointF arrays which represent grid lines in Right Ascension and Declination.
+            <para>The lines are accessed via Grid_RightAscensionPoints and Grid_DeclinationPoints.</para>
+            <para>The sexagesimal labels for each grid line are accessed via Grid_RightAscensionLabels and Grid_DeclinationLabels.</para></summary>
+            <param name="imagepixels_width">Image pixels width.</param>
+            <param name="imagepixels_height">Image pixels height.</param>
+            <param name="xscale">Window pixels per image pixel.</param>
+            <param name="yscale">Window pixels per image pixel.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Exists(JPFITS.FITSHeader,System.String[])">
+            <summary>Checks if a WCS solution exists based on the existence of the CTYPE keywords in the primary header of the given FITS object.</summary>
+            <param name="header">The header to scan for complete FITS standard WCS keywords.</param>
+            <param name="wcs_CTYPEN">The WCS solution type CTYPE to check for. Only "TAN" supported at this time. Typically both axes utilize the same solution type. For example wcs_CTYPEN = new string[2]{"TAN", "TAN"}</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.Clear(JPFITS.FITSHeader)">
+            <summary>
+            Clears the WCS keywords from the header.
+            </summary>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SexagesimalElementsToDegreeElements(System.String,System.String,System.String,System.Double@,System.Double@)">
+            <summary>Convert sexagesimal coordinate elements to degree units, with possibly arbitrary scale delimitters.</summary>
+            <param name="ra_sexa">The right ascension in sexagesimal format.</param>
+            <param name="dec_sexa">The declination in sexagesimal format.</param>
+            <param name="delimit">If the scale delimiter is known then pass it (fast), otherwise it will be arbitrarily determined at each scale separation by passing an empty string (slower).</param>
+            <param name="ra_deg">Return parameter for right ascension in degrees.</param>
+            <param name="dec_deg">Return parameter for declination in degrees.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SexagesimalLineToDegreeElements(System.String,System.Double@,System.Double@)">
+            <summary>Convert sexigesimal coordinates found in the first two columns of a String line into degree coordinate units.</summary>
+            <param name="line">A String line whose first two columns contain sexagesimal coordinates.</param>
+            <param name="ra_deg">Return parameter for right ascension in degrees.</param>
+            <param name="dec_deg">Return parameter for declination in degrees.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.SexagesimalFileToDegreeFile(System.String,System.Boolean,System.Double[]@,System.Double[]@)">
+            <summary>Open a file whose first two columns are sexagesimal entries with any formatting, and optionally save the file as a new file with a SaveFileDialog and return the coordinate columns as arrays in degree units.</summary>
+            <param name="file">The full path of the textual file to open, to scan the first two columns for sexagesimal entries.</param>
+            <param name="saveDegreeFile">True to be given a SaveFileDialog to save a new file with just the two coordinate columns in degree units; False to not save a file.</param>
+            <param name="raDeg">A declared array for the RA coordinates in degrees. The array will be initialized internally to the appropriate size. The user may not require this array, but it still must be supplied.</param>
+            <param name="decDeg">A declared array for the Declination coordinates in degrees. The array will be initialized internally to the appropriate size. The user may not require this array, but it still must be supplied.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.DegreeElementstoSexagesimalElements(System.Double,System.Double,System.String@,System.String@,System.String,System.Int32)">
+            <summary>Convert degree coordinate elements to sexagesimal format.</summary>
+            <param name="ra_deg">Right ascension in degrees.</param>
+            <param name="dec_deg">Declination in degrees.</param>
+            <param name="ra_sexa">The right ascension in sexagesimal format, returned as a String.</param>
+            <param name="dec_sexa">The declination in sexagesimal format, returned as a String.</param>
+            <param name="delimitter">The scale delimiter; if an empty String is passed then a colon will be used.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.DegreeLineToSexagesimalElements(System.String,System.String@,System.String@,System.String,System.Int32)">
+            <summary>Convert degree coordinates found in the first two columns of a String line into sexigesimal coordinate format.</summary>
+            <param name="line">A String line whose first two columns contain degree unit coordinates.</param>
+            <param name="ra_sexa">The right ascension in sexagesimal format, returned as a String.</param>
+            <param name="dec_sexa">The declination in sexagesimal format, returned as a String.</param>
+            <param name="delimitter">The scale delimiter; if an empty String is passed then a colon will be used.</param>
+        </member>
+        <member name="M:JPFITS.WorldCoordinateSolution.DegreeFileToSexagesimalFile(System.String,System.Boolean,System.String[]@,System.String[]@,System.String,System.Int32)">
+            <summary>Open a file whose first two columns are degree entries, and optionally save the file as a new file with a SaveFileDialog and return the coordinate columns as arrays in sexigesimal coordinate format.</summary>
+            <param name="file">The full path of the textual file to open, to scan the first two columns for degree unit entries.</param>
+            <param name="saveSexigesimalFile">True to be given a SaveFileDialog to save a new file with just the two coordinate columns; False to not save a file.</param>
+            <param name="raSexagesimal">A declared array for the RA coordinates in sexigesimal format. The array will be initialized internally to the appropriate size. The user may not require this array, but it still must be supplied.</param>
+            <param name="decSexagesimal">A declared array for the Declination coordinates in sexigesimal format. The array will be initialized internally to the appropriate size. The user may not require this array, but it still must be supplied.</param>
+            <param name="delimitter">The scale delimitter; if an empty String is passed then a colon will be used.</param>
+        </member>
+    </members>
+</doc>

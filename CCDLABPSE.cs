@@ -66,13 +66,13 @@ namespace CCDLAB
 			}
 
 			if (PSEFitTypeChck.SelectedIndex == 0)//circular gaussian
-				PSES[PSESINDEX].Extract_Source_LSFits_Gaussian_Circular(P0, PLB, PUB);
+				PSES[PSESINDEX].Fit_Sources_Gaussian_Circular(P0, PLB, PUB);
 			if (PSEFitTypeChck.SelectedIndex == 1)//circular gaussian
-				PSES[PSESINDEX].Extract_Source_LSFits_Gaussian_Elliptical(P0, PLB, PUB);
+				PSES[PSESINDEX].Fit_Sources_Gaussian_Elliptical(P0, PLB, PUB);
 			if (PSEFitTypeChck.SelectedIndex == 2)//circular moffat
-				PSES[PSESINDEX].Extract_Source_LSFits_Moffat_Circular(P0, PLB, PUB);
+				PSES[PSESINDEX].Fit_Sources_Moffat_Circular(P0, PLB, PUB);
 			if (PSEFitTypeChck.SelectedIndex == 3)//elliptical moffat
-				PSES[PSESINDEX].Extract_Source_LSFits_Moffat_Elliptical(P0, PLB, PUB);
+				PSES[PSESINDEX].Fit_Sources_Moffat_Elliptical(P0, PLB, PUB);
 
 			if (PSES[PSESINDEX].Fitted == false)//cancelled
 			{

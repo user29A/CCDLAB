@@ -6721,7 +6721,7 @@ namespace CCDLAB
 					ind = intslistfile.LastIndexOf(".");
 				string dedriftedXYIntsFile = intslistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedXYIntsFits = new FITSImage(dedriftedXYIntsFile, dedriftedXYInts, false, true);
-				dedriftedXYIntsFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedXYIntsFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedXYIntsFits.WriteImage(TypeCode.Int16, true);
 
 				ind = fraclistfile.LastIndexOf("_deDrift");
@@ -6729,7 +6729,7 @@ namespace CCDLAB
 					ind = fraclistfile.LastIndexOf(".");
 				string dedriftedXYFracFile = fraclistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedXYFracFits = new FITSImage(dedriftedXYFracFile, dedriftedXYFrac, false, true);
-				dedriftedXYFracFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedXYFracFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedXYFracFits.WriteImage(TypeCode.Int16, true);
 
 				ind = flatlistfile.LastIndexOf("_deDrift");
@@ -6737,7 +6737,7 @@ namespace CCDLAB
 					ind = flatlistfile.LastIndexOf(".");
 				string dedriftedFlatFile = flatlistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedFlatFits = new FITSImage(dedriftedFlatFile, dedriftedFlat, false, true);
-				dedriftedFlatFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedFlatFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedFlatFits.WriteImage(TypeCode.Double, true);
 
 				ind = timelistfile.LastIndexOf("_deDrift");
@@ -6745,7 +6745,7 @@ namespace CCDLAB
 					ind = timelistfile.LastIndexOf(".");
 				string dedriftedTimeFile = timelistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedTimeFits = new FITSImage(dedriftedTimeFile, dedriftedTime, false, true);
-				dedriftedTimeFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedTimeFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedTimeFits.WriteImage(TypeCode.UInt32, true);
 
 				ind = framelistfile.LastIndexOf("_deDrift");
@@ -6753,7 +6753,7 @@ namespace CCDLAB
 					ind = framelistfile.LastIndexOf(".");
 				string dedriftedFrameFile = framelistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedFrameFits = new FITSImage(dedriftedFrameFile, dedriftedFrame, false, true);
-				dedriftedFrameFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedFrameFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedFrameFits.WriteImage(TypeCode.UInt32, true);
 
 				ind = mdMmlistfile.LastIndexOf("_deDrift");
@@ -6761,7 +6761,7 @@ namespace CCDLAB
 					ind = mdMmlistfile.LastIndexOf(".");
 				string dedriftedXYmdMmFile = mdMmlistfile.Insert(ind, "_deDrift");
 				FITSImage dedriftedXYmdMmFits = new FITSImage(dedriftedXYmdMmFile, dedriftedXYmdMm, false, true);
-				dedriftedXYmdMmFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+				dedriftedXYmdMmFits.Header.CopyHeaderFrom(driftsfits.Header);
 				dedriftedXYmdMmFits.WriteImage(TypeCode.Int16, true);
 
 				if (BJDexists)
@@ -6771,7 +6771,7 @@ namespace CCDLAB
 						ind = BJDlistfile.LastIndexOf(".");
 					string dedriftedBJDFile = BJDlistfile.Insert(ind, "_deDrift");
 					FITSImage dedriftedBJDFits = new FITSImage(dedriftedBJDFile, dedriftedBJD, false, true);
-					dedriftedBJDFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+					dedriftedBJDFits.Header.CopyHeaderFrom(driftsfits.Header);
 					dedriftedBJDFits.WriteImage(TypeCode.Double, true);
 				}
 
@@ -6779,7 +6779,7 @@ namespace CCDLAB
 				{
 					string dedriftedExpFile = dedriftedTimeFile.Replace("TimeList", "ExpArrayList");
 					FITSImage dedriftedExpFits = new FITSImage(dedriftedExpFile, dedriftedExposure, false, true);
-					dedriftedExpFits.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+					dedriftedExpFits.Header.CopyHeaderFrom(driftsfits.Header);
 					dedriftedExpFits.WriteImage(TypeCode.Double, true);
 
 					//if (createexposurearray)
@@ -6788,7 +6788,7 @@ namespace CCDLAB
 						if (master)
 							exposurearray = JPFITS.FITSImage.ReadImageArrayOnly(dedriftedExpFile.Replace("_deDrift.fits", ".fits"), null, true);
 						FITSImage exp = new FITSImage(dedriftedExpFile, exposurearray, false, true);
-						exp.Header.CopyHeaderFrom(driftsfits.Header);// CopyHeader(driftsfits);
+						exp.Header.CopyHeaderFrom(driftsfits.Header);
 						exp.WriteImage(TypeCode.Double, true);
 					}
 				}

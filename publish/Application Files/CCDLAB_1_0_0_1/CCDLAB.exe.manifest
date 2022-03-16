@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
+  <asmv1:assemblyIdentity name="CCDLAB.exe" version="1.0.0.1" publicKeyToken="117ec4ba0459c473" language="neutral" processorArchitecture="msil" type="win32" />
+  <description asmv2:iconFile="CCDLAB.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
+  <application />
+  <entryPoint>
+    <assemblyIdentity name="CCDLAB" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <commandLine file="CCDLAB.exe" parameters="" />
+  </entryPoint>
+  <trustInfo>
+    <security>
+      <applicationRequestMinimum>
+        <PermissionSet Unrestricted="true" ID="Custom" SameSite="site" />
+        <defaultAssemblyRequest permissionSetReference="Custom" />
+      </applicationRequestMinimum>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!--
+          UAC Manifest Options
+          If you want to change the Windows User Account Control level replace the
+          requestedExecutionLevel node with one of the following.
+
+        <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
+        <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
+        <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
+
+         If you want to utilize File and Registry Virtualization for backward
+         compatibility then delete the requestedExecutionLevel node.
+    -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <dependency>
+    <dependentOS>
+      <osVersionInfo>
+        <os majorVersion="5" minorVersion="1" buildNumber="2600" servicePackMajor="0" />
+      </osVersionInfo>
+    </dependentOS>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="Microsoft.Windows.CommonLanguageRuntime" version="4.0.30319.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="alglib318hpc_net2.dll" size="2256896">
+      <assemblyIdentity name="alglib318hpc_net2" version="0.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>1AbdEiamuc7glcGgOoKAgy9ljDQeZdYwaiE/cYp6C9A=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CCDLAB.exe" size="873448">
+      <assemblyIdentity name="CCDLAB" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>OyYrWpKNAhOFjAnxqRQ/PlV7e7aR9v9/7YCI8g7GHis=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="JPChart.dll" size="71680">
+      <assemblyIdentity name="JPChart" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>GiwYBPxeMWhKVO3NW0JOd5gW60/NrpcmJLszQaHJS4I=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="JPFITS.dll" size="399360">
+      <assemblyIdentity name="JPFITS" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>gtZEHRKGl6oNdhaosT0zT2sXTWGxxmjHgmUUJU/Ba24=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MLCCDLAB.dll" size="528384">
+      <assemblyIdentity name="MLCCDLAB" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>nuRZgOPd38JgoVnTtVee9UNtqFHEyU9RLgoTS+Y2JNk=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MWArray.dll" size="121344">
+      <assemblyIdentity name="MWArray" version="2.21.0.0" publicKeyToken="E1D84A0DA19DB86F" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>tMur3pJodEl5qf4vld07A6fFlb71DA3t3Jy/vJUuDBU=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <file name="CCDLAB.exe.config" size="561">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>A81SuMCEb/vOaGnMegdOJIo9l+ZLzAto1higVrnSBtI=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="CCDLAB.ico" size="2238">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>KcRPZt4JYWjJNuIPdGg2Ddrl+zG1IGLqwQh9DvYl3/w=</dsig:DigestValue>
+    </hash>
+  </file>
+  <fileAssociation extension=".drift" description="UVIT Drift" progid="CCDLAB" defaultIcon="CCDLAB.ico" xmlns="urn:schemas-microsoft-com:clickonce.v1" />
+  <fileAssociation extension=".fit" description="FITS" progid="CCDLAB" defaultIcon="CCDLAB.ico" xmlns="urn:schemas-microsoft-com:clickonce.v1" />
+  <fileAssociation extension=".fits" description="FITS" progid="CCDLAB" defaultIcon="CCDLAB.ico" xmlns="urn:schemas-microsoft-com:clickonce.v1" />
+  <fileAssociation extension=".fts" description="FITS" progid="CCDLAB" defaultIcon="CCDLAB.ico" xmlns="urn:schemas-microsoft-com:clickonce.v1" />
+<publisherIdentity name="CN=RIPPER\Joseph E Postma" issuerKeyHash="d03cec202f14d2a28b019f0bfc4587796d115325" /><Signature Id="StrongNameSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha256" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" /><DigestValue>J9fee+KvNdLLLpstG0T97uqX0ioIpg8pAuBnKkwBHqo=</DigestValue></Reference></SignedInfo><SignatureValue>XJmpIVXzy5ERS2Er16lgIAEVSiGlAmByrh/NXnOcfP7g6zXIC21rh+eziOd2ugBnlCZuCB6io8IsT+dxsDJKzLAjbfbIYgaeVsAptMjxq61zALUf7+czHKPFymzwpcAsII2l/PNzWbS/rGSzngURzkg5HrsjMekLTesOLe3Q1iE=</SignatureValue><KeyInfo Id="StrongNameKeyInfo"><KeyValue><RSAKeyValue><Modulus>2u6WqweRB0bldDObmjkHkOCV9un4tWe8OkDrxPDn/1JgaTIfLoHKziJakj/Hl+rjL9bpd6V36iI/o7G1cWZFclCLTGq/w49yz3rbQcbl3+FiVkMbygOb5rPAXxo0dhUUINcby/BBrJe+bnUWJ2jT8UnSnom4X48qV6sadbWaYP0=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><msrel:RelData xmlns:msrel="http://schemas.microsoft.com/windows/rel/2005/reldata"><r:license xmlns:r="urn:mpeg:mpeg21:2003:01-REL-R-NS" xmlns:as="http://schemas.microsoft.com/windows/pki/2005/Authenticode"><r:grant><as:ManifestInformation Hash="aa1e014c2a67e002290fa6082ad297eaeefd441b2d9b2ecbd235afe27bded727" Description="" Url=""><as:assemblyIdentity name="CCDLAB.exe" version="1.0.0.1" publicKeyToken="117ec4ba0459c473" language="neutral" processorArchitecture="msil" type="win32" /></as:ManifestInformation><as:SignedBy /><as:AuthenticodePublisher><as:X509SubjectName>CN=RIPPER\Joseph E Postma</as:X509SubjectName></as:AuthenticodePublisher></r:grant><r:issuer><Signature Id="AuthenticodeSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha256" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" /><DigestValue>WQQodCrCBBdt41ZFEDWfrVahvkwrM3CY08jPBhk8ssM=</DigestValue></Reference></SignedInfo><SignatureValue>Twj+jPrspOSXPLxeRsy1XsAJxzCaBBrsGvJJqfB0BWY6UEoySfGQcXw0jZp0cIDLrWuR2mojzVE/fjC80MoLyT8ECO/8+Sx9fUpjZfXw2oe7Brxod8PnM8mwhyyb1EAj7gKHNK41gPFT4xBPWzlECaLEMy/N6sSloM8xFgcNojc=</SignatureValue><KeyInfo><KeyValue><RSAKeyValue><Modulus>2u6WqweRB0bldDObmjkHkOCV9un4tWe8OkDrxPDn/1JgaTIfLoHKziJakj/Hl+rjL9bpd6V36iI/o7G1cWZFclCLTGq/w49yz3rbQcbl3+FiVkMbygOb5rPAXxo0dhUUINcby/BBrJe+bnUWJ2jT8UnSnom4X48qV6sadbWaYP0=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><X509Data><X509Certificate>MIIB8TCCAVqgAwIBAgIQdwEXxOo73IFKoaq1EPgAEzANBgkqhkiG9w0BAQsFADA3MTUwMwYDVQQDHiwAUgBJAFAAUABFAFIAXABKAG8AcwBlAHAAaAAgAEUAIABQAG8AcwB0AG0AYTAeFw0yMTExMTUwODA5MTdaFw0yMjExMTUxNDA5MTdaMDcxNTAzBgNVBAMeLABSAEkAUABQAEUAUgBcAEoAbwBzAGUAcABoACAARQAgAFAAbwBzAHQAbQBhMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDa7parB5EHRuV0M5uaOQeQ4JX26fi1Z7w6QOvE8Of/UmBpMh8ugcrOIlqSP8eX6uMv1ul3pXfqIj+jsbVxZkVyUItMar/Dj3LPettBxuXf4WJWQxvKA5vms8BfGjR2FRQg1xvL8EGsl75udRYnaNPxSdKeibhfjypXqxp1tZpg/QIDAQABMA0GCSqGSIb3DQEBCwUAA4GBAJVoZaSFfkTPEO+C1ufQNPK5DdQ28OvAu69aVcQcPLam42usinwGSLh4szOhlcnhWEiQmzxZDgUywIdtEvDtGsNLykYUokwhJO4GTvwCKPI2FZkrjboE7/1NVK4PSkqZKfUXy4TdnYMRq6XmoVdq2NgSwRQC2SAa6XH/fYJxAVC5</X509Certificate></X509Data></KeyInfo></Signature></r:issuer></r:license></msrel:RelData></KeyInfo></Signature></asmv1:assembly>
