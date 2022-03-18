@@ -79,14 +79,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="JPFITS.dll" size="402944">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="JPFITS.dll" size="402432">
       <assemblyIdentity name="JPFITS" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>E0gRXQjkc3KDJ+KchpPrX4rdjssRfG25D2eIabMEXv8=</dsig:DigestValue>
+        <dsig:DigestValue>P6X/IsuhiWduKNDcdZ6AJyX8d8YHGP/1H9c9EwH4VAI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
