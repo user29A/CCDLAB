@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31903.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCDLAB", "CCDLAB\CCDLAB.csproj", "{27A53E62-D277-4098-ADA9-C7E688AA3BFF}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "CCDLAB Setup", "..\CCDLAB Setup\CCDLAB Setup.vdproj", "{E63FD13A-F4AC-4C4D-B181-DE7AA4EE1198}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27A53E62-D277-4098-ADA9-C7E688AA3BFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27A53E62-D277-4098-ADA9-C7E688AA3BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27A53E62-D277-4098-ADA9-C7E688AA3BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27A53E62-D277-4098-ADA9-C7E688AA3BFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E63FD13A-F4AC-4C4D-B181-DE7AA4EE1198}.Debug|Any CPU.ActiveCfg = Debug
+		{E63FD13A-F4AC-4C4D-B181-DE7AA4EE1198}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {49FAA300-5D37-4740-9E6C-9CE6DDA7448E}
+	EndGlobalSection
+EndGlobal
