@@ -112,18 +112,23 @@
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
     <Compile Include="CCDLAB.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CCDLABBatch.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CCDLABImageWindows.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CCDLABPSE.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CCDLABUVIT.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ColorImageCreator.cs">

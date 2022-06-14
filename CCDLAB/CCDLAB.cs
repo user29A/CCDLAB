@@ -1535,24 +1535,14 @@ namespace CCDLAB
 						double divergpix = 0.75;
 						for (int j = 0; j < NSrc; j++)
 							if (Math.Abs(currdrifts[j] - currdriftmed) > divergpix)
-							{
-								//ntrackdivergingimgs++;
-								//divergingindex = j;//assume this is constant...or if changes will be picked up again anyway
-								//break;
 								divergcount[j]++;
 
-								//MessageBox.Show(j + "  " + divergcount[j] + "  " + Math.Abs(currdrifts[j] - currdriftmed));
-							}
-
 						for (int k = 0; k < NSrc; k++)
-							if (divergcount[k]/*ntrackdivergingimgs*/ >= 5)//then remove the bad one divergingindex
+							if (divergcount[k] >= 5)//then remove the bad one divergingindex
 							{
-								//MessageBox.Show(k + "  " + divergcount[k] + "  " + Math.Abs(currdrifts[k] - currdriftmed) + "  " + currdriftmed);
-
 								divergingindex = k;
 								ntracksremoved++;
 								WAITBAR.Text = "Point Source (" + (MANREGCOORDS.GetLength(0) - 1) + ") Drift Tracking Directory " + (UVITMANREGDIRLISTINDEX + 1).ToString() + " of " + UVITMANREGDIRLIST.Length.ToString() + " (Removed " + ntracksremoved + " sources)";
-								//ntrackdivergingimgs = 0;//reset so doesnt keep firing
 								NSrc -= 1;
 								int[,] tempMANREGCOORDS = new int[NSrc, 2];
 								int[] tempdivergingcount = new int[NSrc];
@@ -1600,6 +1590,16 @@ namespace CCDLAB
 								goto checkagain;
 								//break;
 							}
+					}
+
+					if (NSrc <= 3 && DO_UVITDRIFTFILES && i > 20 && !UVITBADTRACK)
+					{
+						double[] currdrifts = new double[NSrc];
+						for (int j = 0; j < NSrc; j++)
+							currdrifts[j] = Math.Sqrt((MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0]) * (MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0]) + (MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0]) * (MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0]));
+						double currdriftstd = JPMath.Stdv(currdrifts, false);
+						if (currdriftstd > 50)
+							UVITBADTRACK = true;
 					}
 
 					if (DO_UVITDRIFTFILES && UVITdisplay && Math.IEEERemainder((double)i, (double)UVITdisplaycadence) == 0)
@@ -1690,6 +1690,23 @@ namespace CCDLAB
 
 				if (DO_UVITDRIFTFILES)
 				{
+					if (UVITBADTRACK)
+					{
+						WAITBAR.Close();
+						Enabled = true;
+						BringToFront();
+						SPAREFITSImageSet.Clear();
+						UVITBADTRACK = false;
+						DialogResult res = MessageBox.Show("Manually retry point source tracking?", "Bad Track Detected...", MessageBoxButtons.YesNo);
+						if (res == DialogResult.Yes)
+						{
+							PointSrcINTDriftNoPlotConfChck.Checked = false;
+							PointSrcINTDriftNoPSEConfChck.Checked = false;
+							CreateDriftFromINTMenuItem_Click(sender, new EventArgs());
+							return;
+						}
+					}
+					
 					ImageWindow.Refresh();
 					SPAREFITSImageSet.Clear();
 

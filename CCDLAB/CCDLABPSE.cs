@@ -1454,11 +1454,11 @@ namespace CCDLAB
 
 					if (PSELoadSrcDrop.SelectedIndex == 0)//RA, Dec
 					{
-						if (JPMath.Max(c1, false) > 24 || JPMath.Max(c2, false) > 90)
-						{
-							MessageBox.Show("The 'RA, Dec' values seem like they're actually pixel coordinates. The first two columns of the file must be 'RA, Dec'.", "Error...");
-							return;
-						}
+						//if (JPMath.Max(c1, false) > 24 || JPMath.Max(c2, false) > 90)
+						//{
+						//	MessageBox.Show("The 'RA, Dec' values seem like they're actually pixel coordinates. The first two columns of the file must be 'RA, Dec'.", "Error...");
+						//	return;
+						//}
 
 						if (PSES == null)
 						{

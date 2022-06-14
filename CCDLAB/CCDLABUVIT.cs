@@ -5261,17 +5261,17 @@ namespace CCDLAB
 						return;
 				}
 
-				//if (PointSrcROIAutoRunChck.Checked)
-				if (HalfWidthXUpD.Value > 9 || HalfWidthYUpD.Value > 9)
-				{
-					HalfWidthXUpD.Value = SUBIMAGE_HWX_OLD;//9;
-					HalfWidthYUpD.Value = SUBIMAGE_HWY_OLD;//9;
-				}
-				if (HalfWidthXUpD.Value > 9 || HalfWidthYUpD.Value > 9)
+				if (PointSrcROIAutoRunChck.Checked)
+					if (HalfWidthXUpD.Value > 9 || HalfWidthYUpD.Value > 9)
+					{
+						HalfWidthXUpD.Value = /*SUBIMAGE_HWX_OLD;*/9;
+						HalfWidthYUpD.Value = /*SUBIMAGE_HWY_OLD;*/9;
+					}
+				/*if (HalfWidthXUpD.Value == 0 || HalfWidthYUpD.Value == 0)
 				{
 					HalfWidthXUpD.Value = 9;
 					HalfWidthYUpD.Value = 9;
-				}
+				}*/
 
 				AUTOLOADIMAGESFILES = new string[IMAGESET.Count];
 				UVDRIFTBATCHFILES = new string[IMAGESET.Count];//must fill these here first with XYInts
@@ -7189,7 +7189,10 @@ namespace CCDLAB
 
 					DialogResult res = DialogResult.Abort;
 					if (PSES[PSESINDEX].N_Sources <= 2)
+					{
 						res = DialogResult.No;
+						PointSrcINTDriftNoPlotConfChck.Checked = false;
+					}
 					else if (PSES[PSESINDEX].N_Sources > 2 && !PointSrcINTDriftNoPSEConfChck.Checked)
 						res = MessageBox.Show("Use " + PSES[PSESINDEX].N_Sources + " auto-found sources for tracking?", "Track?", MessageBoxButtons.YesNoCancel);
 					else if (PSES[PSESINDEX].N_Sources > 2 && PointSrcINTDriftNoPSEConfChck.Checked)
