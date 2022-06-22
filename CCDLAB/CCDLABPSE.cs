@@ -8,6 +8,7 @@ using MathWorks.MATLAB.NET.Arrays;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace CCDLAB
 {
@@ -247,20 +248,20 @@ namespace CCDLAB
 					ymax = (int)ROI_PATH_COORDS[1, i];
 			}
 
-			if (pts.Length > 200)
-			{
-				double skip = (double)(pts.Length) / 200;
+			//if (pts.Length > 200)
+			//{
+			//	double skip = (double)(pts.Length) / 200;
 
-				for (int i = 0; i < 200; i++)
-					pts[i] = pts[(int)((double)(i) * skip)];
+			//	for (int i = 0; i < 200; i++)
+			//		pts[i] = pts[(int)((double)(i) * skip)];
 
-				Array.Resize(ref pts, 200);
-			}
+			//	Array.Resize(ref pts, 200);
+			//}
 			pts[pts.Length - 1] = pts[0];
 
-			ROI_REGION = new bool[IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height];
+			//ROI_REGION = new bool[IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height];
 
-			JPMath.PointD.PolygonInteriorPointsRegion(ROI_REGION, pts, xmin, ymin, xmax, ymax);
+			ROI_REGION = JPMath.PointD.PolygonInteriorPointsRegion(IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height, pts, xmin, ymin, xmax, ymax);
 
 			ImageUpD(IMAGESET[FILELISTINDEX].Image);
 			ImageWindow.Refresh();
@@ -1374,7 +1375,7 @@ namespace CCDLAB
 				return;
 			}
 
-			if (PSELoadSrcDrop.SelectedIndex == 0 && !WorldCoordinateSolution.Exists(IMAGESET[FILELISTINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (PSELoadSrcDrop.SelectedIndex <= 1 && !WorldCoordinateSolution.Exists(IMAGESET[FILELISTINDEX].Header, new string[2] { "TAN", "TAN" }))
 			{
 				MessageBox.Show("CD matrix for WCS not found in current image header. Can not transform [RA, Dec] to [x, y]...", "Error...");
 				return;
@@ -1563,7 +1564,7 @@ namespace CCDLAB
 					}
 				}
 			}
-			else if (PSELoadSrcDrop.SelectedIndex == 1)//RA Dec hexages
+			else if (PSELoadSrcDrop.SelectedIndex == 1)//RA Dec sexages
 			{
 				JPFITS.REG.SetReg("CCDLAB", "PSELoadFilterIndex", ofd.FilterIndex);
 
@@ -1612,6 +1613,73 @@ namespace CCDLAB
 			ShowPSEChck.Enabled = true;
 			ShowPSEChck.Checked = true;
 			PSEDropContextPlotAll.PerformClick();
+		}
+
+		private void DisplayMenuSourceRegions_Load_Click(object sender, EventArgs e)
+		{
+			if (!IMAGESET[FILELISTINDEX].WCS.Exists())
+				IMAGESET[FILELISTINDEX].WCS = new WorldCoordinateSolution(IMAGESET[FILELISTINDEX].Header);
+
+			OpenFileDialog ofd = new OpenFileDialog();
+			ofd.Multiselect = false;
+			ofd.InitialDirectory = IMAGESET[FILELISTINDEX].FilePath;
+			ofd.Filter = "CSV (Comma Delimited)|*.csv";
+			if (ofd.ShowDialog() == DialogResult.Cancel)
+				return;
+
+			StreamReader sr = new StreamReader(ofd.FileName);
+
+			List<double> ras = new List<double>();
+			List<double> dec = new List<double>();
+			List<double> rad = new List<double>();
+			List<string> lab = new List<string>();
+
+			while (!sr.EndOfStream)
+			{
+				var line = sr.ReadLine();
+				var values = line.Split(',');
+
+				ras.Add(Convert.ToDouble(values[0]));
+				dec.Add(Convert.ToDouble(values[1]));
+				rad.Add(Convert.ToDouble(values[2]));//arcseconds
+				lab.Add(values[3]);
+			}
+
+			sr.Close();
+
+			DISPREGIONCOORD_X = new double[ras.Count];
+			DISPREGIONCOORD_Y = new double[ras.Count];
+			DISPREGIONCOORD_R = new double[ras.Count];
+			DISPREGIONCOORD_L = new string[ras.Count];
+
+			double x, y;
+			for (int i = 0; i < ras.Count; i++)
+			{
+				IMAGESET[FILELISTINDEX].WCS.Get_Pixel((double)ras[i], (double)dec[i], "TAN", out x, out y, true);
+				DISPREGIONCOORD_X[i] = x;
+				DISPREGIONCOORD_Y[i] = y;
+				DISPREGIONCOORD_R[i] = rad[i] / IMAGESET[FILELISTINDEX].WCS.GetCDELTn(1);
+				DISPREGIONCOORD_L[i] = lab[i] + String.Format(" ({0})", i + 1);
+			}
+
+			ImageWindow.Refresh();
+			SubImageWindow.Refresh();
+		}
+
+		private void DisplayMenuSourceRegions_Clear_Click(object sender, EventArgs e)
+		{
+			DISPREGIONCOORD_X = null;
+			DISPREGIONCOORD_Y = null;
+			DISPREGIONCOORD_R = null;
+			DISPREGIONCOORD_L = null;
+
+			ImageWindow.Refresh();
+			SubImageWindow.Refresh();
+		}
+
+		private void DisplayMenuSourceRegions_Click(object sender, EventArgs e)
+		{
+			
 		}
 
 		private void PSEPixelValLbl_MouseHover(object sender, EventArgs e)

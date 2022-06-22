@@ -1383,6 +1383,15 @@ namespace CCDLAB
 
 			L1MachineStandardChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1MachineStandardChck"));
 			L1MachineExtremeChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1MachineExtremeChck"));
+			UVITMergeMultiKeepObsIdsChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVITMergeMultiKeepObsIdsChck"));
+		}
+
+		private void UVITMergeMultiKeepObsIdsChck_Click(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", "UVITMergeMultiKeepObsIdsChck", UVITMergeMultiKeepObsIdsChck.Checked);
+			UVITMenu.ShowDropDown();
+			ShiftAndRotateMenuItem.ShowDropDown();
+			UVITMergeMultiL1.ShowDropDown();
 		}
 
 		private void L1MachineStandardChck_Click(System.Object sender, EventArgs e)
@@ -8894,7 +8903,7 @@ namespace CCDLAB
 				if (UVMERGEDIRS_INDEX == -1)
 				{
 					FolderBrowserDialog fbd = new FolderBrowserDialog();
-					fbd.SelectedPath = (string)REG.GetReg("CCDLAB", "L2EventListPath"); ;
+					fbd.SelectedPath = (string)REG.GetReg("CCDLAB", "L2EventListPath");
 					fbd.Description = "Select the folder to scan for the most recent INTEGERS Lists (_XYInts_List)";
 					if (fbd.ShowDialog() == DialogResult.Cancel)
 						return;
@@ -8907,27 +8916,27 @@ namespace CCDLAB
 					//else, multiple channel/filter directories exist and must be processed in sequence, as per the below
 					if (Directory.GetParent(fbd.SelectedPath).Name == "NUV" || Directory.GetParent(fbd.SelectedPath).Name == "FUV")//must be either of these ones if a single channel/filter has been selected
 						UVMERGEDIRS = new string[] { fbd.SelectedPath };
-					else if (Directory.Exists(fbd.SelectedPath + "\\NUV") || Directory.Exists(fbd.SelectedPath + "\\FUV") || new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")
+					else if (/*Directory.Exists(fbd.SelectedPath + "\\NUV") || Directory.Exists(fbd.SelectedPath + "\\FUV") ||*/ new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")
 					{
 						//some parent has been selected and need to process the channel/filter subfolders one at a time
 						if (new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")//then process the channel subdir filter folders
 							UVMERGEDIRS = Directory.GetDirectories(fbd.SelectedPath);//these must be the single channel filter folders
-						else//else must be the parent to both NUV and FUV
-						{
-							string[] Fuvdirs = new string[0];
-							string[] Nuvdirs = new string[0];
-							if (Directory.Exists(fbd.SelectedPath + "\\FUV"))
-								Fuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\FUV");
-							if (Directory.Exists(fbd.SelectedPath + "\\NUV"))
-								Nuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\NUV");
-							UVMERGEDIRS = new string[Fuvdirs.Length + Nuvdirs.Length];
-							for (int i = 0; i < Fuvdirs.Length; i++)
-								UVMERGEDIRS[i] = Fuvdirs[i];
-							for (int i = Fuvdirs.Length; i < Fuvdirs.Length + Nuvdirs.Length; i++)
-								UVMERGEDIRS[i] = Nuvdirs[i - Fuvdirs.Length];
-						}
+						//else//else must be the parent to both NUV and FUV
+						//{
+						//	string[] Fuvdirs = new string[0];
+						//	string[] Nuvdirs = new string[0];
+						//	if (Directory.Exists(fbd.SelectedPath + "\\FUV"))
+						//		Fuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\FUV");
+						//	if (Directory.Exists(fbd.SelectedPath + "\\NUV"))
+						//		Nuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\NUV");
+						//	UVMERGEDIRS = new string[Fuvdirs.Length + Nuvdirs.Length];
+						//	for (int i = 0; i < Fuvdirs.Length; i++)
+						//		UVMERGEDIRS[i] = Fuvdirs[i];
+						//	for (int i = Fuvdirs.Length; i < Fuvdirs.Length + Nuvdirs.Length; i++)
+						//		UVMERGEDIRS[i] = Nuvdirs[i - Fuvdirs.Length];
+						//}
 					}
-					else if (Directory.GetDirectories(fbd.SelectedPath, "NUV", SearchOption.AllDirectories).Length > 0 || Directory.GetDirectories(fbd.SelectedPath, "FUV", SearchOption.AllDirectories).Length > 0)//typically when processing multiple epochs
+					else if (Directory.GetDirectories(fbd.SelectedPath, "NUV", SearchOption.AllDirectories).Length > 0 || Directory.GetDirectories(fbd.SelectedPath, "FUV", SearchOption.AllDirectories).Length > 0)//parents or when processing multiple obs-ids
 					{
 						string[] NUVdirs = Directory.GetDirectories(fbd.SelectedPath, "NUV", SearchOption.AllDirectories);
 						string[] FUVdirs = Directory.GetDirectories(fbd.SelectedPath, "FUV", SearchOption.AllDirectories);
@@ -9092,7 +9101,7 @@ namespace CCDLAB
 			//check that filters/channels arent' mixed
 			if (FITSImageSet.GetCommonDirectory(xyintsfiles) != Directory.GetParent(Directory.GetParent(xyintsfiles[0]).FullName).FullName)
 			{
-				MessageBox.Show("These do not seem to be indentical channel/filter images for merging...", "Error...");
+				MessageBox.Show("These do not seem to be indentical channel/filter images for merging...\r\n\r\n" + FITSImageSet.GetCommonDirectory(xyintsfiles) + "\r\n\r\n" + Directory.GetParent(Directory.GetParent(xyintsfiles[0]).FullName).FullName, "Error...");
 				CombineUVCentroidListsMenuItem_Click(sender, e);
 				return;
 			}
@@ -11362,6 +11371,9 @@ namespace CCDLAB
 
 		private void UVFinalizeScienceBtn_DoubleClick(System.Object sender, EventArgs e)
 		{
+			if (IMAGESET.Count == 0)
+				return;
+
 			WAITBAR = new WaitBar();
 			WAITBAR.Text = "Finalize Science Products...";
 			WAITBAR.ProgressBar.Maximum = 2 * IMAGESET.Count;
@@ -11469,7 +11481,14 @@ namespace CCDLAB
 				string origfilename = image.FullFileName;
 				image.FileName = image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_IMAGE_" + new DirectoryInfo(objdir).Name + ".fits";
 				image.FilePath = objdir;
-				File.Copy(origfilename, image.FullFileName, true);
+				try
+				{
+					File.Copy(origfilename, image.FullFileName);
+				}
+				catch
+				{
+					MessageBox.Show("The parent directory may not have the same name as a subdirectory.", "Error");
+				}
 				/*zipfiles.Add(image.FullFileName);
 				e.Result = zipfiles;*/
 
@@ -11580,7 +11599,12 @@ namespace CCDLAB
 
 			if (allobjdirs.Count > 1)
 			{
-				string multipardir = Path.GetDirectoryName((string)allobjdirs[0]);
+				string[] alldirs = new string[allobjdirs.Count];
+				for (int i = 0; i < alldirs.Length; i++)
+					alldirs[i] = (string)allobjdirs[i];
+
+				string multipardir = JPFITS.FITSImageSet.GetCommonDirectory(alldirs);
+
 				string[] files = Directory.GetFiles(multipardir, "*MASTER_EXPARRAY*.fits", SearchOption.AllDirectories);
 				for (int i = 0; i < files.Length; i++)
 				{
@@ -11683,6 +11707,157 @@ namespace CCDLAB
 
 			WCSRADecShowChck.PerformClick();
 		}
+
+		private void UVITMergeMultiL1Help_Click(object sender, EventArgs e)
+		{
+			string instructions = "This assists the user in mergeing L1 data sets of the same target from different observation ID's/L1 files. Instructions:" + Environment.NewLine;
+
+			instructions += Environment.NewLine;
+			instructions += "a)	Make parent folder of the target name." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "b)	Place the L1 files inside the parent folder IN THEIR OWN SUBFOLDERS." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "c) Process each L1 file as per normal, through registration only. Do not perform merging of orbits." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "d)	Double-click \"Merge Multiple L1 Obs. IDs\" menu item. Select the PARENT folder." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "CCDLAB will now reorganize the files so that the user may proceed with orbit-wise registration across all L1 files. Do NOT auto-run through registration. After registration, proceed with the regular merging step and usual sequence." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "These instructions copied to the clipboard.";
+
+			Clipboard.SetText(instructions);
+			MessageBox.Show(instructions);
+
+			UVITMenu.ShowDropDown();
+			ShiftAndRotateMenuItem.ShowDropDown();
+		}
+
+		private void UVITMergeMultiL1_DoubleClick(object sender, EventArgs e)
+		{
+			UVITMenu.HideDropDown();
+
+			FolderBrowserDialog fbd = new FolderBrowserDialog();
+			fbd.SelectedPath = (string)REG.GetReg("CCDLAB", "OpenFilesPath");
+			fbd.Description = "Select the PARENT DIRECTORY of the L1 folders. This may take a few moments to complete...system may hang momentarily.";
+			if (fbd.ShowDialog() == DialogResult.Cancel)
+				return;
+
+			string[] obsiddirs = Directory.GetDirectories(fbd.SelectedPath, "*", SearchOption.TopDirectoryOnly);
+			if (obsiddirs.Length == 0)
+			{
+				MessageBox.Show("No subdirectories found.", "Error");
+				return;
+			}
+			else if (obsiddirs.Length == 1)
+			{
+				MessageBox.Show("Only one subdirectory found.", "Error");
+				return;
+			}
+			else
+			{
+				for (int i = 0; i < obsiddirs.Length; i++)
+					if (Directory.GetDirectories(obsiddirs[i], "Digested L1", SearchOption.TopDirectoryOnly).Length == 0)
+					{
+						MessageBox.Show("Folder selection doesn't make sense. Please select parent directory containing Observation-ID subdirectories.", "Error");
+						return;
+					}
+			}
+
+			ProgressBar.Maximum = obsiddirs.Length;
+
+			for (int i = 0; i < obsiddirs.Length; i++)
+			{
+				ProgressBar.Value = i + 1;
+				ProgressBar.Refresh();
+
+				string[] fuvchanneldirs = Directory.GetDirectories(obsiddirs[i], "*FUV*", SearchOption.TopDirectoryOnly);
+				if (fuvchanneldirs.Length > 0)//FUV exists
+				{
+					if (!Directory.Exists(fbd.SelectedPath + "//FUV"))
+						Directory.CreateDirectory(fbd.SelectedPath + "//FUV");
+
+					string[] filterdirs = Directory.GetDirectories(fuvchanneldirs[0], "*FUV*", SearchOption.TopDirectoryOnly);
+
+					for (int j = 0; j < filterdirs.Length; j++)
+					{
+						DirectoryInfo filterdirinfo = new DirectoryInfo(filterdirs[j]);
+						if (!Directory.Exists(fbd.SelectedPath + "//FUV//" + filterdirinfo.Name))
+							Directory.CreateDirectory(fbd.SelectedPath + "//FUV//" + filterdirinfo.Name);
+
+						string[] orbitdirs = Directory.GetDirectories(filterdirs[j], "*FUV*", SearchOption.TopDirectoryOnly);
+
+						for (int k = 0; k < orbitdirs.Length; k++)
+						{
+							DirectoryInfo orbitdirinfo = new DirectoryInfo(orbitdirs[k]);
+							
+							if (!UVITMergeMultiKeepObsIdsChck.Checked)
+								Directory.Move(orbitdirs[k], fbd.SelectedPath + "//FUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name);
+							else
+							{
+								System.IO.Directory.CreateDirectory(fbd.SelectedPath + "//FUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name);
+
+								string[] files = System.IO.Directory.GetFiles(orbitdirs[k]);
+								foreach (string s in files)
+								{
+									string fileName = System.IO.Path.GetFileName(s);
+									string destFile = System.IO.Path.Combine(fbd.SelectedPath + "//FUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name, fileName);
+									System.IO.File.Copy(s, destFile, true);
+								}
+							}
+						}
+					}
+					if (!UVITMergeMultiKeepObsIdsChck.Checked)
+						Directory.Delete(fuvchanneldirs[0], true);
+				}
+
+				string[] nuvchanneldirs = Directory.GetDirectories(obsiddirs[i], "*NUV*", SearchOption.TopDirectoryOnly);
+				if (nuvchanneldirs.Length > 0)//NUV exists
+				{
+					if (!Directory.Exists(fbd.SelectedPath + "//NUV"))
+						Directory.CreateDirectory(fbd.SelectedPath + "//NUV");
+
+					string[] filterdirs = Directory.GetDirectories(nuvchanneldirs[0], "*NUV*", SearchOption.TopDirectoryOnly);
+
+					for (int j = 0; j < filterdirs.Length; j++)
+					{
+						DirectoryInfo filterdirinfo = new DirectoryInfo(filterdirs[j]);
+						if (!Directory.Exists(fbd.SelectedPath + "//NUV//" + filterdirinfo.Name))
+							Directory.CreateDirectory(fbd.SelectedPath + "//NUV//" + filterdirinfo.Name);
+
+						string[] orbitdirs = Directory.GetDirectories(filterdirs[j], "*NUV*", SearchOption.TopDirectoryOnly);
+
+						for (int k = 0; k < orbitdirs.Length; k++)
+						{
+							DirectoryInfo orbitdirinfo = new DirectoryInfo(orbitdirs[k]);
+
+							if (!UVITMergeMultiKeepObsIdsChck.Checked)
+								Directory.Move(orbitdirs[k], fbd.SelectedPath + "//NUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name);
+							else
+							{
+								System.IO.Directory.CreateDirectory(fbd.SelectedPath + "//NUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name);
+
+								string[] files = System.IO.Directory.GetFiles(orbitdirs[k]);
+								foreach (string s in files)
+								{
+									string fileName = System.IO.Path.GetFileName(s);
+									string destFile = System.IO.Path.Combine(fbd.SelectedPath + "//NUV//" + filterdirinfo.Name + "//" + orbitdirinfo.Name, fileName);
+									System.IO.File.Copy(s, destFile, true);
+								}
+							}
+						}
+					}
+					if (!UVITMergeMultiKeepObsIdsChck.Checked)
+						Directory.Delete(nuvchanneldirs[0], true);
+				}
+			}
+			if (!UVITMergeMultiKeepObsIdsChck.Checked)
+				MessageBox.Show("L1 Obs. ID's merged, with original Obs. ID's MOVED to the new parent folder.", "MOVED");
+			else
+				MessageBox.Show("L1 Obs. ID's merged, with original Obs. ID's COPIED to the new parent folder.", "COPIED");
+
+		}
+
 
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using JPFITS;
 
 namespace CCDLAB
@@ -34,6 +35,10 @@ namespace CCDLAB
 		int PREVMINCONTRASTVALUE, PREVMAXCONTRASTVALUE;
 		int[] FNDCOORDS_X;
 		int[] FNDCOORDS_Y;
+		double[] DISPREGIONCOORD_X;
+		double[] DISPREGIONCOORD_Y;
+		double[] DISPREGIONCOORD_R;
+		string[] DISPREGIONCOORD_L;
 		Rectangle[] FNDCOORDRECTS;
 		double[,] MARKCOORDS;
 		Rectangle[] MARKCOORDRECTS;

@@ -11,26 +11,6 @@ namespace CCDLAB
 {
 	public partial class Form1
 	{
-		/*private void DrawRotatedTextAt(Graphics gr, float angle, string txt, PointF point, Font the_font, Brush the_brush)
-		{
-			// Save the graphics state.
-			GraphicsState state = gr.Save();
-			gr.ResetTransform();
-
-			// Rotate.
-			gr.RotateTransform(angle);
-
-			// Translate to desired position. Be sure to append
-			// the rotation so it occurs after the rotation.
-			gr.TranslateTransform(point.X, point.Y, MatrixOrder.Append);
-
-			// Draw the text at the origin.
-			gr.DrawString(txt, the_font, the_brush, 0, 0);
-
-			// Restore the graphics state.
-			gr.Restore(state);
-		}*/
-
 		private void SubImageWindow_Paint(object sender, PaintEventArgs e)
 		{
 			if (FIRSTLOAD)
@@ -52,6 +32,19 @@ namespace CCDLAB
 				for (int i = 0; i < FNDCOORDS_X.Length; i++)
 					if (FNDCOORDS_X[i] >= XSUBRANGE[0] && FNDCOORDS_X[i] <= XSUBRANGE[XSUBRANGE.Length - 1] && FNDCOORDS_Y[i] >= YSUBRANGE[0] && FNDCOORDS_Y[i] <= YSUBRANGE[YSUBRANGE.Length - 1])
 						e.Graphics.FillRectangle(IMAGEWINDOWPEN.Brush, (float)(((float)(FNDCOORDS_X[i]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - 3.0), (float)(((float)(FNDCOORDS_Y[i]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - 3.0), (float)(float)7.0, (float)(float)7.0);
+			}
+
+			if (DISPREGIONCOORD_X != null)
+			{
+				IMAGEWINDOWPEN.Color = Color.GreenYellow;
+				IMAGEWINDOWBRUSH.Color = Color.GreenYellow;
+				for (int i = 0; i < DISPREGIONCOORD_X.Length; i++)
+					if (DISPREGIONCOORD_X[i] >= XSUBRANGE[0] && DISPREGIONCOORD_X[i] <= XSUBRANGE[XSUBRANGE.Length - 1] && DISPREGIONCOORD_Y[i] >= YSUBRANGE[0] && DISPREGIONCOORD_Y[i] <= YSUBRANGE[YSUBRANGE.Length - 1])
+					{
+						e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(((float)(DISPREGIONCOORD_X[i]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - 3), (float)(((float)(DISPREGIONCOORD_Y[i]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - 3), 7, 7);
+						e.Graphics.DrawEllipse(IMAGEWINDOWPEN, (float)(((float)(DISPREGIONCOORD_X[i]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - DISPREGIONCOORD_R[i] * subxsc), (float)(((float)(DISPREGIONCOORD_Y[i]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - DISPREGIONCOORD_R[i] * subysc), (float)(DISPREGIONCOORD_R[i]) * 2 * subxsc, (float)(DISPREGIONCOORD_R[i]) * 2 * subysc);
+						e.Graphics.DrawString(DISPREGIONCOORD_L[i], new Font("Microsoft Sans Serif", 12.0f, FontStyle.Bold), IMAGEWINDOWBRUSH, (float)(DISPREGIONCOORD_X[i]) * subxsc, (float)(DISPREGIONCOORD_Y[i]) * subysc);
+					}
 			}
 
 			if (ShowPSEChck.Checked && PSESRECTS != null && PSESRECTS[PSESINDEX] != null)
@@ -194,6 +187,18 @@ namespace CCDLAB
 				{
 					IMAGEWINDOWPEN.Color = Color.Red;
 					e.Graphics.DrawRectangles(IMAGEWINDOWPEN, FNDCOORDRECTS);
+				}
+
+				if (DISPREGIONCOORD_X != null)
+				{
+					IMAGEWINDOWPEN.Color = Color.GreenYellow;
+					IMAGEWINDOWBRUSH.Color = Color.GreenYellow;
+					for (int i = 0; i < DISPREGIONCOORD_X.Length; i++)
+					{
+						//e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(((float)(DISPREGIONCOORD_X[i]) + 0.5) * xsc - 3), (float)(((float)(DISPREGIONCOORD_Y[i]) + 0.5) * ysc - 3), 7, 7);
+						e.Graphics.DrawEllipse(IMAGEWINDOWPEN, (float)(((float)(DISPREGIONCOORD_X[i]) + 0.5) * xsc - DISPREGIONCOORD_R[i] * xsc), (float)(((float)(DISPREGIONCOORD_Y[i]) + 0.5) * ysc - DISPREGIONCOORD_R[i] * ysc), (float)(DISPREGIONCOORD_R[i]) * 2 * xsc, (float)(DISPREGIONCOORD_R[i]) * 2 * ysc);
+						e.Graphics.DrawString(DISPREGIONCOORD_L[i], new Font("Microsoft Sans Serif", 12.0f, FontStyle.Bold), IMAGEWINDOWBRUSH, (float)(DISPREGIONCOORD_X[i]) * xsc + 5, (float)(DISPREGIONCOORD_Y[i]) * ysc + 5);
+					}
 				}
 
 				if (DOMANREG && MANREGCOORDRECTS.Length > 0 || UVREGISTRATION && MANREGCOORDRECTS.Length > 0 || WCSMANUALRAD && MANREGCOORDRECTS.Length > 0)

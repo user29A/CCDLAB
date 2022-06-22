@@ -574,6 +574,10 @@ namespace CCDLAB
 			this.OptInvertImageView = new System.Windows.Forms.ToolStripMenuItem();
 			this.OptViewSpectrum = new System.Windows.Forms.ToolStripMenuItem();
 			this.ResetPlotPositions = new System.Windows.Forms.ToolStripMenuItem();
+			this.DisplayMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.DisplayMenuSourceRegions = new System.Windows.Forms.ToolStripMenuItem();
+			this.DisplayMenuSourceRegions_Load = new System.Windows.Forms.ToolStripMenuItem();
+			this.DisplayMenuSourceRegions_Clear = new System.Windows.Forms.ToolStripMenuItem();
 			this.WCSMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.WCSRADecShowChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -828,6 +832,9 @@ namespace CCDLAB
 			this.UVNUVToFUVFrameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.DeRotateViaWCSBtn = new System.Windows.Forms.ToolStripMenuItem();
 			this.invertWCSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator53 = new System.Windows.Forms.ToolStripSeparator();
+			this.UVITMergeMultiL1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.UVITMergeMultiL1Help = new System.Windows.Forms.ToolStripMenuItem();
 			this.DeSaturateROICountsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.CorrectBackgroundCountsChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.BackgroundCountsPixelFrameTxt = new System.Windows.Forms.ToolStripTextBox();
@@ -888,6 +895,7 @@ namespace CCDLAB
 			this.UVFinalizeBGWrkr = new System.ComponentModel.BackgroundWorker();
 			this.HeaderTxt = new System.Windows.Forms.ListBox();
 			this.ExtractROICentroidsWrkr = new System.ComponentModel.BackgroundWorker();
+			this.UVITMergeMultiKeepObsIdsChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.ImageWindowCntxt.SuspendLayout();
 			this.ImageFingerPointContext.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.HalfWidthXUpD)).BeginInit();
@@ -6864,6 +6872,7 @@ namespace CCDLAB
             this.FileMenu,
             this.EditMenu,
             this.OptsMenu,
+            this.DisplayMenu,
             this.WCSMenu,
             this.UVITMenu,
             this.aboutToolStripMenuItem});
@@ -7247,6 +7256,38 @@ namespace CCDLAB
 			this.ResetPlotPositions.Text = "Reset Plot Positions";
 			this.ResetPlotPositions.Click += new System.EventHandler(this.ResetPlotPositions_Click);
 			// 
+			// DisplayMenu
+			// 
+			this.DisplayMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DisplayMenuSourceRegions});
+			this.DisplayMenu.Name = "DisplayMenu";
+			this.DisplayMenu.Size = new System.Drawing.Size(57, 20);
+			this.DisplayMenu.Text = "Display";
+			// 
+			// DisplayMenuSourceRegions
+			// 
+			this.DisplayMenuSourceRegions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DisplayMenuSourceRegions_Load,
+            this.DisplayMenuSourceRegions_Clear});
+			this.DisplayMenuSourceRegions.Name = "DisplayMenuSourceRegions";
+			this.DisplayMenuSourceRegions.Size = new System.Drawing.Size(155, 22);
+			this.DisplayMenuSourceRegions.Text = "Source Regions";
+			this.DisplayMenuSourceRegions.Click += new System.EventHandler(this.DisplayMenuSourceRegions_Click);
+			// 
+			// DisplayMenuSourceRegions_Load
+			// 
+			this.DisplayMenuSourceRegions_Load.Name = "DisplayMenuSourceRegions_Load";
+			this.DisplayMenuSourceRegions_Load.Size = new System.Drawing.Size(101, 22);
+			this.DisplayMenuSourceRegions_Load.Text = "Load";
+			this.DisplayMenuSourceRegions_Load.Click += new System.EventHandler(this.DisplayMenuSourceRegions_Load_Click);
+			// 
+			// DisplayMenuSourceRegions_Clear
+			// 
+			this.DisplayMenuSourceRegions_Clear.Name = "DisplayMenuSourceRegions_Clear";
+			this.DisplayMenuSourceRegions_Clear.Size = new System.Drawing.Size(101, 22);
+			this.DisplayMenuSourceRegions_Clear.Text = "Clear";
+			this.DisplayMenuSourceRegions_Clear.Click += new System.EventHandler(this.DisplayMenuSourceRegions_Clear_Click);
+			// 
 			// WCSMenu
 			// 
 			this.WCSMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -7269,7 +7310,7 @@ namespace CCDLAB
 			// 
 			this.WCSRADecShowChck.CheckOnClick = true;
 			this.WCSRADecShowChck.Name = "WCSRADecShowChck";
-			this.WCSRADecShowChck.Size = new System.Drawing.Size(180, 22);
+			this.WCSRADecShowChck.Size = new System.Drawing.Size(161, 22);
 			this.WCSRADecShowChck.Text = "Show";
 			this.WCSRADecShowChck.Click += new System.EventHandler(this.WCSRADecShowChck_Click);
 			// 
@@ -7281,7 +7322,7 @@ namespace CCDLAB
             this.toolStripSeparator52,
             this.WCSCopyFromDiskFile});
 			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-			this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.copyToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
 			this.copyToolStripMenuItem.Text = "Copy";
 			// 
 			// WCSCopyToLoadedImgs
@@ -7316,7 +7357,7 @@ namespace CCDLAB
 			this.WCSClearMenuBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.WCSClearAllChck});
 			this.WCSClearMenuBtn.Name = "WCSClearMenuBtn";
-			this.WCSClearMenuBtn.Size = new System.Drawing.Size(180, 22);
+			this.WCSClearMenuBtn.Size = new System.Drawing.Size(161, 22);
 			this.WCSClearMenuBtn.Text = "Clear WCS";
 			this.WCSClearMenuBtn.Click += new System.EventHandler(this.WCSClearMenuBtn_Click);
 			// 
@@ -7336,7 +7377,7 @@ namespace CCDLAB
             this.toolStripSeparator26,
             this.WCSSolutionPtsCopyTableBtn});
 			this.WCSSolutionPtsBtn.Name = "WCSSolutionPtsBtn";
-			this.WCSSolutionPtsBtn.Size = new System.Drawing.Size(180, 22);
+			this.WCSSolutionPtsBtn.Size = new System.Drawing.Size(161, 22);
 			this.WCSSolutionPtsBtn.Text = "Solution Points";
 			// 
 			// WCSPlotSolutionPtnBtn
@@ -7368,7 +7409,7 @@ namespace CCDLAB
 			// toolStripSeparator30
 			// 
 			this.toolStripSeparator30.Name = "toolStripSeparator30";
-			this.toolStripSeparator30.Size = new System.Drawing.Size(177, 6);
+			this.toolStripSeparator30.Size = new System.Drawing.Size(158, 6);
 			// 
 			// WCSToolsMenu
 			// 
@@ -7379,7 +7420,7 @@ namespace CCDLAB
             this.WCSToolsConvertRATxt,
             this.WCSToolsConvertDecTxt});
 			this.WCSToolsMenu.Name = "WCSToolsMenu";
-			this.WCSToolsMenu.Size = new System.Drawing.Size(180, 22);
+			this.WCSToolsMenu.Size = new System.Drawing.Size(161, 22);
 			this.WCSToolsMenu.Text = "Tools";
 			// 
 			// WCSToolsConvertSexaFiletoDegFile
@@ -7424,19 +7465,19 @@ namespace CCDLAB
 			// toolStripSeparator32
 			// 
 			this.toolStripSeparator32.Name = "toolStripSeparator32";
-			this.toolStripSeparator32.Size = new System.Drawing.Size(177, 6);
+			this.toolStripSeparator32.Size = new System.Drawing.Size(158, 6);
 			// 
 			// WCSRADecManual
 			// 
 			this.WCSRADecManual.Name = "WCSRADecManual";
-			this.WCSRADecManual.Size = new System.Drawing.Size(180, 22);
+			this.WCSRADecManual.Size = new System.Drawing.Size(161, 22);
 			this.WCSRADecManual.Text = "Manual Solution";
 			this.WCSRADecManual.Click += new System.EventHandler(this.WCSRADecManual_Click);
 			// 
 			// toolStripSeparator31
 			// 
 			this.toolStripSeparator31.Name = "toolStripSeparator31";
-			this.toolStripSeparator31.Size = new System.Drawing.Size(177, 6);
+			this.toolStripSeparator31.Size = new System.Drawing.Size(158, 6);
 			// 
 			// AutoWCSMenuItem
 			// 
@@ -7474,7 +7515,7 @@ namespace CCDLAB
             this.WCSRefineSolutionBtn,
             this.toolStripSeparator29});
 			this.AutoWCSMenuItem.Name = "AutoWCSMenuItem";
-			this.AutoWCSMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.AutoWCSMenuItem.Size = new System.Drawing.Size(161, 22);
 			this.AutoWCSMenuItem.Text = "Auto WCS";
 			this.AutoWCSMenuItem.DropDownOpening += new System.EventHandler(this.AutoWCSMenuItem_DropDownOpening);
 			this.AutoWCSMenuItem.DropDownOpened += new System.EventHandler(this.AutoWCSMenuItem_DropDownOpened);
@@ -8149,7 +8190,7 @@ namespace CCDLAB
 			// AutoWCSXCorr
 			// 
 			this.AutoWCSXCorr.Name = "AutoWCSXCorr";
-			this.AutoWCSXCorr.Size = new System.Drawing.Size(180, 22);
+			this.AutoWCSXCorr.Size = new System.Drawing.Size(161, 22);
 			this.AutoWCSXCorr.Text = "Auto WCS XCorr";
 			this.AutoWCSXCorr.Visible = false;
 			this.AutoWCSXCorr.Click += new System.EventHandler(this.AutoWCSXCorr_Click);
@@ -9313,7 +9354,9 @@ namespace CCDLAB
             this.toolStripSeparator20,
             this.UVNUVToFUVFrameMenuItem,
             this.DeRotateViaWCSBtn,
-            this.invertWCSToolStripMenuItem});
+            this.invertWCSToolStripMenuItem,
+            this.toolStripSeparator53,
+            this.UVITMergeMultiL1});
 			this.ShiftAndRotateMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("ShiftAndRotateMenuItem.Image")));
 			this.ShiftAndRotateMenuItem.Name = "ShiftAndRotateMenuItem";
 			this.ShiftAndRotateMenuItem.Size = new System.Drawing.Size(263, 22);
@@ -9671,6 +9714,29 @@ namespace CCDLAB
 			this.invertWCSToolStripMenuItem.ToolTipText = "Needed for other programs which invert the image display relative to CCDLAB displ" +
     "ay";
 			this.invertWCSToolStripMenuItem.Click += new System.EventHandler(this.invertWCSToolStripMenuItem_Click);
+			// 
+			// toolStripSeparator53
+			// 
+			this.toolStripSeparator53.Name = "toolStripSeparator53";
+			this.toolStripSeparator53.Size = new System.Drawing.Size(253, 6);
+			// 
+			// UVITMergeMultiL1
+			// 
+			this.UVITMergeMultiL1.DoubleClickEnabled = true;
+			this.UVITMergeMultiL1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.UVITMergeMultiKeepObsIdsChck,
+            this.UVITMergeMultiL1Help});
+			this.UVITMergeMultiL1.Name = "UVITMergeMultiL1";
+			this.UVITMergeMultiL1.Size = new System.Drawing.Size(256, 22);
+			this.UVITMergeMultiL1.Text = "Merge Multiple L1 Obs. IDs";
+			this.UVITMergeMultiL1.DoubleClick += new System.EventHandler(this.UVITMergeMultiL1_DoubleClick);
+			// 
+			// UVITMergeMultiL1Help
+			// 
+			this.UVITMergeMultiL1Help.Name = "UVITMergeMultiL1Help";
+			this.UVITMergeMultiL1Help.Size = new System.Drawing.Size(192, 22);
+			this.UVITMergeMultiL1Help.Text = "Help/Info/Instructions";
+			this.UVITMergeMultiL1Help.Click += new System.EventHandler(this.UVITMergeMultiL1Help_Click);
 			// 
 			// DeSaturateROICountsMenuItem
 			// 
@@ -10198,6 +10264,16 @@ namespace CCDLAB
 			this.ExtractROICentroidsWrkr.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ExtractROICentroidsWrkr_DoWork);
 			this.ExtractROICentroidsWrkr.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ExtractROICentroidsWrkr_ProgressChanged);
 			this.ExtractROICentroidsWrkr.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ExtractROICentroidsWrkr_RunWorkerCompleted);
+			// 
+			// UVITMergeMultiKeepObsIdsChck
+			// 
+			this.UVITMergeMultiKeepObsIdsChck.Checked = true;
+			this.UVITMergeMultiKeepObsIdsChck.CheckOnClick = true;
+			this.UVITMergeMultiKeepObsIdsChck.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.UVITMergeMultiKeepObsIdsChck.Name = "UVITMergeMultiKeepObsIdsChck";
+			this.UVITMergeMultiKeepObsIdsChck.Size = new System.Drawing.Size(192, 22);
+			this.UVITMergeMultiKeepObsIdsChck.Text = "Keep Obs. IDs";
+			this.UVITMergeMultiKeepObsIdsChck.Click += new System.EventHandler(this.UVITMergeMultiKeepObsIdsChck_Click);
 			// 
 			// Form1
 			// 
@@ -11230,6 +11306,14 @@ namespace CCDLAB
 		private System.Windows.Forms.ToolStripComboBox WCSAstroQueryLimitLLengthDrop;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem12;
 		private System.Windows.Forms.ToolStripComboBox WCSAstroQueryFilterDrop;
+		private System.Windows.Forms.ToolStripMenuItem DisplayMenu;
+		private System.Windows.Forms.ToolStripMenuItem DisplayMenuSourceRegions;
+		private System.Windows.Forms.ToolStripMenuItem DisplayMenuSourceRegions_Load;
+		private System.Windows.Forms.ToolStripMenuItem DisplayMenuSourceRegions_Clear;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator53;
+		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiL1;
+		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiL1Help;
+		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiKeepObsIdsChck;
 	}
 }
 
