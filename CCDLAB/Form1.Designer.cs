@@ -31,8 +31,8 @@ namespace CCDLAB
         {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-			System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			this.ImageWindowCntxt = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.ImageWndwShowCoordTooltipChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.ImageWndwCntxtView = new System.Windows.Forms.ToolStripMenuItem();
@@ -599,6 +599,8 @@ namespace CCDLAB
 			this.toolStripSeparator51 = new System.Windows.Forms.ToolStripSeparator();
 			this.WCSToolsConvertRATxt = new System.Windows.Forms.ToolStripTextBox();
 			this.WCSToolsConvertDecTxt = new System.Windows.Forms.ToolStripTextBox();
+			this.toolStripSeparator54 = new System.Windows.Forms.ToolStripSeparator();
+			this.WCSToolsAstraCartaBtn = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator32 = new System.Windows.Forms.ToolStripSeparator();
 			this.WCSRADecManual = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator31 = new System.Windows.Forms.ToolStripSeparator();
@@ -640,6 +642,8 @@ namespace CCDLAB
 			this.WCSQuerySquareRegionChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
 			this.WCSAstroQueryLimitLLengthDrop = new System.Windows.Forms.ToolStripComboBox();
+			this.AstraCartaImageShowChck = new System.Windows.Forms.ToolStripMenuItem();
+			this.AstraCartaForceNew = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator45 = new System.Windows.Forms.ToolStripSeparator();
 			this.WCSQuerySaveFileChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.WCSQuerySaveFileChooseDirBtn = new System.Windows.Forms.ToolStripMenuItem();
@@ -834,6 +838,7 @@ namespace CCDLAB
 			this.invertWCSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator53 = new System.Windows.Forms.ToolStripSeparator();
 			this.UVITMergeMultiL1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.UVITMergeMultiKeepObsIdsChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.UVITMergeMultiL1Help = new System.Windows.Forms.ToolStripMenuItem();
 			this.DeSaturateROICountsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.CorrectBackgroundCountsChck = new System.Windows.Forms.ToolStripMenuItem();
@@ -895,7 +900,8 @@ namespace CCDLAB
 			this.UVFinalizeBGWrkr = new System.ComponentModel.BackgroundWorker();
 			this.HeaderTxt = new System.Windows.Forms.ListBox();
 			this.ExtractROICentroidsWrkr = new System.ComponentModel.BackgroundWorker();
-			this.UVITMergeMultiKeepObsIdsChck = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem27 = new System.Windows.Forms.ToolStripMenuItem();
+			this.AstraCartaPMEpoch = new System.Windows.Forms.ToolStripTextBox();
 			this.ImageWindowCntxt.SuspendLayout();
 			this.ImageFingerPointContext.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.HalfWidthXUpD)).BeginInit();
@@ -7310,7 +7316,7 @@ namespace CCDLAB
 			// 
 			this.WCSRADecShowChck.CheckOnClick = true;
 			this.WCSRADecShowChck.Name = "WCSRADecShowChck";
-			this.WCSRADecShowChck.Size = new System.Drawing.Size(161, 22);
+			this.WCSRADecShowChck.Size = new System.Drawing.Size(180, 22);
 			this.WCSRADecShowChck.Text = "Show";
 			this.WCSRADecShowChck.Click += new System.EventHandler(this.WCSRADecShowChck_Click);
 			// 
@@ -7322,7 +7328,7 @@ namespace CCDLAB
             this.toolStripSeparator52,
             this.WCSCopyFromDiskFile});
 			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-			this.copyToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+			this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.copyToolStripMenuItem.Text = "Copy";
 			// 
 			// WCSCopyToLoadedImgs
@@ -7357,7 +7363,7 @@ namespace CCDLAB
 			this.WCSClearMenuBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.WCSClearAllChck});
 			this.WCSClearMenuBtn.Name = "WCSClearMenuBtn";
-			this.WCSClearMenuBtn.Size = new System.Drawing.Size(161, 22);
+			this.WCSClearMenuBtn.Size = new System.Drawing.Size(180, 22);
 			this.WCSClearMenuBtn.Text = "Clear WCS";
 			this.WCSClearMenuBtn.Click += new System.EventHandler(this.WCSClearMenuBtn_Click);
 			// 
@@ -7377,7 +7383,7 @@ namespace CCDLAB
             this.toolStripSeparator26,
             this.WCSSolutionPtsCopyTableBtn});
 			this.WCSSolutionPtsBtn.Name = "WCSSolutionPtsBtn";
-			this.WCSSolutionPtsBtn.Size = new System.Drawing.Size(161, 22);
+			this.WCSSolutionPtsBtn.Size = new System.Drawing.Size(180, 22);
 			this.WCSSolutionPtsBtn.Text = "Solution Points";
 			// 
 			// WCSPlotSolutionPtnBtn
@@ -7409,7 +7415,7 @@ namespace CCDLAB
 			// toolStripSeparator30
 			// 
 			this.toolStripSeparator30.Name = "toolStripSeparator30";
-			this.toolStripSeparator30.Size = new System.Drawing.Size(158, 6);
+			this.toolStripSeparator30.Size = new System.Drawing.Size(177, 6);
 			// 
 			// WCSToolsMenu
 			// 
@@ -7418,9 +7424,11 @@ namespace CCDLAB
             this.WCSToolsConvertDegFiletoSexaFile,
             this.toolStripSeparator51,
             this.WCSToolsConvertRATxt,
-            this.WCSToolsConvertDecTxt});
+            this.WCSToolsConvertDecTxt,
+            this.toolStripSeparator54,
+            this.WCSToolsAstraCartaBtn});
 			this.WCSToolsMenu.Name = "WCSToolsMenu";
-			this.WCSToolsMenu.Size = new System.Drawing.Size(161, 22);
+			this.WCSToolsMenu.Size = new System.Drawing.Size(180, 22);
 			this.WCSToolsMenu.Text = "Tools";
 			// 
 			// WCSToolsConvertSexaFiletoDegFile
@@ -7462,22 +7470,34 @@ namespace CCDLAB
     "opied. (Press Enter)";
 			this.WCSToolsConvertDecTxt.KeyDown += new System.Windows.Forms.KeyEventHandler(this.WCSToolsConvertRATxt_KeyDown);
 			// 
+			// toolStripSeparator54
+			// 
+			this.toolStripSeparator54.Name = "toolStripSeparator54";
+			this.toolStripSeparator54.Size = new System.Drawing.Size(277, 6);
+			// 
+			// WCSToolsAstraCartaBtn
+			// 
+			this.WCSToolsAstraCartaBtn.Name = "WCSToolsAstraCartaBtn";
+			this.WCSToolsAstraCartaBtn.Size = new System.Drawing.Size(280, 22);
+			this.WCSToolsAstraCartaBtn.Text = "AstraCarta";
+			this.WCSToolsAstraCartaBtn.Click += new System.EventHandler(this.WCSToolsAstraCartaBtn_Click);
+			// 
 			// toolStripSeparator32
 			// 
 			this.toolStripSeparator32.Name = "toolStripSeparator32";
-			this.toolStripSeparator32.Size = new System.Drawing.Size(158, 6);
+			this.toolStripSeparator32.Size = new System.Drawing.Size(177, 6);
 			// 
 			// WCSRADecManual
 			// 
 			this.WCSRADecManual.Name = "WCSRADecManual";
-			this.WCSRADecManual.Size = new System.Drawing.Size(161, 22);
+			this.WCSRADecManual.Size = new System.Drawing.Size(180, 22);
 			this.WCSRADecManual.Text = "Manual Solution";
 			this.WCSRADecManual.Click += new System.EventHandler(this.WCSRADecManual_Click);
 			// 
 			// toolStripSeparator31
 			// 
 			this.toolStripSeparator31.Name = "toolStripSeparator31";
-			this.toolStripSeparator31.Size = new System.Drawing.Size(158, 6);
+			this.toolStripSeparator31.Size = new System.Drawing.Size(177, 6);
 			// 
 			// AutoWCSMenuItem
 			// 
@@ -7515,7 +7535,7 @@ namespace CCDLAB
             this.WCSRefineSolutionBtn,
             this.toolStripSeparator29});
 			this.AutoWCSMenuItem.Name = "AutoWCSMenuItem";
-			this.AutoWCSMenuItem.Size = new System.Drawing.Size(161, 22);
+			this.AutoWCSMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.AutoWCSMenuItem.Text = "Auto WCS";
 			this.AutoWCSMenuItem.DropDownOpening += new System.EventHandler(this.AutoWCSMenuItem_DropDownOpening);
 			this.AutoWCSMenuItem.DropDownOpened += new System.EventHandler(this.AutoWCSMenuItem_DropDownOpened);
@@ -7723,6 +7743,10 @@ namespace CCDLAB
             this.WCSQuerySquareRegionChck,
             this.toolStripMenuItem4,
             this.WCSAstroQueryLimitLLengthDrop,
+            this.AstraCartaImageShowChck,
+            this.AstraCartaForceNew,
+            this.toolStripMenuItem27,
+            this.AstraCartaPMEpoch,
             this.toolStripSeparator45,
             this.WCSQuerySaveFileChck,
             this.toolStripSeparator47,
@@ -7745,7 +7769,7 @@ namespace CCDLAB
 			// 
 			this.AstroQueryCatalogueNameDrop.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.AstroQueryCatalogueNameDrop.Items.AddRange(new object[] {
-            "Gaia (DR3)"});
+            "GaiaDR3"});
 			this.AstroQueryCatalogueNameDrop.Name = "AstroQueryCatalogueNameDrop";
 			this.AstroQueryCatalogueNameDrop.Size = new System.Drawing.Size(121, 23);
 			this.AstroQueryCatalogueNameDrop.SelectedIndexChanged += new System.EventHandler(this.AstroQueryCatalogueNameDrop_SelectedIndexChanged);
@@ -7812,7 +7836,7 @@ namespace CCDLAB
 			this.toolStripMenuItem26.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this.toolStripMenuItem26.Name = "toolStripMenuItem26";
 			this.toolStripMenuItem26.Size = new System.Drawing.Size(194, 22);
-			this.toolStripMenuItem26.Text = "Radius (arc minutes)";
+			this.toolStripMenuItem26.Text = "Buffer (arc minutes)";
 			// 
 			// WCSAutoResolveRadiusTxt
 			// 
@@ -7853,6 +7877,22 @@ namespace CCDLAB
 			this.WCSAstroQueryLimitLLengthDrop.Name = "WCSAstroQueryLimitLLengthDrop";
 			this.WCSAstroQueryLimitLLengthDrop.Size = new System.Drawing.Size(121, 23);
 			this.WCSAstroQueryLimitLLengthDrop.SelectedIndexChanged += new System.EventHandler(this.WCSAstroQueryLimitLLengthDrop_SelectedIndexChanged);
+			// 
+			// AstraCartaImageShowChck
+			// 
+			this.AstraCartaImageShowChck.CheckOnClick = true;
+			this.AstraCartaImageShowChck.Name = "AstraCartaImageShowChck";
+			this.AstraCartaImageShowChck.Size = new System.Drawing.Size(194, 22);
+			this.AstraCartaImageShowChck.Text = "Show Catalogue Plot";
+			this.AstraCartaImageShowChck.Click += new System.EventHandler(this.AstraCartaImageShowChck_Click);
+			// 
+			// AstraCartaForceNew
+			// 
+			this.AstraCartaForceNew.CheckOnClick = true;
+			this.AstraCartaForceNew.Name = "AstraCartaForceNew";
+			this.AstraCartaForceNew.Size = new System.Drawing.Size(194, 22);
+			this.AstraCartaForceNew.Text = "Force New Raw Query";
+			this.AstraCartaForceNew.Click += new System.EventHandler(this.AstraCartaForceNew_Click);
 			// 
 			// toolStripSeparator45
 			// 
@@ -8190,7 +8230,7 @@ namespace CCDLAB
 			// AutoWCSXCorr
 			// 
 			this.AutoWCSXCorr.Name = "AutoWCSXCorr";
-			this.AutoWCSXCorr.Size = new System.Drawing.Size(161, 22);
+			this.AutoWCSXCorr.Size = new System.Drawing.Size(180, 22);
 			this.AutoWCSXCorr.Text = "Auto WCS XCorr";
 			this.AutoWCSXCorr.Visible = false;
 			this.AutoWCSXCorr.Click += new System.EventHandler(this.AutoWCSXCorr_Click);
@@ -9731,6 +9771,16 @@ namespace CCDLAB
 			this.UVITMergeMultiL1.Text = "Merge Multiple L1 Obs. IDs";
 			this.UVITMergeMultiL1.DoubleClick += new System.EventHandler(this.UVITMergeMultiL1_DoubleClick);
 			// 
+			// UVITMergeMultiKeepObsIdsChck
+			// 
+			this.UVITMergeMultiKeepObsIdsChck.Checked = true;
+			this.UVITMergeMultiKeepObsIdsChck.CheckOnClick = true;
+			this.UVITMergeMultiKeepObsIdsChck.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.UVITMergeMultiKeepObsIdsChck.Name = "UVITMergeMultiKeepObsIdsChck";
+			this.UVITMergeMultiKeepObsIdsChck.Size = new System.Drawing.Size(192, 22);
+			this.UVITMergeMultiKeepObsIdsChck.Text = "Keep Obs. IDs";
+			this.UVITMergeMultiKeepObsIdsChck.Click += new System.EventHandler(this.UVITMergeMultiKeepObsIdsChck_Click);
+			// 
 			// UVITMergeMultiL1Help
 			// 
 			this.UVITMergeMultiL1Help.Name = "UVITMergeMultiL1Help";
@@ -10084,17 +10134,17 @@ namespace CCDLAB
 			this.Chart1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			chartArea1.AxisX.MajorGrid.Enabled = false;
-			chartArea1.AxisY.MajorGrid.Enabled = false;
-			chartArea1.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
-			chartArea1.Name = "ChartArea1";
-			this.Chart1.ChartAreas.Add(chartArea1);
+			chartArea4.AxisX.MajorGrid.Enabled = false;
+			chartArea4.AxisY.MajorGrid.Enabled = false;
+			chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
+			chartArea4.Name = "ChartArea1";
+			this.Chart1.ChartAreas.Add(chartArea4);
 			this.Chart1.Location = new System.Drawing.Point(35, 41);
 			this.Chart1.Name = "Chart1";
-			series1.ChartArea = "ChartArea1";
-			series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-			series1.Name = "Series1";
-			this.Chart1.Series.Add(series1);
+			series4.ChartArea = "ChartArea1";
+			series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+			series4.Name = "Series1";
+			this.Chart1.Series.Add(series4);
 			this.Chart1.Size = new System.Drawing.Size(800, 800);
 			this.Chart1.TabIndex = 56;
 			this.Chart1.Text = "chart1";
@@ -10265,15 +10315,21 @@ namespace CCDLAB
 			this.ExtractROICentroidsWrkr.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ExtractROICentroidsWrkr_ProgressChanged);
 			this.ExtractROICentroidsWrkr.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ExtractROICentroidsWrkr_RunWorkerCompleted);
 			// 
-			// UVITMergeMultiKeepObsIdsChck
+			// toolStripMenuItem27
 			// 
-			this.UVITMergeMultiKeepObsIdsChck.Checked = true;
-			this.UVITMergeMultiKeepObsIdsChck.CheckOnClick = true;
-			this.UVITMergeMultiKeepObsIdsChck.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.UVITMergeMultiKeepObsIdsChck.Name = "UVITMergeMultiKeepObsIdsChck";
-			this.UVITMergeMultiKeepObsIdsChck.Size = new System.Drawing.Size(192, 22);
-			this.UVITMergeMultiKeepObsIdsChck.Text = "Keep Obs. IDs";
-			this.UVITMergeMultiKeepObsIdsChck.Click += new System.EventHandler(this.UVITMergeMultiKeepObsIdsChck_Click);
+			this.toolStripMenuItem27.Enabled = false;
+			this.toolStripMenuItem27.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this.toolStripMenuItem27.Name = "toolStripMenuItem27";
+			this.toolStripMenuItem27.Size = new System.Drawing.Size(194, 22);
+			this.toolStripMenuItem27.Text = "Epoch";
+			// 
+			// AstraCartaPMEpoch
+			// 
+			this.AstraCartaPMEpoch.BackColor = System.Drawing.Color.Gainsboro;
+			this.AstraCartaPMEpoch.Name = "AstraCartaPMEpoch";
+			this.AstraCartaPMEpoch.Size = new System.Drawing.Size(100, 23);
+			this.AstraCartaPMEpoch.ToolTipText = "Enter either a float value or header keyword providing the float value of the obs" +
+    "ervation epoch year.year to adjust catalogue positions for proper motion.";
 			// 
 			// Form1
 			// 
@@ -11314,6 +11370,12 @@ namespace CCDLAB
 		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiL1;
 		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiL1Help;
 		private System.Windows.Forms.ToolStripMenuItem UVITMergeMultiKeepObsIdsChck;
+		private System.Windows.Forms.ToolStripMenuItem AstraCartaImageShowChck;
+		private System.Windows.Forms.ToolStripMenuItem AstraCartaForceNew;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator54;
+		private System.Windows.Forms.ToolStripMenuItem WCSToolsAstraCartaBtn;
+		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem27;
+		private System.Windows.Forms.ToolStripTextBox AstraCartaPMEpoch;
 	}
 }
 

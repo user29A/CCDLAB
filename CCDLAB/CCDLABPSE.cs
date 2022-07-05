@@ -1883,17 +1883,25 @@ namespace CCDLAB
 
 			MARKCOORDRECTS = new Rectangle[n];
 			MARKCOORDS = new double[2, n];
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
 			double[] cp1 = new double[n];
 			double[] cp2 = new double[n];
+			double[] cv1 = new double[n];
+			double[] cv2 = new double[n];
+			double[] cd1 = new double[n];
+			double[] cd2 = new double[n];
+
 			for (int i = 1; i <= n; i++)
 			{
 				cp1[i - 1] = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("WCP1_" + i.ToString("000")));
 				cp2[i - 1] = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("WCP2_" + i.ToString("000")));
+				cv1[i - 1] = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("WCV1_" + i.ToString("000")));
+				cv2[i - 1] = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("WCV2_" + i.ToString("000")));
 				MARKCOORDS[0, i - 1] = cp1[i - 1] - 1;
 				MARKCOORDS[1, i - 1] = cp2[i - 1] - 1;
 			}
+
+			PSES = new PointSourceExtractor[1];
+			PSES[0] = new PointSourceExtractor(cp1, cp2);
 
 			MAKEMARKCOORDRECTS();
 			ImageWindow.Refresh();
@@ -1905,7 +1913,7 @@ namespace CCDLAB
 
 		private void WCSClearPlotSolutionPtsBtn_Click(object sender, EventArgs e)
 		{
-			MarkCoordClear.PerformClick();
+			MarkCoordClear.PerformClick();			
 
 			WCSMenu.ShowDropDown();
 			WCSSolutionPtsBtn.ShowDropDown();
@@ -2186,480 +2194,129 @@ namespace CCDLAB
 
 		private void WCSAutoBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-			POLYPOINTS = null;
-			POLYPOINTS2 = null;
-			PSESRECTS = null;
-			MARKCOORDRECTS = null;
-			WCSRADecShowChck.Checked = false;
-			SHOW_WCSCOORDS = false;
-			ImageWindow.Refresh();
-
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
-			int nCATpts = Convert.ToInt32(WCSAutoNCatPtsTxt.Text);
-			double scale_init = Convert.ToDouble(WCSScaleInit.Text) / 3600 * Math.PI / 180;
-			double scale_lb = Convert.ToDouble(WCSScaleInitLB.Text) / 3600 * Math.PI / 180;
-			double scale_ub = Convert.ToDouble(WCSScaleInitUB.Text) / 3600 * Math.PI / 180;
-			double rotat_init = Convert.ToDouble(WCSRotationInit.Text) * Math.PI / 180;
-			double rotat_lb = Convert.ToDouble(WCSRotationInitLB.Text) * Math.PI / 180;
-			double rotat_ub = Convert.ToDouble(WCSRotationInitUB.Text) * Math.PI / 180;
-			double vertextol = Convert.ToDouble(WCSAutoVertexToleranceTxt.Text) * Math.PI / 180;
-			bool do_parallel = !WCSAutoDisplayChck.Checked;
-			string catfilename = (string)WCSAutoCatalogueTxt.Tag;
-			string catCVAL1 = WCSAutoCatalogueCVAL1.Text;
-			string catCVAL2 = WCSAutoCatalogueCVAL2.Text;
-			string catExtension = WCSAutoCatalogueExtensionTxt.Text;
-			string catMag = WCSAutoCatalogueMag.Text;
-			int stopNpts = Convert.ToInt32(WCSAutoStopNMatchesText.Text);
-			int stopPercpts = Convert.ToInt32(WCSAutoStopPercMatchesText.Text);
-
-			//get catalogue RA, Dec, and mag's, and sort by mags
-			if (!File.Exists(catfilename))
+			try
 			{
-				MessageBox.Show("Cannot find catalogue file:\r\r" + catfilename + "\r\rDoes not exist.", "Error...");
-				return;
-			}
 
-			JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(catfilename, catExtension);
-			double[] ra = bt.GetTTYPEEntry(catCVAL1);
-			double[] dec = bt.GetTTYPEEntry(catCVAL2);
-			double[] mag = bt.GetTTYPEEntry(catMag);
-
-			//need to check mag for NaN's and re-form ra dec mag
-			int catcnt = 0;
-			for (int i = 0; i < ra.Length; i++)
-			{
-				if (Double.IsNaN(mag[i]))
-					continue;
-
-				ra[catcnt] = ra[i];
-				dec[catcnt] = dec[i];
-				mag[catcnt] = mag[i];
-				catcnt++;
-			}
-			Array.Resize(ref ra, catcnt);
-			Array.Resize(ref dec, catcnt);
-			Array.Resize(ref mag, catcnt);
-
-			//sort the catalogue list by magnitude
-			double[] keysref = new double[mag.Length];
-			Array.Copy(mag, keysref, mag.Length);
-			Array.Sort(mag, ra);
-			Array.Copy(keysref, mag, mag.Length);
-			Array.Sort(mag, dec);
-
-			//get the brightest few catlaogue points
-			JPMath.PointD[] CATpts = new JPMath.PointD[nCATpts];
-			double crval1 = 0, crval2 = 0;
-			for (int i = 0; i < CATpts.Length; i++)
-			{
-				CATpts[i] = new JPMath.PointD(ra[i], dec[i], mag[i]);
-				crval1 += CATpts[i].X;
-				crval2 += CATpts[i].Y;
-			}
-			crval1 /= (double)CATpts.Length;//the reference value can be the mean
-			crval2 /= (double)CATpts.Length;//the reference value can be the mean
-
-			//convert the catalogue points to intermediate points
-			JPMath.PointD[] CATpts_intrmdt = new JPMath.PointD[nCATpts];
-			double a0 = crval1 * Math.PI / 180, d0 = crval2 * Math.PI / 180;
-			for (int i = 0; i < CATpts_intrmdt.Length; i++)
-			{
-				double a = CATpts[i].X * Math.PI / 180;//radians
-				double d = CATpts[i].Y * Math.PI / 180;//radians
-
-				//for tangent plane Gnomic
-				double xint = Math.Cos(d) * Math.Sin(a - a0) / (Math.Cos(d0) * Math.Cos(d) * Math.Cos(a - a0) + Math.Sin(d0) * Math.Sin(d));
-				double yint = (Math.Cos(d0) * Math.Sin(d) - Math.Cos(d) * Math.Sin(d0) * Math.Cos(a - a0)) / (Math.Sin(d0) * Math.Sin(d) + Math.Cos(d0) * Math.Cos(d) * Math.Cos(a - a0));
-
-				CATpts_intrmdt[i] = new JPMath.PointD(xint, yint, CATpts[i].Value);
-			}
-
-			//make intermediate coordinate triangles
-			int nCATtriangles = CATpts_intrmdt.Length * (CATpts_intrmdt.Length - 1) * (CATpts_intrmdt.Length - 2) / 6;
-			JPMath.Triangle[] CATtriangles_intrmdt = new JPMath.Triangle[nCATtriangles];
-			int c = 0;
-			for (int i = 0; i < CATpts_intrmdt.Length - 2; i++)
-				for (int j = i + 1; j < CATpts_intrmdt.Length - 1; j++)
-					for (int k = j + 1; k < CATpts_intrmdt.Length; k++)
-					{
-						CATtriangles_intrmdt[c] = new JPMath.Triangle(CATpts_intrmdt[i], CATpts_intrmdt[j], CATpts_intrmdt[k]);
-						c++;
-					}
-
-			//get PSE image sources
-			ShowPSEChck.Checked = true;
-			ShowPSEChck.Enabled = true;
-			PSES = new PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
-			PSESINDEX = 0;
-			PSESRECTS = new Rectangle[1][];
-			double div = 8;
-			int niters = 0;
-			int maxiters = 11;
-			double immax = IMAGESET[FILELISTINDEX].Max;
-			double immed = IMAGESET[FILELISTINDEX].Median;
-			double imamp = immax - immed;
-			double pixthresh = imamp / div + immed;
-			double pix_sat = (double)PSESaturationUpD.Value;
-			while (niters <= maxiters)
-			{
-				niters++;
-
-				PSES[PSESINDEX].Extract_Sources(IMAGESET[FILELISTINDEX].Image, pix_sat, pixthresh, Double.MaxValue, 0, Double.MaxValue, false, (int)PSEKernelRadUpD.Value, (int)PSESeparationUpD.Value, PSEAutoBackgroundChck.Checked, "", ROI_REGION, false);
-				MAKEPSERECTS();
-				ImageWindow.Refresh();
-				SubImageWindow.Refresh();
-
-				if (PSES[PSESINDEX].N_Sources >= nCATpts)
-					break;
-
-				div *= 2;
-				pixthresh = imamp / div + immed;
-			}
-			if (PSES[PSESINDEX].N_Sources > nCATpts)
-			{
-				PSES[PSESINDEX].ClipToNBrightest(nCATpts);
-				MAKEPSERECTS();
-				ImageWindow.Refresh();
-				SubImageWindow.Refresh();
-			}
-
-			//turn the PSE results into points
-			JPMath.PointD[] PSEpts = new JPMath.PointD[PSES[PSESINDEX].N_Sources];
-			double crpix1_init = 0, crpix2_init = 0, crpix1_lb = Double.MaxValue, crpix1_ub = Double.MinValue, crpix2_lb = Double.MaxValue, crpix2_ub = Double.MinValue;
-			for (int i = 0; i < PSEpts.Length; i++)
-			{
-				PSEpts[i] = new JPMath.PointD(IMAGESET[FILELISTINDEX].Width - 1 - PSES[PSESINDEX].Centroids_X[i], IMAGESET[FILELISTINDEX].Height - 1 - PSES[PSESINDEX].Centroids_Y[i], PSES[PSESINDEX].Centroids_Volume[i]);
-				crpix1_init += PSEpts[i].X;
-				crpix2_init += PSEpts[i].Y;
-				if (crpix1_ub < PSEpts[i].X)
-					crpix1_ub = PSEpts[i].X;
-				if (crpix1_lb > PSEpts[i].X)
-					crpix1_lb = PSEpts[i].X;
-				if (crpix2_ub < PSEpts[i].Y)
-					crpix2_ub = PSEpts[i].Y;
-				if (crpix2_lb > PSEpts[i].Y)
-					crpix2_lb = PSEpts[i].Y;
-			}
-			crpix1_init /= (double)PSEpts.Length;//the reference value initial guesses can be the means
-			crpix2_init /= (double)PSEpts.Length;
-
-			//make PSE triangles
-			int nPSEtriangles = PSEpts.Length * (PSEpts.Length - 1) * (PSEpts.Length - 2) / 6;
-			JPMath.Triangle[] PSEtriangles = new JPMath.Triangle[nPSEtriangles];
-			c = 0;
-			for (int i = 0; i < PSEpts.Length - 2; i++)
-				for (int j = i + 1; j < PSEpts.Length - 1; j++)
-					for (int k = j + 1; k < PSEpts.Length; k++)
-					{
-						PSEtriangles[c] = new JPMath.Triangle(PSEpts[i], PSEpts[j], PSEpts[k]);
-
-						if (!do_parallel)
-						{
-							if (WCSAUTOCANCEL)
-								break;
-							POLYPOINTS = new Point[3];
-							POLYPOINTS[0] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(0).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(0).Y - 0.5) * ysc));
-							POLYPOINTS[1] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(1).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(1).Y - 0.5) * ysc));
-							POLYPOINTS[2] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(2).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(2).Y - 0.5) * ysc));
-							ImageWindow.Refresh();
-						}
-						c++;
-					}
-
-			POLYPOINTS = null;
-			if (!do_parallel)
-				ImageWindow.Refresh();
-
-			if (WCSAUTOCANCEL)
-				return;
-
-			if (do_parallel)
-				if (WCSAutoConditionArraysChck.Checked)
-				{
-					PSEtriangles = JPFITS.WCSAutoSolver.ConditionTriangleArrayBrightnessThreads(PSEtriangles, Environment.ProcessorCount, false);
-					CATtriangles_intrmdt = JPFITS.WCSAutoSolver.ConditionTriangleArrayBrightnessThreads(CATtriangles_intrmdt, 1, true);
-				}
-
-			//for each PSE triangle, fit it to a CAT intermediate triangle, and then check if this fit satisfies the other CAT points to the PSE points
-			//rotation transformation p[0] = scale; p[1] = phi (radians); p[2] = x-axis coordinate reference; p[3] = y-axis coordinate reference;
-			double[] plb = new double[4] { scale_lb, rotat_lb, crpix1_lb, crpix2_lb };
-			double[] pub = new double[4] { scale_ub, rotat_ub, crpix1_ub, crpix2_ub };
-			double[] psc = new double[4] { scale_init, 1, Math.Abs(crpix1_init), Math.Abs(crpix2_init) };
-			POLYPOINTS = new System.Drawing.Point[3];
-			POLYPOINTS2 = new System.Drawing.Point[3];
-
-			double kern_diam = (double)(2 * PSEKernelRadUpD.Value) + 1;
-			double p00 = 0, p01 = 0, p02 = 0, p03 = 0;
-			int total_pt_matches = 0;
-			TimeSpan ts = new TimeSpan();
-			bool solution = false;
-			int prog = 0, threadnum = 0;
-			ulong ncompares = 0, nfalse_sols = 0, nfalsefalses = 0;
-			bool compare_fieldvectors = rotat_lb != -Math.PI && rotat_ub != Math.PI;			
-
-			ParallelOptions opts = new ParallelOptions();
-			if (do_parallel)
-				opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
-			else
-				opts.MaxDegreeOfParallelism = 1;
-			var rangePartitioner = Partitioner.Create(0, PSEtriangles.Length);
-			object locker = new object();
-			int thrgrpsz = PSEtriangles.Length / opts.MaxDegreeOfParallelism;
-			double mdpT100ovrlen = (double)(opts.MaxDegreeOfParallelism * 100) / (double)PSEtriangles.Length;
-			DATE = DateTime.Now;
-
-			Parallel.ForEach(rangePartitioner, opts, (range, loopState) =>
-			{
-				if (solution || WCSAUTOCANCEL)
-					loopState.Stop();
-
-				ulong ncompareslocal = 0, nfalse_solslocal = 0, nfalsefalses_local = 0;
-				//create these here so that each thread when parallel has own copy
-				double[] xpix_triplet = new double[3];
-				double[] ypix_triplet = new double[3];
-				double[] Xintrmdt_triplet = new double[3];
-				double[] Yintrmdt_triplet = new double[3];
-				double[] P0 = new double[4];
-				double[] PLB = plb;
-				double[] PUB = pub;
-				double minlength2, maxlength2;
-
-				for (int i = range.Item1; i < range.Item2; i++)
-				{
-					if (solution)
-						break;
-					if (WCSAUTOCANCEL)
-						break;
-
-					if (i < thrgrpsz)
-						if ((double)i * mdpT100ovrlen > prog)
-							WCSAutoBGWrkr.ReportProgress(1);
-
-					xpix_triplet[0] = PSEtriangles[i].GetVertex(0).X;
-					ypix_triplet[0] = PSEtriangles[i].GetVertex(0).Y;
-					xpix_triplet[1] = PSEtriangles[i].GetVertex(1).X;
-					ypix_triplet[1] = PSEtriangles[i].GetVertex(1).Y;
-					xpix_triplet[2] = PSEtriangles[i].GetVertex(2).X;
-					ypix_triplet[2] = PSEtriangles[i].GetVertex(2).Y;
-					minlength2 = scale_lb * (PSEtriangles[i].GetSideLength(2) - kern_diam);
-					maxlength2 = scale_ub * (PSEtriangles[i].GetSideLength(2) + kern_diam);
-
-					if (!do_parallel)
-					{
-						POLYPOINTS[0] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[0] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[0] - 0.5) * ysc));
-						POLYPOINTS[1] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[1] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[1] - 0.5) * ysc));
-						POLYPOINTS[2] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[2] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[2] - 0.5) * ysc));
-						ImageWindow.Refresh();
-					}
-
-					for (int j = 0; j < CATtriangles_intrmdt.Length; j++)
-					{
-						if (solution)
-							break;
-						if (WCSAUTOCANCEL)
-							break;
-
-						ncompareslocal++;
-
-						//compare AAS (vertex0, vertex1, longest side)
-						if (Math.Abs(PSEtriangles[i].GetVertexAngle(0) - CATtriangles_intrmdt[j].GetVertexAngle(0)) > vertextol)
-							continue;
-						if (Math.Abs(PSEtriangles[i].GetVertexAngle(1) - CATtriangles_intrmdt[j].GetVertexAngle(1)) > vertextol)
-							continue;
-						if (CATtriangles_intrmdt[j].GetSideLength(2) < minlength2 || CATtriangles_intrmdt[j].GetSideLength(2) > maxlength2)
-							continue;
-
-						//this is the angle subtended between the two field vectors of the PSE and intermediate triangles...in the correct direction
-						double theta = Math.Atan2(PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.Y - PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.X, PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.X + PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.Y);
-						
-						if (compare_fieldvectors)//if a rotation estimate has been provided
-						{
-							//if the angle between the field vectors is smaller/larger than the estimate and bounds, then continue – not the correct triangles to fit given the rotation bounds estimate
-							if (theta > (rotat_ub + vertextol) || theta < (rotat_lb - vertextol))//+- WCS_VERTEX_TOL to bounds to provide tolerance when bounds are equal
-								continue;
-
-							P0[1] = rotat_init;//if here, then reset the fitter’s rotation parameter to initial estimate provided (others reset below)
-						}
-						else//no rotation estimate provided, so we can make our own
-						{
-							P0[1] = theta;//set the initial rotation to the angle between the field vectors
-							PLB[1] = theta - vertextol;// provide some tolerance bounds
-							PUB[1] = theta + vertextol;// provide some tolerance bounds
-						}
-
-						Xintrmdt_triplet[0] = CATtriangles_intrmdt[j].GetVertex(0).X;
-						Yintrmdt_triplet[0] = CATtriangles_intrmdt[j].GetVertex(0).Y;
-						Xintrmdt_triplet[1] = CATtriangles_intrmdt[j].GetVertex(1).X;
-						Yintrmdt_triplet[1] = CATtriangles_intrmdt[j].GetVertex(1).Y;
-						Xintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).X;
-						Yintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).Y;
-
-						//reset P0 for j'th iteration
-						P0[0] = scale_init;
-						//P0[1] = rotat_init;//done above in if (compare_fieldvectors)
-						P0[2] = crpix1_init;
-						P0[3] = crpix2_init;
-
-						//try a fit
-						JPMath.Fit_WCSTransform2d(Xintrmdt_triplet, Yintrmdt_triplet, xpix_triplet, ypix_triplet, ref P0, PLB, PUB, psc);
-
-						int N_pt_matches = 0;
-						for (int k = 0; k < 3; k++)
-						{
-							int x = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * Xintrmdt_triplet[k] - Math.Sin(-P0[1]) * Yintrmdt_triplet[k]) + P0[2]));
-							int y = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * Xintrmdt_triplet[k] + Math.Cos(-P0[1]) * Yintrmdt_triplet[k]) + P0[3]));
-							if (!do_parallel)
-								POLYPOINTS2[k] = new System.Drawing.Point((int)((x + 0.5) * xsc), (int)((y + 0.5) * ysc));
-
-							if (x > 0 && y > 0 && x < IMAGESET[FILELISTINDEX].Width && y < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceIndexMap[x, y] == PSES[PSESINDEX].SourceIndexMap[IMAGESET[FILELISTINDEX].Width - 1 - (int)Math.Round(xpix_triplet[k]), IMAGESET[FILELISTINDEX].Height - 1 - (int)Math.Round(ypix_triplet[k])])
-								N_pt_matches++;
-						}
-						if (!do_parallel)
-							ImageWindow.Refresh();
-
-						if (N_pt_matches != 3)//not a possible solution
-						{
-							nfalsefalses_local++;
-							continue;
-						}
-
-						if (do_parallel)
-						{
-							for (int k = 0; k < 3; k++)
-							{
-								double x = (double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * Xintrmdt_triplet[k] - Math.Sin(-P0[1]) * Yintrmdt_triplet[k]) + P0[2]);
-								double y = (double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * Xintrmdt_triplet[k] + Math.Cos(-P0[1]) * Yintrmdt_triplet[k]) + P0[3]);
-								POLYPOINTS2[k] = new System.Drawing.Point((int)((x + 0.5) * xsc), (int)((y + 0.5) * ysc));
-								POLYPOINTS[k] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[k] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[k] - 0.5) * ysc));
-							}
-							ImageWindow.Refresh();
-						}
-						else
-						{
-							POLYPOINTSb = new Point[POLYPOINTS.Length];
-							POLYPOINTS2b = new Point[POLYPOINTS2.Length];
-							Array.Copy(POLYPOINTS, POLYPOINTSb, POLYPOINTS.Length);
-							Array.Copy(POLYPOINTS2, POLYPOINTS2b, POLYPOINTS2.Length);
-						}
-
-						//need to check if the other CAT points match the PSE pts
-						N_pt_matches = 0;
-						for (int k = 0; k < CATpts_intrmdt.Length; k++)
-						{
-							double x_int = CATpts_intrmdt[k].X;
-							double y_int = CATpts_intrmdt[k].Y;
-
-							int x_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * x_int - Math.Sin(-P0[1]) * y_int) + P0[2]));
-							int y_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * x_int + Math.Cos(-P0[1]) * y_int) + P0[3]));
-
-							if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX].Width && y_pix < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceBooleanMap[x_pix, y_pix])
-								N_pt_matches++;
-						}
-
-						if (N_pt_matches >= stopNpts || N_pt_matches * 100 / CATpts_intrmdt.Length >= stopPercpts)
-						{
-							solution = true;
-							ts = DateTime.Now - DATE;
-							total_pt_matches = N_pt_matches;
-							p00 = P0[0];
-							p01 = P0[1];
-							p02 = P0[2];
-							p03 = P0[3];
-							threadnum = Thread.CurrentThread.ManagedThreadId;
-						}
-						else
-							nfalse_solslocal++;
-					}
-				}
-				lock (locker)
-				{
-					ncompares += ncompareslocal;
-					nfalse_sols += nfalse_solslocal;
-					nfalsefalses += nfalsefalses_local;
-				}
-			});
-
-			if (!do_parallel)
-			{
-				POLYPOINTS = POLYPOINTSb;
-				POLYPOINTS2 = POLYPOINTS2b;
-			}
-
-			if (!solution || WCSAUTOCANCEL)
-			{
 				POLYPOINTS = null;
 				POLYPOINTS2 = null;
 				PSESRECTS = null;
 				MARKCOORDRECTS = null;
+				WCSRADecShowChck.Checked = false;
+				SHOW_WCSCOORDS = false;
 				ImageWindow.Refresh();
-				if (WCSAUTOCANCEL)
-					MessageBox.Show("Cancelled...");
-				else if (!solution)
-					MessageBox.Show("No solution...");
-				return;
-			}
 
-			MARKCOORDS = new double[2, total_pt_matches];
-			WCS_RA = new double[total_pt_matches];
-			WCS_DEC = new double[total_pt_matches];
-			double[] xpix_matches = new double[total_pt_matches];
-			double[] ypix_matches = new double[total_pt_matches];
-			c = 0;
+				float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
+				float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+				int nCATpts = Convert.ToInt32(WCSAutoNCatPtsTxt.Text);
+				double scale_init = Convert.ToDouble(WCSScaleInit.Text) / 3600 * Math.PI / 180;
+				double scale_lb = Convert.ToDouble(WCSScaleInitLB.Text) / 3600 * Math.PI / 180;
+				double scale_ub = Convert.ToDouble(WCSScaleInitUB.Text) / 3600 * Math.PI / 180;
+				double rotat_init = Convert.ToDouble(WCSRotationInit.Text) * Math.PI / 180;
+				double rotat_lb = Convert.ToDouble(WCSRotationInitLB.Text) * Math.PI / 180;
+				double rotat_ub = Convert.ToDouble(WCSRotationInitUB.Text) * Math.PI / 180;
+				double vertextol = Convert.ToDouble(WCSAutoVertexToleranceTxt.Text) * Math.PI / 180;
+				bool do_parallel = !WCSAutoDisplayChck.Checked;
+				string catfilename = (string)WCSAutoCatalogueTxt.Tag;
+				string catCVAL1 = WCSAutoCatalogueCVAL1.Text;
+				string catCVAL2 = WCSAutoCatalogueCVAL2.Text;
+				string catExtension = WCSAutoCatalogueExtensionTxt.Text;
+				string catMag = WCSAutoCatalogueMag.Text;
+				int stopNpts = Convert.ToInt32(WCSAutoStopNMatchesText.Text);
+				int stopPercpts = Convert.ToInt32(WCSAutoStopPercMatchesText.Text);
 
-			for (int k = 0; k < CATpts_intrmdt.Length; k++)
-			{
-				double x_intrmdt = CATpts_intrmdt[k].X;
-				double y_intrmdt = CATpts_intrmdt[k].Y;
-
-				int x_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / p00 * (Math.Cos(-p01) * x_intrmdt - Math.Sin(-p01) * y_intrmdt) + p02));
-				int y_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / p00 * (Math.Sin(-p01) * x_intrmdt + Math.Cos(-p01) * y_intrmdt) + p03));
-
-				if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX].Width && y_pix < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceBooleanMap[x_pix, y_pix])
+				//get catalogue RA, Dec, and mag's, and sort by mags
+				if (!File.Exists(catfilename))
 				{
-					int index = PSES[PSESINDEX].SourceIndexMap[x_pix, y_pix];
-					xpix_matches[c] = PSES[PSESINDEX].Centroids_X[index];
-					ypix_matches[c] = PSES[PSESINDEX].Centroids_Y[index];
-					WCS_RA[c] = CATpts[k].X;
-					WCS_DEC[c] = CATpts[k].Y;
-					MARKCOORDS[0, c] = x_pix;
-					MARKCOORDS[1, c] = y_pix;
-					c++;
+					MessageBox.Show("Cannot find catalogue file:\r\r" + catfilename + "\r\rDoes not exist.", "Error...");
+					return;
 				}
-			}
 
-			MAKEMARKCOORDRECTS();
-			PSES[PSESINDEX] = new JPFITS.PointSourceExtractor(xpix_matches, ypix_matches);
-			MAKEPSERECTS();
-			WCSSolveList.PerformClick();
+				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(catfilename, catExtension);
+				double[] ra = bt.GetTTYPEEntry(catCVAL1);
+				double[] dec = bt.GetTTYPEEntry(catCVAL2);
+				double[] mag = bt.GetTTYPEEntry(catMag);
 
-			DialogResult res = MessageBox.Show("Scale: " + Math.Round(p00 * 180 / Math.PI * 3600, 4) + ";\rRotation: " + Math.Round(p01 * 180 / Math.PI, 3) + ";\rN Pt. Matches: " + total_pt_matches + " (" + (total_pt_matches * 100 / CATpts_intrmdt.Length).ToString("00.0") + "%)" + ";\rN_Comparisons: " + ncompares.ToString("0.00e00") + " (" + Math.Round((double)(ncompares * 100) / (double)(PSEtriangles.Length) / (double)(CATtriangles_intrmdt.Length), 1) + "%)" + ";\rN_False Positives: " + nfalse_sols + ";\rN_False Falses: " + nfalsefalses + ";\rThread: " + threadnum + ";\rCompleted in: " + ts.Minutes.ToString() + "m" + ((double)(ts.Seconds) + (double)ts.Milliseconds / 1000).ToString() + "s" + ";\rComparison per Second: " + (ncompares / ts.TotalSeconds).ToString("0.00e00") + ";\r\rClear Solution Points?", "Finished...", MessageBoxButtons.YesNo);
-			if (res == DialogResult.Yes)
-			{
-				POLYPOINTS = null;
-				POLYPOINTS2 = null;
-				PSESRECTS = null;
-				MARKCOORDRECTS = null;
-				ImageWindow.Refresh();
-			}
+				//need to check mag for NaN's and re-form ra dec mag
+				int catcnt = 0;
+				for (int i = 0; i < ra.Length; i++)
+				{
+					if (Double.IsNaN(mag[i]))
+						continue;
 
-			POLYPOINTS = null;
-			POLYPOINTS2 = null;
-			ImageWindow.Refresh();
+					ra[catcnt] = ra[i];
+					dec[catcnt] = dec[i];
+					mag[catcnt] = mag[i];
+					catcnt++;
+				}
+				Array.Resize(ref ra, catcnt);
+				Array.Resize(ref dec, catcnt);
+				Array.Resize(ref mag, catcnt);
 
-			if (WCSAutoRefineChck.Checked)
-			{
+				//sort the catalogue list by magnitude
+				double[] keysref = new double[mag.Length];
+				Array.Copy(mag, keysref, mag.Length);
+				Array.Sort(mag, ra);
+				Array.Copy(keysref, mag, mag.Length);
+				Array.Sort(mag, dec);
+
+				//get the brightest few catlaogue points
+				JPMath.PointD[] CATpts = new JPMath.PointD[nCATpts];
+				double crval1 = 0, crval2 = 0;
+				for (int i = 0; i < CATpts.Length; i++)
+				{
+					CATpts[i] = new JPMath.PointD(ra[i], dec[i], mag[i]);
+					crval1 += CATpts[i].X;
+					crval2 += CATpts[i].Y;
+				}
+				crval1 /= (double)CATpts.Length;//the reference value can be the mean
+				crval2 /= (double)CATpts.Length;//the reference value can be the mean
+
+				//convert the catalogue points to intermediate points
+				JPMath.PointD[] CATpts_intrmdt = new JPMath.PointD[nCATpts];
+				double a0 = crval1 * Math.PI / 180, d0 = crval2 * Math.PI / 180;
+				for (int i = 0; i < CATpts_intrmdt.Length; i++)
+				{
+					double a = CATpts[i].X * Math.PI / 180;//radians
+					double d = CATpts[i].Y * Math.PI / 180;//radians
+
+					//for tangent plane Gnomic
+					double xint = Math.Cos(d) * Math.Sin(a - a0) / (Math.Cos(d0) * Math.Cos(d) * Math.Cos(a - a0) + Math.Sin(d0) * Math.Sin(d));
+					double yint = (Math.Cos(d0) * Math.Sin(d) - Math.Cos(d) * Math.Sin(d0) * Math.Cos(a - a0)) / (Math.Sin(d0) * Math.Sin(d) + Math.Cos(d0) * Math.Cos(d) * Math.Cos(a - a0));
+
+					CATpts_intrmdt[i] = new JPMath.PointD(xint, yint, CATpts[i].Value);
+				}
+
+				//make intermediate coordinate triangles
+				int nCATtriangles = CATpts_intrmdt.Length * (CATpts_intrmdt.Length - 1) * (CATpts_intrmdt.Length - 2) / 6;
+				JPMath.Triangle[] CATtriangles_intrmdt = new JPMath.Triangle[nCATtriangles];
+				int c = 0;
+				for (int i = 0; i < CATpts_intrmdt.Length - 2; i++)
+					for (int j = i + 1; j < CATpts_intrmdt.Length - 1; j++)
+						for (int k = j + 1; k < CATpts_intrmdt.Length; k++)
+						{
+							CATtriangles_intrmdt[c] = new JPMath.Triangle(CATpts_intrmdt[i], CATpts_intrmdt[j], CATpts_intrmdt[k]);
+							c++;
+						}
+
+				//get PSE image sources
+				ShowPSEChck.Checked = true;
+				ShowPSEChck.Enabled = true;
 				PSES = new PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
 				PSESINDEX = 0;
-				nCATpts = Convert.ToInt32(WCSAutoRefineNPtsTxt.Text);
-				WCSLoadListNPtsTxt.Text = nCATpts.ToString();
-				niters = 0;
+				PSESRECTS = new Rectangle[1][];
+				double div = 8;
+				int niters = 0;
+				int maxiters = 11;
+				double immax = IMAGESET[FILELISTINDEX].Max;
+				double immed = IMAGESET[FILELISTINDEX].Median;
+				double imamp = immax - immed;
+				double pixthresh = imamp / div + immed;
+				double pix_sat = (double)PSESaturationUpD.Value;
 				while (niters <= maxiters)
 				{
 					niters++;
 
 					PSES[PSESINDEX].Extract_Sources(IMAGESET[FILELISTINDEX].Image, pix_sat, pixthresh, Double.MaxValue, 0, Double.MaxValue, false, (int)PSEKernelRadUpD.Value, (int)PSESeparationUpD.Value, PSEAutoBackgroundChck.Checked, "", ROI_REGION, false);
-					PSESRECTS = new Rectangle[1][];
 					MAKEPSERECTS();
 					ImageWindow.Refresh();
 					SubImageWindow.Refresh();
@@ -2673,16 +2330,322 @@ namespace CCDLAB
 				if (PSES[PSESINDEX].N_Sources > nCATpts)
 				{
 					PSES[PSESINDEX].ClipToNBrightest(nCATpts);
-					PSESRECTS = new Rectangle[1][];
 					MAKEPSERECTS();
 					ImageWindow.Refresh();
 					SubImageWindow.Refresh();
 				}
-				WCSLoadSimbadAscii_Click(sender, e);
-				WCSClarifyListSources.PerformClick();
-				IMAGESET[FILELISTINDEX].WCS.Grid_Refresh();
+
+				//turn the PSE results into points
+				JPMath.PointD[] PSEpts = new JPMath.PointD[PSES[PSESINDEX].N_Sources];
+				double crpix1_init = 0, crpix2_init = 0, crpix1_lb = Double.MaxValue, crpix1_ub = Double.MinValue, crpix2_lb = Double.MaxValue, crpix2_ub = Double.MinValue;
+				for (int i = 0; i < PSEpts.Length; i++)
+				{
+					PSEpts[i] = new JPMath.PointD(IMAGESET[FILELISTINDEX].Width - 1 - PSES[PSESINDEX].Centroids_X[i], IMAGESET[FILELISTINDEX].Height - 1 - PSES[PSESINDEX].Centroids_Y[i], PSES[PSESINDEX].Centroids_Volume[i]);
+					crpix1_init += PSEpts[i].X;
+					crpix2_init += PSEpts[i].Y;
+					if (crpix1_ub < PSEpts[i].X)
+						crpix1_ub = PSEpts[i].X;
+					if (crpix1_lb > PSEpts[i].X)
+						crpix1_lb = PSEpts[i].X;
+					if (crpix2_ub < PSEpts[i].Y)
+						crpix2_ub = PSEpts[i].Y;
+					if (crpix2_lb > PSEpts[i].Y)
+						crpix2_lb = PSEpts[i].Y;
+				}
+				crpix1_init /= (double)PSEpts.Length;//the reference value initial guesses can be the means
+				crpix2_init /= (double)PSEpts.Length;
+
+				//make PSE triangles
+				int nPSEtriangles = PSEpts.Length * (PSEpts.Length - 1) * (PSEpts.Length - 2) / 6;
+				JPMath.Triangle[] PSEtriangles = new JPMath.Triangle[nPSEtriangles];
+				c = 0;
+				for (int i = 0; i < PSEpts.Length - 2; i++)
+					for (int j = i + 1; j < PSEpts.Length - 1; j++)
+						for (int k = j + 1; k < PSEpts.Length; k++)
+						{
+							PSEtriangles[c] = new JPMath.Triangle(PSEpts[i], PSEpts[j], PSEpts[k]);
+
+							if (!do_parallel)
+							{
+								if (WCSAUTOCANCEL)
+									break;
+								POLYPOINTS = new Point[3];
+								POLYPOINTS[0] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(0).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(0).Y - 0.5) * ysc));
+								POLYPOINTS[1] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(1).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(1).Y - 0.5) * ysc));
+								POLYPOINTS[2] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - PSEtriangles[c].GetVertex(2).X - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - PSEtriangles[c].GetVertex(2).Y - 0.5) * ysc));
+								ImageWindow.Refresh();
+							}
+							c++;
+						}
+
+				POLYPOINTS = null;
+				if (!do_parallel)
+					ImageWindow.Refresh();
+
+				if (WCSAUTOCANCEL)
+					return;
+
+				if (do_parallel)
+					if (WCSAutoConditionArraysChck.Checked)
+					{
+						PSEtriangles = JPFITS.WCSAutoSolver.ConditionTriangleArrayBrightnessThreads(PSEtriangles, Environment.ProcessorCount, false);
+						CATtriangles_intrmdt = JPFITS.WCSAutoSolver.ConditionTriangleArrayBrightnessThreads(CATtriangles_intrmdt, 1, true);
+					}
+
+				//for each PSE triangle, fit it to a CAT intermediate triangle, and then check if this fit satisfies the other CAT points to the PSE points
+				//rotation transformation p[0] = scale; p[1] = phi (radians); p[2] = x-axis coordinate reference; p[3] = y-axis coordinate reference;
+				double[] plb = new double[4] { scale_lb, rotat_lb, crpix1_lb, crpix2_lb };
+				double[] pub = new double[4] { scale_ub, rotat_ub, crpix1_ub, crpix2_ub };
+				double[] psc = new double[4] { scale_init, 1, Math.Abs(crpix1_init), Math.Abs(crpix2_init) };
+				POLYPOINTS = new System.Drawing.Point[3];
+				POLYPOINTS2 = new System.Drawing.Point[3];
+
+				double kern_diam = (double)(2 * PSEKernelRadUpD.Value) + 1;
+				double p00 = 0, p01 = 0, p02 = 0, p03 = 0;
+				int total_pt_matches = 0;
+				TimeSpan ts = new TimeSpan();
+				bool solution = false;
+				int prog = 0, threadnum = 0;
+				ulong ncompares = 0, nfalse_sols = 0, nfalsefalses = 0;
+				bool compare_fieldvectors = rotat_lb != -Math.PI && rotat_ub != Math.PI;
+
+				ParallelOptions opts = new ParallelOptions();
+				if (do_parallel)
+					opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
+				else
+					opts.MaxDegreeOfParallelism = 1;
+				var rangePartitioner = Partitioner.Create(0, PSEtriangles.Length);
+				object locker = new object();
+				int thrgrpsz = PSEtriangles.Length / opts.MaxDegreeOfParallelism;
+				double mdpT100ovrlen = (double)(opts.MaxDegreeOfParallelism * 100) / (double)PSEtriangles.Length;
+				DATE = DateTime.Now;
+
+				Parallel.ForEach(rangePartitioner, opts, (range, loopState) =>
+				{
+					if (solution || WCSAUTOCANCEL)
+						loopState.Stop();
+
+					ulong ncompareslocal = 0, nfalse_solslocal = 0, nfalsefalses_local = 0;
+				//create these here so that each thread when parallel has own copy
+					double[] xpix_triplet = new double[3];
+					double[] ypix_triplet = new double[3];
+					double[] Xintrmdt_triplet = new double[3];
+					double[] Yintrmdt_triplet = new double[3];
+					double[] P0 = new double[4];
+					double[] PLB = plb;
+					double[] PUB = pub;
+					double minlength2, maxlength2;
+
+					for (int i = range.Item1; i < range.Item2; i++)
+					{
+						if (solution)
+							break;
+						if (WCSAUTOCANCEL)
+							break;
+
+						if (i < thrgrpsz)
+							if ((double)i * mdpT100ovrlen > prog)
+								WCSAutoBGWrkr.ReportProgress(1);
+
+						xpix_triplet[0] = PSEtriangles[i].GetVertex(0).X;
+						ypix_triplet[0] = PSEtriangles[i].GetVertex(0).Y;
+						xpix_triplet[1] = PSEtriangles[i].GetVertex(1).X;
+						ypix_triplet[1] = PSEtriangles[i].GetVertex(1).Y;
+						xpix_triplet[2] = PSEtriangles[i].GetVertex(2).X;
+						ypix_triplet[2] = PSEtriangles[i].GetVertex(2).Y;
+						minlength2 = scale_lb * (PSEtriangles[i].GetSideLength(2) - kern_diam);
+						maxlength2 = scale_ub * (PSEtriangles[i].GetSideLength(2) + kern_diam);
+
+						if (!do_parallel)
+						{
+							POLYPOINTS[0] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[0] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[0] - 0.5) * ysc));
+							POLYPOINTS[1] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[1] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[1] - 0.5) * ysc));
+							POLYPOINTS[2] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[2] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[2] - 0.5) * ysc));
+							ImageWindow.Refresh();
+						}
+
+						for (int j = 0; j < CATtriangles_intrmdt.Length; j++)
+						{
+							if (solution)
+								break;
+							if (WCSAUTOCANCEL)
+								break;
+
+							ncompareslocal++;
+
+						//compare AAS (vertex0, vertex1, longest side)
+							if (Math.Abs(PSEtriangles[i].GetVertexAngle(0) - CATtriangles_intrmdt[j].GetVertexAngle(0)) > vertextol)
+								continue;
+							if (Math.Abs(PSEtriangles[i].GetVertexAngle(1) - CATtriangles_intrmdt[j].GetVertexAngle(1)) > vertextol)
+								continue;
+							if (CATtriangles_intrmdt[j].GetSideLength(2) < minlength2 || CATtriangles_intrmdt[j].GetSideLength(2) > maxlength2)
+								continue;
+
+						//this is the angle subtended between the two field vectors of the PSE and intermediate triangles...in the correct direction
+							double theta = Math.Atan2(PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.Y - PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.X, PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.X + PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.Y);
+
+							if (compare_fieldvectors)//if a rotation estimate has been provided
+							{
+							//if the angle between the field vectors is smaller/larger than the estimate and bounds, then continue – not the correct triangles to fit given the rotation bounds estimate
+								if (theta > (rotat_ub + vertextol) || theta < (rotat_lb - vertextol))//+- WCS_VERTEX_TOL to bounds to provide tolerance when bounds are equal
+									continue;
+
+								P0[1] = rotat_init;//if here, then reset the fitter’s rotation parameter to initial estimate provided (others reset below)
+							}
+							else//no rotation estimate provided, so we can make our own
+							{
+								P0[1] = theta;//set the initial rotation to the angle between the field vectors
+								PLB[1] = theta - vertextol;// provide some tolerance bounds
+								PUB[1] = theta + vertextol;// provide some tolerance bounds
+							}
+
+							Xintrmdt_triplet[0] = CATtriangles_intrmdt[j].GetVertex(0).X;
+							Yintrmdt_triplet[0] = CATtriangles_intrmdt[j].GetVertex(0).Y;
+							Xintrmdt_triplet[1] = CATtriangles_intrmdt[j].GetVertex(1).X;
+							Yintrmdt_triplet[1] = CATtriangles_intrmdt[j].GetVertex(1).Y;
+							Xintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).X;
+							Yintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).Y;
+
+						//reset P0 for j'th iteration
+							P0[0] = scale_init;
+						//P0[1] = rotat_init;//done above in if (compare_fieldvectors)
+							P0[2] = crpix1_init;
+							P0[3] = crpix2_init;
+
+						//try a fit
+							JPMath.Fit_WCSTransform2d(Xintrmdt_triplet, Yintrmdt_triplet, xpix_triplet, ypix_triplet, ref P0, PLB, PUB, psc);
+
+							int N_pt_matches = 0;
+							for (int k = 0; k < 3; k++)
+							{
+								int x = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * Xintrmdt_triplet[k] - Math.Sin(-P0[1]) * Yintrmdt_triplet[k]) + P0[2]));
+								int y = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * Xintrmdt_triplet[k] + Math.Cos(-P0[1]) * Yintrmdt_triplet[k]) + P0[3]));
+								if (!do_parallel)
+									POLYPOINTS2[k] = new System.Drawing.Point((int)((x + 0.5) * xsc), (int)((y + 0.5) * ysc));
+
+								if (x > 0 && y > 0 && x < IMAGESET[FILELISTINDEX].Width && y < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceIndexMap[x, y] == PSES[PSESINDEX].SourceIndexMap[IMAGESET[FILELISTINDEX].Width - 1 - (int)Math.Round(xpix_triplet[k]), IMAGESET[FILELISTINDEX].Height - 1 - (int)Math.Round(ypix_triplet[k])])
+									N_pt_matches++;
+							}
+							if (!do_parallel)
+								ImageWindow.Refresh();
+
+							if (N_pt_matches != 3)//not a possible solution
+							{
+								nfalsefalses_local++;
+								continue;
+							}
+
+							if (do_parallel)
+							{
+								for (int k = 0; k < 3; k++)
+								{
+									double x = (double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * Xintrmdt_triplet[k] - Math.Sin(-P0[1]) * Yintrmdt_triplet[k]) + P0[2]);
+									double y = (double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * Xintrmdt_triplet[k] + Math.Cos(-P0[1]) * Yintrmdt_triplet[k]) + P0[3]);
+									POLYPOINTS2[k] = new System.Drawing.Point((int)((x + 0.5) * xsc), (int)((y + 0.5) * ysc));
+									POLYPOINTS[k] = new System.Drawing.Point((int)((IMAGESET[FILELISTINDEX].Width - 1 - xpix_triplet[k] - 0.5) * xsc), (int)((IMAGESET[FILELISTINDEX].Height - 1 - ypix_triplet[k] - 0.5) * ysc));
+								}
+								ImageWindow.Refresh();
+							}
+							else
+							{
+								POLYPOINTSb = new Point[POLYPOINTS.Length];
+								POLYPOINTS2b = new Point[POLYPOINTS2.Length];
+								Array.Copy(POLYPOINTS, POLYPOINTSb, POLYPOINTS.Length);
+								Array.Copy(POLYPOINTS2, POLYPOINTS2b, POLYPOINTS2.Length);
+							}
+
+						//need to check if the other CAT points match the PSE pts
+							N_pt_matches = 0;
+							for (int k = 0; k < CATpts_intrmdt.Length; k++)
+							{
+								double x_int = CATpts_intrmdt[k].X;
+								double y_int = CATpts_intrmdt[k].Y;
+
+								int x_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / P0[0] * (Math.Cos(-P0[1]) * x_int - Math.Sin(-P0[1]) * y_int) + P0[2]));
+								int y_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / P0[0] * (Math.Sin(-P0[1]) * x_int + Math.Cos(-P0[1]) * y_int) + P0[3]));
+
+								if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX].Width && y_pix < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceBooleanMap[x_pix, y_pix])
+									N_pt_matches++;
+							}
+
+							if (N_pt_matches >= stopNpts || N_pt_matches * 100 / CATpts_intrmdt.Length >= stopPercpts)
+							{
+								solution = true;
+								ts = DateTime.Now - DATE;
+								total_pt_matches = N_pt_matches;
+								p00 = P0[0];
+								p01 = P0[1];
+								p02 = P0[2];
+								p03 = P0[3];
+								threadnum = Thread.CurrentThread.ManagedThreadId;
+							}
+							else
+								nfalse_solslocal++;
+						}
+					}
+					lock (locker)
+					{
+						ncompares += ncompareslocal;
+						nfalse_sols += nfalse_solslocal;
+						nfalsefalses += nfalsefalses_local;
+					}
+				});
+
+				if (!do_parallel)
+				{
+					POLYPOINTS = POLYPOINTSb;
+					POLYPOINTS2 = POLYPOINTS2b;
+				}
+
+				if (!solution || WCSAUTOCANCEL)
+				{
+					POLYPOINTS = null;
+					POLYPOINTS2 = null;
+					PSESRECTS = null;
+					MARKCOORDRECTS = null;
+					ImageWindow.Refresh();
+					if (WCSAUTOCANCEL)
+						MessageBox.Show("Cancelled...");
+					else if (!solution)
+						MessageBox.Show("No solution...");
+					return;
+				}
+
+				MARKCOORDS = new double[2, total_pt_matches];
+				WCS_RA = new double[total_pt_matches];
+				WCS_DEC = new double[total_pt_matches];
+				double[] xpix_matches = new double[total_pt_matches];
+				double[] ypix_matches = new double[total_pt_matches];
+				c = 0;
+
+				for (int k = 0; k < CATpts_intrmdt.Length; k++)
+				{
+					double x_intrmdt = CATpts_intrmdt[k].X;
+					double y_intrmdt = CATpts_intrmdt[k].Y;
+
+					int x_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Width - 1 - (1 / p00 * (Math.Cos(-p01) * x_intrmdt - Math.Sin(-p01) * y_intrmdt) + p02));
+					int y_pix = (int)Math.Round((double)IMAGESET[FILELISTINDEX].Height - 1 - (1 / p00 * (Math.Sin(-p01) * x_intrmdt + Math.Cos(-p01) * y_intrmdt) + p03));
+
+					if (x_pix > 0 && y_pix > 0 && x_pix < IMAGESET[FILELISTINDEX].Width && y_pix < IMAGESET[FILELISTINDEX].Height && PSES[PSESINDEX].SourceBooleanMap[x_pix, y_pix])
+					{
+						int index = PSES[PSESINDEX].SourceIndexMap[x_pix, y_pix];
+						xpix_matches[c] = PSES[PSESINDEX].Centroids_X[index];
+						ypix_matches[c] = PSES[PSESINDEX].Centroids_Y[index];
+						WCS_RA[c] = CATpts[k].X;
+						WCS_DEC[c] = CATpts[k].Y;
+						MARKCOORDS[0, c] = x_pix;
+						MARKCOORDS[1, c] = y_pix;
+						c++;
+					}
+				}
+
+				MAKEMARKCOORDRECTS();
+				PSES[PSESINDEX] = new JPFITS.PointSourceExtractor(xpix_matches, ypix_matches);
+				MAKEPSERECTS();
 				WCSSolveList.PerformClick();
-				if (MessageBox.Show(PSES[PSESINDEX].N_Sources + " sources of " + WCSAutoRefineNPtsTxt.Text + " were able to be used for WCS refinement. \r\n\r\nClear Solution points?", "Finished...", MessageBoxButtons.YesNo) == DialogResult.Yes)
+
+				DialogResult res = MessageBox.Show("Scale: " + Math.Round(p00 * 180 / Math.PI * 3600, 4) + ";\rRotation: " + Math.Round(p01 * 180 / Math.PI, 3) + ";\rN Pt. Matches: " + total_pt_matches + " (" + (total_pt_matches * 100 / CATpts_intrmdt.Length).ToString("00.0") + "%)" + ";\rN_Comparisons: " + ncompares.ToString("0.00e00") + " (" + Math.Round((double)(ncompares * 100) / (double)(PSEtriangles.Length) / (double)(CATtriangles_intrmdt.Length), 1) + "%)" + ";\rN_False Positives: " + nfalse_sols + ";\rN_False Falses: " + nfalsefalses + ";\rThread: " + threadnum + ";\rCompleted in: " + ts.Minutes.ToString() + "m" + ((double)(ts.Seconds) + (double)ts.Milliseconds / 1000).ToString() + "s" + ";\rComparison per Second: " + (ncompares / ts.TotalSeconds).ToString("0.00e00") + ";\r\rClear Solution Points?", "Finished...", MessageBoxButtons.YesNo);
+				if (res == DialogResult.Yes)
 				{
 					POLYPOINTS = null;
 					POLYPOINTS2 = null;
@@ -2690,6 +2653,59 @@ namespace CCDLAB
 					MARKCOORDRECTS = null;
 					ImageWindow.Refresh();
 				}
+
+				POLYPOINTS = null;
+				POLYPOINTS2 = null;
+				ImageWindow.Refresh();
+
+				if (WCSAutoRefineChck.Checked)
+				{
+					PSES = new PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
+					PSESINDEX = 0;
+					nCATpts = Convert.ToInt32(WCSAutoRefineNPtsTxt.Text);
+					WCSLoadListNPtsTxt.Text = nCATpts.ToString();
+					niters = 0;
+					while (niters <= maxiters)
+					{
+						niters++;
+
+						PSES[PSESINDEX].Extract_Sources(IMAGESET[FILELISTINDEX].Image, pix_sat, pixthresh, Double.MaxValue, 0, Double.MaxValue, false, (int)PSEKernelRadUpD.Value, (int)PSESeparationUpD.Value, PSEAutoBackgroundChck.Checked, "", ROI_REGION, false);
+						PSESRECTS = new Rectangle[1][];
+						MAKEPSERECTS();
+						ImageWindow.Refresh();
+						SubImageWindow.Refresh();
+
+						if (PSES[PSESINDEX].N_Sources >= nCATpts)
+							break;
+
+						div *= 2;
+						pixthresh = imamp / div + immed;
+					}
+					if (PSES[PSESINDEX].N_Sources > nCATpts)
+					{
+						PSES[PSESINDEX].ClipToNBrightest(nCATpts);
+						PSESRECTS = new Rectangle[1][];
+						MAKEPSERECTS();
+						ImageWindow.Refresh();
+						SubImageWindow.Refresh();
+					}
+					WCSLoadSimbadAscii_Click(sender, e);
+					WCSClarifyListSources.PerformClick();
+					IMAGESET[FILELISTINDEX].WCS.Grid_Refresh();
+					WCSSolveList.PerformClick();
+					if (MessageBox.Show(PSES[PSESINDEX].N_Sources + " sources of " + WCSAutoRefineNPtsTxt.Text + " were able to be used for WCS refinement. \r\n\r\nClear Solution points?", "Finished...", MessageBoxButtons.YesNo) == DialogResult.Yes)
+					{
+						POLYPOINTS = null;
+						POLYPOINTS2 = null;
+						PSESRECTS = null;
+						MARKCOORDRECTS = null;
+						ImageWindow.Refresh();
+					}
+				}
+			}
+			catch (Exception ee)
+			{
+				MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
 			}
 		}
 
@@ -2781,6 +2797,9 @@ namespace CCDLAB
 			WCSQuerySaveFileChooseDirBtn.Checked = Convert.ToBoolean(JPFITS.REG.GetReg("CCDLAB", "WCSQuerySaveFileChooseDirBtnChck"));
 			WCSAstroQueryLimitLLengthDrop.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "WCSAstroQueryLimitLLength"));
 			WCSAstroQueryFilterDrop.SelectedIndex = Convert.ToInt32(JPFITS.REG.GetReg("CCDLAB", "WCSAstroQueryFilterDrop"));
+			AstraCartaImageShowChck.Checked = Convert.ToBoolean(JPFITS.REG.GetReg("CCDLAB", "AstraCartaImageShowChck"));
+			AstraCartaForceNew.Checked = Convert.ToBoolean(JPFITS.REG.GetReg("CCDLAB", "AstraCartaForceNew"));
+			AstraCartaPMEpoch.Text = (string)REG.GetReg("CCDLAB", "AstraCartaPMEpoch");
 		}
 
 		private void WCSAutoQueryBtn_DropDownOpening(object sender, System.EventArgs e)
@@ -2986,27 +3005,79 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
+			WCSMenu.HideDropDown();
+			AutoWCSMenuItem.HideDropDown();
+			WCSAutoQueryBtn.HideDropDown();			
+
 			string catalogue = (string)AstroQueryCatalogueNameDrop.SelectedItem;
-			catalogue = catalogue.Substring(0, catalogue.IndexOf("(") - 1);
 
 			string cval1 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL1.Text);
 			string cval2 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL2.Text);
+			double ra = 0, dec = 0;
 			try
 			{
-				Convert.ToDouble(cval1);
+				ra = Convert.ToDouble(cval1);//value is degree format
+				dec = Convert.ToDouble(cval2);
 			}
-			catch
+			catch//must be sexagesimal
 			{
-				double ra, dec;
 				JPFITS.WorldCoordinateSolution.SexagesimalElementsToDegreeElements(cval1, cval2, "", out ra, out dec);
-				cval1 = ra.ToString();
-				cval2 = dec.ToString();
 			}
 
-			string filename = CCDLABPATH + "gaiaDR3Query.fit";
+			ArrayList keys = new ArrayList();
+			ArrayList values = new ArrayList();
+
+			keys.Add("-ra");
+			values.Add(ra.ToString());
+			keys.Add("-dec");
+			values.Add(dec.ToString());
+
+			double scale = Convert.ToDouble(WCSScaleInit.Text);
+
+			keys.Add("-scale");
+			values.Add(scale.ToString());
+
+			string shape = "rectangle";
+			if (WCSQuerySquareRegionChck.Text.Contains("Circular"))
+				shape = "circle";
+			keys.Add("-shape");
+			values.Add(shape);
+
+			double buffer = 0;
+			if (WCSAutoResolveRadiusTxt.Text != "")
+				buffer = Convert.ToDouble(WCSAutoResolveRadiusTxt.Text);
+			if (buffer != 0)
+			{
+				keys.Add("-buffer");
+				values.Add(buffer.ToString());
+			}
+
+			double pmepoch = 0;
+			if (AstraCartaPMEpoch.Text != "")
+			{
+				if (JPMath.IsNumeric(AstraCartaPMEpoch.Text))
+				{
+					pmepoch = Convert.ToDouble(AstraCartaPMEpoch.Text);
+					REG.SetReg("CCDLAB", "AstraCartaPMEpoch", "");
+				}
+				else if (JPMath.IsNumeric(IMAGESET[FILELISTINDEX].Header.GetKeyValue("DATEDATE")))
+					pmepoch = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("DATEDATE"));
+			}
+			if (pmepoch != 0)
+			{
+				keys.Add("-pmepoch");
+				values.Add(pmepoch.ToString());
+
+				if (!JPMath.IsNumeric(AstraCartaPMEpoch.Text))
+					REG.SetReg("CCDLAB", "AstraCartaPMEpoch", AstraCartaPMEpoch.Text);
+			}
+			else
+				REG.SetReg("CCDLAB", "AstraCartaPMEpoch", "");
+
+			string outpath = CCDLABPATH;
 			if (WCSQuerySaveFileChck.Checked)
 				if (!WCSQuerySaveFileChooseDirBtn.Checked)
-					filename = IMAGESET[FILELISTINDEX].FullFileName.Substring(0, IMAGESET[FILELISTINDEX].FullFileName.LastIndexOf(".")) + "_gaiaDR3Query.fit";
+					outpath = IMAGESET[FILELISTINDEX].FilePath;
 				else
 				{
 					FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -3014,45 +3085,78 @@ namespace CCDLAB
 					fbd.Description = "Select directory to save catalogue";
 					if (fbd.ShowDialog() == DialogResult.Cancel)
 						return;
-					filename = fbd.SelectedPath + "\\" + new DirectoryInfo(fbd.SelectedPath).Name + "_gaiaDR3Query.fit";
+					outpath = fbd.SelectedPath;
 				}
+			keys.Add("-outdir");
+			values.Add(outpath);
 
-			string radius = WCSAutoResolveRadiusTxt.Text;
+			int nquery = Convert.ToInt32(WCSAstroQueryLimitLLengthDrop.SelectedItem.ToString());
+			keys.Add("-nquery");
+			values.Add(nquery.ToString());
 
-			string square = "0";
-			if (WCSQuerySquareRegionChck.Text.Contains("Square"))
-				square = "1";
+			string filter = WCSAstroQueryFilterDrop.SelectedItem.ToString();
+			keys.Add("-filter");
+			values.Add(filter);
 
-			string Nlimit = WCSAstroQueryLimitLLengthDrop.SelectedItem.ToString();
-
-			string sortfilter = WCSAstroQueryFilterDrop.SelectedItem.ToString();
-
-			WCSMenu.HideDropDown();
-			AutoWCSMenuItem.HideDropDown();
-			WCSAutoQueryBtn.HideDropDown();
-
-			int res = JPFITS.WCSAutoSolver.GaiaDR3QueryN(cval1, cval2, filename, radius, square, Nlimit, sortfilter);
-			//int res = JPFITS.WCSAutoSolver.AstroQuery(catalogue, cval1, cval2, ref filename, radius, square);
-			if (res != 0)
+			bool imageshow = AstraCartaImageShowChck.Checked;
+			if (imageshow)
 			{
-				MessageBox.Show("Query failed with exit code: " + res);
-				return;
+				keys.Add("-imageshow");
+				values.Add("");
 			}
+
+			bool forcenew = AstraCartaForceNew.Checked;
+			if (forcenew)
+			{
+				keys.Add("-forcenew");
+				values.Add("");
+			}
+
+			if (IMAGESET[FILELISTINDEX].Header.GetKeyValue("SOURCEID") != "")
+			{
+				keys.Add("-outname");
+				values.Add(IMAGESET[FILELISTINDEX].Header.GetKeyValue("SOURCEID"));
+			}
+
+			keys.Add("-fitsout");
+			values.Add("");
+
+			keys.Add("-pixwidth");
+			values.Add(IMAGESET[FILELISTINDEX].Width.ToString());
+
+			keys.Add("-pixheight");
+			values.Add(IMAGESET[FILELISTINDEX].Height.ToString());
+
+			keys.Add("-overwrite");
+			values.Add("");
+
+			JPFITS.AstraCarta ac = new AstraCarta(keys, values);
+			ac.CloseOnCompleteChck.Checked = true;
+			ac.ShowDialog();
+			string queryfilename = ac.Result_Filename;
+			if (queryfilename == "")
+				return;
 
 			WCSMenu.ShowDropDown();
 			AutoWCSMenuItem.ShowDropDown();
 			WCSAutoQueryBtn.ShowDropDown();
 
-			WCSAutoCatalogueTxt.Tag = filename;
+			WCSAutoCatalogueTxt.Tag = queryfilename;
 			WCSAutoCatalogueTxt.Text = ((string)WCSAutoCatalogueTxt.Tag).Substring(((string)WCSAutoCatalogueTxt.Tag).LastIndexOf("\\") + 1);
 			WCSAutoCatalogueTxt.ToolTipText = ((string)WCSAutoCatalogueTxt.Tag).Substring(0, ((string)WCSAutoCatalogueTxt.Tag).LastIndexOf("\\") + 1);
-			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCATDir", filename.Substring(0, filename.LastIndexOf("\\")));
-			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueTxt", filename);
+			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCATDir", queryfilename.Substring(0, queryfilename.LastIndexOf("\\")));
+			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueTxt", queryfilename);
 			WCSAutoCatalogueTxt.BackColor = Color.LightGreen;
 			WCSAutoCatalogueExtensionTxt.Text = "";
 			WCSAutoCatalogueCVAL1.Text = "ra";
 			WCSAutoCatalogueCVAL2.Text = "dec";
-			WCSAutoCatalogueMag.Text = "phot_bp_mean_mag";
+			if (filter == "bp")
+				WCSAutoCatalogueMag.Text = "phot_bp_mean_mag";
+			else if (filter == "g")
+				WCSAutoCatalogueMag.Text = "phot_g_mean_mag";
+			else
+				WCSAutoCatalogueMag.Text = "phot_rp_mean_mag";
+
 			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueExtensionTxt", WCSAutoCatalogueExtensionTxt.Text);
 			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueCVAL1", WCSAutoCatalogueCVAL1.Text);
 			JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueCVAL2", WCSAutoCatalogueCVAL2.Text);
@@ -3060,6 +3164,112 @@ namespace CCDLAB
 
 			if (WCSQuerySolveAfter.Checked)
 				WCSAutoSolveBtn.PerformClick();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//if (IMAGESET.Count == 0)
+			//	return;
+
+			//string catalogue = (string)AstroQueryCatalogueNameDrop.SelectedItem;
+			//catalogue = catalogue.Substring(0, catalogue.IndexOf("(") - 1);
+
+			//string cval1 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL1.Text);
+			//string cval2 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL2.Text);
+			//try
+			//{
+			//	Convert.ToDouble(cval1);
+			//}
+			//catch
+			//{
+			//	double ra, dec;
+			//	JPFITS.WorldCoordinateSolution.SexagesimalElementsToDegreeElements(cval1, cval2, "", out ra, out dec);
+			//	cval1 = ra.ToString();
+			//	cval2 = dec.ToString();
+			//}
+
+			//string filename = CCDLABPATH + "gaiaDR3Query.fit";
+			//if (WCSQuerySaveFileChck.Checked)
+			//	if (!WCSQuerySaveFileChooseDirBtn.Checked)
+			//		filename = IMAGESET[FILELISTINDEX].FullFileName.Substring(0, IMAGESET[FILELISTINDEX].FullFileName.LastIndexOf(".")) + "_gaiaDR3Query.fit";
+			//	else
+			//	{
+			//		FolderBrowserDialog fbd = new FolderBrowserDialog();
+			//		fbd.SelectedPath = IMAGESET[FILELISTINDEX].FilePath;
+			//		fbd.Description = "Select directory to save catalogue";
+			//		if (fbd.ShowDialog() == DialogResult.Cancel)
+			//			return;
+			//		filename = fbd.SelectedPath + "\\" + new DirectoryInfo(fbd.SelectedPath).Name + "_gaiaDR3Query.fit";
+			//	}
+
+			//string radius = WCSAutoResolveRadiusTxt.Text;
+
+			//string square = "0";
+			//if (WCSQuerySquareRegionChck.Text.Contains("Square"))
+			//	square = "1";
+
+			//string Nlimit = WCSAstroQueryLimitLLengthDrop.SelectedItem.ToString();
+
+			//string sortfilter = WCSAstroQueryFilterDrop.SelectedItem.ToString();
+
+			//WCSMenu.HideDropDown();
+			//AutoWCSMenuItem.HideDropDown();
+			//WCSAutoQueryBtn.HideDropDown();
+
+			//int res = JPFITS.WCSAutoSolver.GaiaDR3QueryN(cval1, cval2, filename, radius, square, Nlimit, sortfilter);
+			////int res = JPFITS.WCSAutoSolver.AstroQuery(catalogue, cval1, cval2, ref filename, radius, square);
+			//if (res != 0)
+			//{
+			//	MessageBox.Show("Query failed with exit code: " + res);
+			//	return;
+			//}
+
+			//WCSMenu.ShowDropDown();
+			//AutoWCSMenuItem.ShowDropDown();
+			//WCSAutoQueryBtn.ShowDropDown();
+
+			//WCSAutoCatalogueTxt.Tag = filename;
+			//WCSAutoCatalogueTxt.Text = ((string)WCSAutoCatalogueTxt.Tag).Substring(((string)WCSAutoCatalogueTxt.Tag).LastIndexOf("\\") + 1);
+			//WCSAutoCatalogueTxt.ToolTipText = ((string)WCSAutoCatalogueTxt.Tag).Substring(0, ((string)WCSAutoCatalogueTxt.Tag).LastIndexOf("\\") + 1);
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCATDir", filename.Substring(0, filename.LastIndexOf("\\")));
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueTxt", filename);
+			//WCSAutoCatalogueTxt.BackColor = Color.LightGreen;
+			//WCSAutoCatalogueExtensionTxt.Text = "";
+			//WCSAutoCatalogueCVAL1.Text = "ra";
+			//WCSAutoCatalogueCVAL2.Text = "dec";
+			//WCSAutoCatalogueMag.Text = "phot_bp_mean_mag";
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueExtensionTxt", WCSAutoCatalogueExtensionTxt.Text);
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueCVAL1", WCSAutoCatalogueCVAL1.Text);
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueCVAL2", WCSAutoCatalogueCVAL2.Text);
+			//JPFITS.REG.SetReg("CCDLAB", "WCSAutoCatalogueMag", WCSAutoCatalogueMag.Text);
+
+			//if (WCSQuerySolveAfter.Checked)
+			//	WCSAutoSolveBtn.PerformClick();
 		}
 
 		private void WCSQuerySaveFileChck_Click(object sender, System.EventArgs e)
@@ -3104,6 +3314,24 @@ namespace CCDLAB
 		private void WCSQuerySolveAfter_Click(object sender, System.EventArgs e)
 		{
 			JPFITS.REG.SetReg("CCDLAB", "WCSQuerySolveAfter", WCSQuerySolveAfter.Checked);
+
+			WCSMenu.ShowDropDown();
+			AutoWCSMenuItem.ShowDropDown();
+			WCSAutoQueryBtn.ShowDropDown();
+		}
+
+		private void AstraCartaImageShowChck_Click(object sender, EventArgs e)
+		{
+			JPFITS.REG.SetReg("CCDLAB", "AstraCartaImageShowChck", AstraCartaImageShowChck.Checked);
+
+			WCSMenu.ShowDropDown();
+			AutoWCSMenuItem.ShowDropDown();
+			WCSAutoQueryBtn.ShowDropDown();
+		}
+
+		private void AstraCartaForceNew_Click(object sender, EventArgs e)
+		{
+			JPFITS.REG.SetReg("CCDLAB", "AstraCartaForceNew", AstraCartaForceNew.Checked);
 
 			WCSMenu.ShowDropDown();
 			AutoWCSMenuItem.ShowDropDown();
@@ -3630,6 +3858,11 @@ namespace CCDLAB
 			}
 		}
 
+		private void WCSToolsAstraCartaBtn_Click(object sender, EventArgs e)
+		{
+			JPFITS.AstraCarta ac = new AstraCarta();
+			ac.Show();
+		}
 
 		private void AutoWCSXCorr_Click(object sender, System.EventArgs e)
 		{

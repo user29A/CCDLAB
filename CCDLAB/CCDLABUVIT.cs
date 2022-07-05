@@ -2760,8 +2760,10 @@ namespace CCDLAB
 				{
 					FUVDIREXISTS = false;
 					IMAGESET = new FITSImageSet();
+
 					FMLoad_Click(sender, e);
 					DONUVDRIFTNOW = true;
+
 					ConsolidateNUVApplyToFUV_Click(sender, e);
 					return;
 				}
@@ -3149,12 +3151,16 @@ namespace CCDLAB
 					string sourceID;
 					if (!L1SpecifySourceNameChck.Checked)
 					{
-						sourceID = (source.Header.GetKeyValue("SOURCEID").Replace(" ", "")).Replace("/", "");
+						//sourceID = (source.Header.GetKeyValue("SOURCEID").Replace(" ", "")).Replace("/", "");
+						sourceID = string.Join("_", source.Header.GetKeyValue("SOURCEID").Split(Path.GetInvalidFileNameChars()));
 						if (sourceID.Length > 17)
 							sourceID = sourceID.Substring(0, 17);
 					}
 					else
 						sourceID = L1SourceNameTxt.Text;
+					double date;
+					JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out date);
+					source.Header.SetKey("DATEDATE", date.ToString(), "year.year", true, source.Header.GetKeyIndex("DATE-OBS", false) + 1);
 
 					//try
 					{
@@ -10124,6 +10130,8 @@ namespace CCDLAB
 					FUVDIREXISTS = Directory.Exists(FUVdir);
 					NUVDIREXISTS = Directory.Exists(NUVdir);
 
+					//MessageBox.Show(FUVdir + "\r\n\r\n" + NUVdir + "\r\n\r\n" + NUVDIREXISTS.ToString());
+
 					if (Directory.Exists(FUVdir) && !DONUVDRIFTNOW)
 						TimeListNames = Directory.GetFiles(FUVdir, "*TimeList.fits", SearchOption.AllDirectories);
 					else
@@ -11719,9 +11727,11 @@ namespace CCDLAB
 			instructions += Environment.NewLine;
 			instructions += "c) Process each L1 file as per normal, through registration only. Do not perform merging of orbits." + Environment.NewLine;
 			instructions += Environment.NewLine;
-			instructions += "d)	Double-click \"Merge Multiple L1 Obs. IDs\" menu item. Select the PARENT folder." + Environment.NewLine;
+			instructions += "d) Register all Obs-ID's together by selecting the PARENT directory. Do not auto-run through." + Environment.NewLine;
 			instructions += Environment.NewLine;
-			instructions += "CCDLAB will now reorganize the files so that the user may proceed with orbit-wise registration across all L1 files. Do NOT auto-run through registration. After registration, proceed with the regular merging step and usual sequence." + Environment.NewLine;
+			instructions += "e)	Double-click \"Merge Multiple L1 Obs. IDs\" menu item. Select the PARENT directory." + Environment.NewLine;
+			instructions += Environment.NewLine;
+			instructions += "f) You will now have the master files from the merged set, and also from the individual Obs-ID's if you used the option to \"Keep Obs. ID's\". Proceed as you normally would with PSF optimization, WCS, derotation, finalize, etc." + Environment.NewLine;
 			instructions += Environment.NewLine;
 			instructions += Environment.NewLine;
 			instructions += "These instructions copied to the clipboard.";

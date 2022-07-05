@@ -7,6 +7,8 @@ using JPFITS;
 
 namespace CCDLAB
 {
+	//MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
+
 	public partial class Form1 : Form
 	{
 		#region PROGRAM VARIABLES

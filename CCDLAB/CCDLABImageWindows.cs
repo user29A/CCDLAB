@@ -2096,9 +2096,12 @@ namespace CCDLAB
 
 		private void MarkCoordClear_Click(object sender, System.EventArgs e)
 		{
+			PSESRECTS = null;
+			PSES = null;
 			MARKCOORDRECTS = null;
 			MARKCOORDS = null;
 			MARKCOORDRECTDPTS = null;
+
 			ImageWindow.Refresh();
 			SubImageWindow.Refresh();
 		}
