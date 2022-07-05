@@ -3158,9 +3158,10 @@ namespace CCDLAB
 					}
 					else
 						sourceID = L1SourceNameTxt.Text;
-					double date;
-					JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out date);
-					source.Header.SetKey("DATEDATE", date.ToString(), "year.year", true, source.Header.GetKeyIndex("DATE-OBS", false) + 1);
+					double yeardotyear;
+					double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
+					source.Header.SetKey("DATEDATE", yeardotyear.ToString(), "year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
+					source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of Start", true, source.Header.GetKeyIndex("DATE-OBS", false));
 
 					//try
 					{
