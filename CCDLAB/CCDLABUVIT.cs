@@ -3120,6 +3120,13 @@ namespace CCDLAB
 				if (!Directory.Exists(src.FilePath + "Digested L1\\"))
 					Directory.CreateDirectory(src.FilePath + "Digested L1\\");
 
+			if (L1SpecifySourceNameChck.Checked)
+				if (string.Join("_", L1SourceNameTxt.Text.Split(Path.GetInvalidFileNameChars())) == "")
+				{
+					MessageBox.Show("Invalid Source Name: '" + L1SourceNameTxt.Text + "'", "Try Again...");
+					return;
+				}
+
 			ParallelOptions opts = new ParallelOptions();
 			if (do_parallel_L1)
 				opts.MaxDegreeOfParallelism = (int)((double)Environment.ProcessorCount / Math.PI);
@@ -3151,17 +3158,17 @@ namespace CCDLAB
 					string sourceID;
 					if (!L1SpecifySourceNameChck.Checked)
 					{
-						//sourceID = (source.Header.GetKeyValue("SOURCEID").Replace(" ", "")).Replace("/", "");
 						sourceID = string.Join("_", source.Header.GetKeyValue("SOURCEID").Split(Path.GetInvalidFileNameChars()));
 						if (sourceID.Length > 17)
 							sourceID = sourceID.Substring(0, 17);
 					}
 					else
-						sourceID = L1SourceNameTxt.Text;
+						sourceID = string.Join("_", L1SourceNameTxt.Text.Split(Path.GetInvalidFileNameChars()));
+
 					double yeardotyear;
 					double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
-					source.Header.SetKey("DATEDATE", yeardotyear.ToString(), "year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
-					source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of Start", true, source.Header.GetKeyIndex("DATE-OBS", false));
+					source.Header.SetKey("DATEDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
+					source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
 
 					//try
 					{

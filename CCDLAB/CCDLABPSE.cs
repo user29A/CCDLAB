@@ -3007,9 +3007,7 @@ namespace CCDLAB
 
 			WCSMenu.HideDropDown();
 			AutoWCSMenuItem.HideDropDown();
-			WCSAutoQueryBtn.HideDropDown();			
-
-			string catalogue = (string)AstroQueryCatalogueNameDrop.SelectedItem;
+			WCSAutoQueryBtn.HideDropDown();
 
 			string cval1 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL1.Text);
 			string cval2 = IMAGESET[FILELISTINDEX].Header.GetKeyValue(WCSAutoQueryCVAL2.Text);
@@ -3093,6 +3091,10 @@ namespace CCDLAB
 			int nquery = Convert.ToInt32(WCSAstroQueryLimitLLengthDrop.SelectedItem.ToString());
 			keys.Add("-nquery");
 			values.Add(nquery.ToString());
+
+			string catalogue = AstroQueryCatalogueNameDrop.SelectedItem.ToString();
+			keys.Add("-catalogue");
+			values.Add(catalogue);
 
 			string filter = WCSAstroQueryFilterDrop.SelectedItem.ToString();
 			keys.Add("-filter");
