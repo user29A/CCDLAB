@@ -684,7 +684,13 @@ namespace CCDLAB
 								{
 									if (imageonly == false)
 									{
-										tbtc.Add((Dx)); tbtc.Add((Dy)); tbtc.Add(pixval - fcmin); tbtc.Add(shape); tbtc.Add(fcmin); tbtc.Add(fcmax - fcmin); tbtc.Add(n);
+										tbtc.Add((Dx));
+										tbtc.Add((Dy));
+										tbtc.Add(pixval - fcmin);
+										tbtc.Add(shape);
+										tbtc.Add(fcmin);
+										tbtc.Add(fcmax - fcmin);
+										tbtc.Add(n);
 									}
 									else
 									{
@@ -718,7 +724,13 @@ namespace CCDLAB
 								{
 									if (imageonly == false)
 									{
-										tbtq.Add((Dx)); tbtq.Add((Dy)); tbtq.Add(pixval - fcmin); tbtq.Add(shape); tbtq.Add(fcmin); tbtq.Add(fcmax - fcmin); tbtq.Add(n);
+										tbtq.Add((Dx));
+										tbtq.Add((Dy));
+										tbtq.Add(pixval - fcmin);
+										tbtq.Add(shape);
+										tbtq.Add(fcmin);
+										tbtq.Add(fcmax - fcmin);
+										tbtq.Add(n);
 									}
 									else
 									{
@@ -776,7 +788,13 @@ namespace CCDLAB
 							{
 								if (imageonly == false)
 								{
-									tbts.Add((Dx)); tbts.Add((Dy)); tbts.Add(pixval - fcmin); tbts.Add(shape); tbts.Add(fcmin); tbts.Add(fcmax - fcmin); tbts.Add(n);
+									tbts.Add((Dx));
+									tbts.Add((Dy));
+									tbts.Add(pixval - fcmin);
+									tbts.Add(shape);
+									tbts.Add(fcmin);
+									tbts.Add(fcmax - fcmin);
+									tbts.Add(n);
 								}
 								else
 								{
@@ -821,7 +839,13 @@ namespace CCDLAB
 							{
 								if (imageonly == false)
 								{
-									fbfc.Add((Dx)); fbfc.Add((Dy)); fbfc.Add(pixval - fcmin); fbfc.Add(shape); fbfc.Add(fcmin); fbfc.Add(fcmax - fcmin); fbfc.Add(n);
+									fbfc.Add((Dx));
+									fbfc.Add((Dy));
+									fbfc.Add(pixval - fcmin);
+									fbfc.Add(shape);
+									fbfc.Add(fcmin);
+									fbfc.Add(fcmax - fcmin);
+									fbfc.Add(n);
 								}
 								else
 								{
@@ -883,7 +907,12 @@ namespace CCDLAB
 							{
 								if (imageonly == false)
 								{
-									fbfs.Add((Dx)); fbfs.Add((Dy)); fbfs.Add(pixval - fcmin); fbfs.Add(shape); fbfs.Add(fcmin); fbfs.Add(fcmax - fcmin); fbfs.Add(n);
+									fbfs.Add((Dx));
+									fbfs.Add((Dy));
+									fbfs.Add(pixval - fcmin);
+									fbfs.Add(shape); fbfs.Add(fcmin);
+									fbfs.Add(fcmax - fcmin);
+									fbfs.Add(n);
 								}
 								else
 								{
