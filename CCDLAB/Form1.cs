@@ -168,6 +168,7 @@ namespace CCDLAB
 		bool FUVDIREXISTS = false;
 		bool NUVDIREXISTS = false;
 		bool DONUVDRIFTNOW = false;
+
 		bool UVITBATCHOP = false;
 		bool UVITBATCHOP_CANCELLED = false;
 		bool AUTOVISDRIFT = false;

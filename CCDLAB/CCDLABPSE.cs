@@ -2406,7 +2406,7 @@ namespace CCDLAB
 				TimeSpan ts = new TimeSpan();
 				bool solution = false;
 				int prog = 0, threadnum = 0;
-				ulong ncompares = 0, nfalse_sols = 0, nfalsefalses = 0;
+				ulong ncompares = 0, nfalsepositives = 0, nfalsenegatives = 0;
 				bool compare_fieldvectors = rotat_lb != -Math.PI && rotat_ub != Math.PI;
 
 				ParallelOptions opts = new ParallelOptions();
@@ -2425,8 +2425,8 @@ namespace CCDLAB
 					if (solution || WCSAUTOCANCEL)
 						loopState.Stop();
 
-					ulong ncompareslocal = 0, nfalse_solslocal = 0, nfalsefalses_local = 0;
-				//create these here so that each thread when parallel has own copy
+					ulong ncompareslocal = 0, nfalsepositiveslocal = 0, nfalsenegatives_local = 0;
+					//create these here so that each thread when parallel has own copy
 					double[] xpix_triplet = new double[3];
 					double[] ypix_triplet = new double[3];
 					double[] Xintrmdt_triplet = new double[3];
@@ -2444,8 +2444,8 @@ namespace CCDLAB
 							break;
 
 						if (i < thrgrpsz)
-							if ((double)i * mdpT100ovrlen > prog)
-								WCSAutoBGWrkr.ReportProgress(1);
+							if ((int)((double)i * mdpT100ovrlen) > prog)
+								WCSAutoBGWrkr.ReportProgress(++prog);
 
 						xpix_triplet[0] = PSEtriangles[i].GetVertex(0).X;
 						ypix_triplet[0] = PSEtriangles[i].GetVertex(0).Y;
@@ -2473,7 +2473,7 @@ namespace CCDLAB
 
 							ncompareslocal++;
 
-						//compare AAS (vertex0, vertex1, longest side)
+							//compare AAS (vertex0, vertex1, longest side)
 							if (Math.Abs(PSEtriangles[i].GetVertexAngle(0) - CATtriangles_intrmdt[j].GetVertexAngle(0)) > vertextol)
 								continue;
 							if (Math.Abs(PSEtriangles[i].GetVertexAngle(1) - CATtriangles_intrmdt[j].GetVertexAngle(1)) > vertextol)
@@ -2481,7 +2481,7 @@ namespace CCDLAB
 							if (CATtriangles_intrmdt[j].GetSideLength(2) < minlength2 || CATtriangles_intrmdt[j].GetSideLength(2) > maxlength2)
 								continue;
 
-						//this is the angle subtended between the two field vectors of the PSE and intermediate triangles...in the correct direction
+							//this is the angle subtended between the two field vectors of the PSE and intermediate triangles...in the correct direction
 							double theta = Math.Atan2(PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.Y - PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.X, PSEtriangles[i].FieldVector.X * CATtriangles_intrmdt[j].FieldVector.X + PSEtriangles[i].FieldVector.Y * CATtriangles_intrmdt[j].FieldVector.Y);
 
 							if (compare_fieldvectors)//if a rotation estimate has been provided
@@ -2506,13 +2506,13 @@ namespace CCDLAB
 							Xintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).X;
 							Yintrmdt_triplet[2] = CATtriangles_intrmdt[j].GetVertex(2).Y;
 
-						//reset P0 for j'th iteration
+							//reset P0 for j'th iteration
 							P0[0] = scale_init;
-						//P0[1] = rotat_init;//done above in if (compare_fieldvectors)
+							//P0[1] = rotat_init;//done above in if (compare_fieldvectors)
 							P0[2] = crpix1_init;
 							P0[3] = crpix2_init;
 
-						//try a fit
+							//try a fit
 							JPMath.Fit_WCSTransform2d(Xintrmdt_triplet, Yintrmdt_triplet, xpix_triplet, ypix_triplet, ref P0, PLB, PUB, psc);
 
 							int N_pt_matches = 0;
@@ -2531,7 +2531,7 @@ namespace CCDLAB
 
 							if (N_pt_matches != 3)//not a possible solution
 							{
-								nfalsefalses_local++;
+								nfalsenegatives_local++;
 								continue;
 							}
 
@@ -2554,7 +2554,7 @@ namespace CCDLAB
 								Array.Copy(POLYPOINTS2, POLYPOINTS2b, POLYPOINTS2.Length);
 							}
 
-						//need to check if the other CAT points match the PSE pts
+							//need to check if the other CAT points match the PSE pts
 							N_pt_matches = 0;
 							for (int k = 0; k < CATpts_intrmdt.Length; k++)
 							{
@@ -2580,14 +2580,14 @@ namespace CCDLAB
 								threadnum = Thread.CurrentThread.ManagedThreadId;
 							}
 							else
-								nfalse_solslocal++;
+								nfalsepositiveslocal++;
 						}
 					}
 					lock (locker)
 					{
 						ncompares += ncompareslocal;
-						nfalse_sols += nfalse_solslocal;
-						nfalsefalses += nfalsefalses_local;
+						nfalsepositives += nfalsepositiveslocal;
+						nfalsenegatives += nfalsenegatives_local;
 					}
 				});
 
@@ -2644,7 +2644,18 @@ namespace CCDLAB
 				MAKEPSERECTS();
 				WCSSolveList.PerformClick();
 
-				DialogResult res = MessageBox.Show("Scale: " + Math.Round(p00 * 180 / Math.PI * 3600, 4) + ";\rRotation: " + Math.Round(p01 * 180 / Math.PI, 3) + ";\rN Pt. Matches: " + total_pt_matches + " (" + (total_pt_matches * 100 / CATpts_intrmdt.Length).ToString("00.0") + "%)" + ";\rN_Comparisons: " + ncompares.ToString("0.00e00") + " (" + Math.Round((double)(ncompares * 100) / (double)(PSEtriangles.Length) / (double)(CATtriangles_intrmdt.Length), 1) + "%)" + ";\rN_False Positives: " + nfalse_sols + ";\rN_False Falses: " + nfalsefalses + ";\rThread: " + threadnum + ";\rCompleted in: " + ts.Minutes.ToString() + "m" + ((double)(ts.Seconds) + (double)ts.Milliseconds / 1000).ToString() + "s" + ";\rComparison per Second: " + (ncompares / ts.TotalSeconds).ToString("0.00e00") + ";\r\rClear Solution Points?", "Finished...", MessageBoxButtons.YesNo);
+				string initsolmess = "Scale: " + Math.Round(p00 * 180 / Math.PI * 3600, 4) + ";\r";
+				initsolmess += "Rotation: " + Math.Round(p01 * 180 / Math.PI, 3) + ";\r";
+				initsolmess += "N Pt. Matches: " + total_pt_matches + " (" + (total_pt_matches * 100 / CATpts_intrmdt.Length).ToString("00.0") + "%)" + ";\r";
+				initsolmess += "N_Comparisons: " + ncompares.ToString("0.00e00") + " (" + Math.Round((double)(ncompares * 100) / (double)(PSEtriangles.Length) / (double)(CATtriangles_intrmdt.Length), 1) + "%)" + ";\r";
+				initsolmess += "N_False Negatives: " + nfalsenegatives + ";\r";
+				initsolmess += "N_False Positives: " + nfalsepositives + ";\r";
+				initsolmess += "Thread: " + threadnum + ";\r";
+				initsolmess += "Completed in: " + ts.Minutes.ToString() + "m" + ((double)(ts.Seconds) + (double)ts.Milliseconds / 1000).ToString() + "s" + ";\r";
+				initsolmess += "Comparison per Second: " + (ncompares / ts.TotalSeconds).ToString("0.00e00") + ";\r\r";
+				initsolmess += "Clear Solution Points?";
+
+				DialogResult res = MessageBox.Show(initsolmess, "Finished...", MessageBoxButtons.YesNo);
 				if (res == DialogResult.Yes)
 				{
 					POLYPOINTS = null;
@@ -2711,7 +2722,8 @@ namespace CCDLAB
 
 		private void WCSAutoBGWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
-			ProgressBar.PerformStep();
+			//ProgressBar.PerformStep();
+			ProgressBar.Value = e.ProgressPercentage;
 		}
 
 		private void WCSAutoBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
@@ -3027,6 +3039,7 @@ namespace CCDLAB
 
 			keys.Add("-ra");
 			values.Add(ra.ToString());
+
 			keys.Add("-dec");
 			values.Add(dec.ToString());
 
@@ -3058,8 +3071,8 @@ namespace CCDLAB
 					pmepoch = Convert.ToDouble(AstraCartaPMEpoch.Text);
 					REG.SetReg("CCDLAB", "AstraCartaPMEpoch", "");
 				}
-				else if (JPMath.IsNumeric(IMAGESET[FILELISTINDEX].Header.GetKeyValue("DATEDATE")))
-					pmepoch = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("DATEDATE"));
+				else if (JPMath.IsNumeric(IMAGESET[FILELISTINDEX].Header.GetKeyValue("YEARDATE")))
+					pmepoch = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("YEARDATE"));
 			}
 			if (pmepoch != 0)
 			{
@@ -3068,6 +3081,8 @@ namespace CCDLAB
 
 				if (!JPMath.IsNumeric(AstraCartaPMEpoch.Text))
 					REG.SetReg("CCDLAB", "AstraCartaPMEpoch", AstraCartaPMEpoch.Text);
+				else
+					REG.SetReg("CCDLAB", "AstraCartaPMEpoch", "");
 			}
 			else
 				REG.SetReg("CCDLAB", "AstraCartaPMEpoch", "");
@@ -3094,7 +3109,7 @@ namespace CCDLAB
 
 			string catalogue = AstroQueryCatalogueNameDrop.SelectedItem.ToString();
 			keys.Add("-catalogue");
-			values.Add(catalogue);
+			values.Add(catalogue.Trim());
 
 			string filter = WCSAstroQueryFilterDrop.SelectedItem.ToString();
 			keys.Add("-filter");
@@ -3114,10 +3129,10 @@ namespace CCDLAB
 				values.Add("");
 			}
 
-			if (IMAGESET[FILELISTINDEX].Header.GetKeyValue("SOURCEID") != "")
+			if (IMAGESET[FILELISTINDEX].Header.GetKeyValue("OBJECT") != "")
 			{
 				keys.Add("-outname");
-				values.Add(IMAGESET[FILELISTINDEX].Header.GetKeyValue("SOURCEID"));
+				values.Add(IMAGESET[FILELISTINDEX].Header.GetKeyValue("OBJECT"));
 			}
 
 			keys.Add("-fitsout");
@@ -3132,12 +3147,14 @@ namespace CCDLAB
 			keys.Add("-overwrite");
 			values.Add("");
 
-			JPFITS.AstraCarta ac = new AstraCarta(keys, values);
+			//string queryfilename = AstraCarta.Query(keys, values);
+			JPFITS.AstraCarta ac = new AstraCarta(keys, values, true);
 			ac.CloseOnCompleteChck.Checked = true;
 			ac.ShowDialog();
 			string queryfilename = ac.Result_Filename;
+
 			if (queryfilename == "")
-				return;
+				throw new Exception("AstraCarta query returned with no data.");
 
 			WCSMenu.ShowDropDown();
 			AutoWCSMenuItem.ShowDropDown();
@@ -3435,7 +3452,6 @@ namespace CCDLAB
 			objarray[3] = new double[1] { Convert.ToDouble(WCSRotationInit.Text) };
 			objarray[4] = new double[1] { Convert.ToDouble(WCSRotationInitLB.Text) };
 			objarray[5] = new double[1] { Convert.ToDouble(WCSRotationInitUB.Text) };
-			//FITSBinTable.WriteExtension(wcsparamsfile, extname, true, entrylabels, units, null, null, null, objarray);
 			FITSBinTable bt = new FITSBinTable();
 			bt.SetTTYPEEntries(entrylabels, units, objarray);
 			bt.Write(wcsparamsfile, extname, true);
@@ -3863,6 +3879,7 @@ namespace CCDLAB
 		private void WCSToolsAstraCartaBtn_Click(object sender, EventArgs e)
 		{
 			JPFITS.AstraCarta ac = new AstraCarta();
+			ac.CloseOnCompleteChck.Checked = false;
 			ac.Show();
 		}
 

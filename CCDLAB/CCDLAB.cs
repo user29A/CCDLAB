@@ -4941,7 +4941,7 @@ namespace CCDLAB
 
 						string filename = IMAGESET[inds[i]].FullFileName;
 						filename = filename.Substring(0, filename.LastIndexOf(".")) + "_deHotPixel_" + ImageOpFilterWidthUpD.Value.ToString() + filename.Substring(filename.LastIndexOf("."));
-						FITSImage f = new FITSImage(filename, FITSImage.DeHotPixel(IMAGESET[inds[i]], sigma), true, true);
+						FITSImage f = new FITSImage(filename, FITSImage.DeHotPixel(IMAGESET[inds[i]], sigma, 3, true), true, true);
 						f.Header.CopyHeaderFrom(IMAGESET[inds[i]].Header);
 						IMAGESET.Add(f);
 						FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);

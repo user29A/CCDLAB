@@ -3167,7 +3167,7 @@ namespace CCDLAB
 
 					double yeardotyear;
 					double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
-					source.Header.SetKey("DATEDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
+					source.Header.SetKey("YEARDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
 					source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
 
 					//try
@@ -3535,7 +3535,7 @@ namespace CCDLAB
 
 												string BJDfile = obj_orb_chan + "_BJDList.fits";
 												if (tctfileexists)//else all 0's
-													BJDS = JPMath.BJDC(BJDS, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
+													BJDS = JPMath.BarycentricJuliianDayCorrection(BJDS, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
 
 												if (detector == "NUV" && L1TransformNUVtoFUVChck.Checked)
 													source.Header.SetKey("NUVTOFUV", "true", true, -1);
@@ -4126,7 +4126,7 @@ namespace CCDLAB
 										fits.Header.AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
 										//fits.Header.AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
 										double[] JD = new double[1] { ((double)(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
-										JD = JPMath.BJDC(JD, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
+										JD = JPMath.BarycentricJuliianDayCorrection(JD, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
 										fits.Header.AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
 										if (frame > 16)//skip writing first image so that noise images don't come in
 										{

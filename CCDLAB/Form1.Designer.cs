@@ -31,8 +31,8 @@ namespace CCDLAB
         {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-			System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			this.ImageWindowCntxt = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.ImageWndwShowCoordTooltipChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.ImageWndwCntxtView = new System.Windows.Forms.ToolStripMenuItem();
@@ -644,6 +644,8 @@ namespace CCDLAB
 			this.WCSAstroQueryLimitLLengthDrop = new System.Windows.Forms.ToolStripComboBox();
 			this.AstraCartaImageShowChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.AstraCartaForceNew = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem27 = new System.Windows.Forms.ToolStripMenuItem();
+			this.AstraCartaPMEpoch = new System.Windows.Forms.ToolStripTextBox();
 			this.toolStripSeparator45 = new System.Windows.Forms.ToolStripSeparator();
 			this.WCSQuerySaveFileChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.WCSQuerySaveFileChooseDirBtn = new System.Windows.Forms.ToolStripMenuItem();
@@ -900,8 +902,6 @@ namespace CCDLAB
 			this.UVFinalizeBGWrkr = new System.ComponentModel.BackgroundWorker();
 			this.HeaderTxt = new System.Windows.Forms.ListBox();
 			this.ExtractROICentroidsWrkr = new System.ComponentModel.BackgroundWorker();
-			this.toolStripMenuItem27 = new System.Windows.Forms.ToolStripMenuItem();
-			this.AstraCartaPMEpoch = new System.Windows.Forms.ToolStripTextBox();
 			this.ImageWindowCntxt.SuspendLayout();
 			this.ImageFingerPointContext.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.HalfWidthXUpD)).BeginInit();
@@ -7894,6 +7894,22 @@ namespace CCDLAB
 			this.AstraCartaForceNew.Text = "Force New Raw Query";
 			this.AstraCartaForceNew.Click += new System.EventHandler(this.AstraCartaForceNew_Click);
 			// 
+			// toolStripMenuItem27
+			// 
+			this.toolStripMenuItem27.Enabled = false;
+			this.toolStripMenuItem27.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this.toolStripMenuItem27.Name = "toolStripMenuItem27";
+			this.toolStripMenuItem27.Size = new System.Drawing.Size(194, 22);
+			this.toolStripMenuItem27.Text = "Epoch";
+			// 
+			// AstraCartaPMEpoch
+			// 
+			this.AstraCartaPMEpoch.BackColor = System.Drawing.Color.Gainsboro;
+			this.AstraCartaPMEpoch.Name = "AstraCartaPMEpoch";
+			this.AstraCartaPMEpoch.Size = new System.Drawing.Size(100, 23);
+			this.AstraCartaPMEpoch.ToolTipText = "Enter either a float value or header keyword providing the float value of the obs" +
+    "ervation epoch year.year to adjust catalogue positions for proper motion.";
+			// 
 			// toolStripSeparator45
 			// 
 			this.toolStripSeparator45.Name = "toolStripSeparator45";
@@ -7970,7 +7986,7 @@ namespace CCDLAB
 			this.AutoWCSScaleSaveBtn.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.WSCSaveScaleTxtBox});
 			this.AutoWCSScaleSaveBtn.Name = "AutoWCSScaleSaveBtn";
-			this.AutoWCSScaleSaveBtn.Size = new System.Drawing.Size(98, 22);
+			this.AutoWCSScaleSaveBtn.Size = new System.Drawing.Size(180, 22);
 			this.AutoWCSScaleSaveBtn.Text = "Save";
 			this.AutoWCSScaleSaveBtn.Click += new System.EventHandler(this.AutoWCSScaleSaveBtn_Click);
 			// 
@@ -10134,17 +10150,17 @@ namespace CCDLAB
 			this.Chart1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			chartArea4.AxisX.MajorGrid.Enabled = false;
-			chartArea4.AxisY.MajorGrid.Enabled = false;
-			chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
-			chartArea4.Name = "ChartArea1";
-			this.Chart1.ChartAreas.Add(chartArea4);
+			chartArea2.AxisX.MajorGrid.Enabled = false;
+			chartArea2.AxisY.MajorGrid.Enabled = false;
+			chartArea2.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
+			chartArea2.Name = "ChartArea1";
+			this.Chart1.ChartAreas.Add(chartArea2);
 			this.Chart1.Location = new System.Drawing.Point(35, 41);
 			this.Chart1.Name = "Chart1";
-			series4.ChartArea = "ChartArea1";
-			series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-			series4.Name = "Series1";
-			this.Chart1.Series.Add(series4);
+			series2.ChartArea = "ChartArea1";
+			series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+			series2.Name = "Series1";
+			this.Chart1.Series.Add(series2);
 			this.Chart1.Size = new System.Drawing.Size(800, 800);
 			this.Chart1.TabIndex = 56;
 			this.Chart1.Text = "chart1";
@@ -10314,22 +10330,6 @@ namespace CCDLAB
 			this.ExtractROICentroidsWrkr.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ExtractROICentroidsWrkr_DoWork);
 			this.ExtractROICentroidsWrkr.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ExtractROICentroidsWrkr_ProgressChanged);
 			this.ExtractROICentroidsWrkr.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ExtractROICentroidsWrkr_RunWorkerCompleted);
-			// 
-			// toolStripMenuItem27
-			// 
-			this.toolStripMenuItem27.Enabled = false;
-			this.toolStripMenuItem27.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this.toolStripMenuItem27.Name = "toolStripMenuItem27";
-			this.toolStripMenuItem27.Size = new System.Drawing.Size(194, 22);
-			this.toolStripMenuItem27.Text = "Epoch";
-			// 
-			// AstraCartaPMEpoch
-			// 
-			this.AstraCartaPMEpoch.BackColor = System.Drawing.Color.Gainsboro;
-			this.AstraCartaPMEpoch.Name = "AstraCartaPMEpoch";
-			this.AstraCartaPMEpoch.Size = new System.Drawing.Size(100, 23);
-			this.AstraCartaPMEpoch.ToolTipText = "Enter either a float value or header keyword providing the float value of the obs" +
-    "ervation epoch year.year to adjust catalogue positions for proper motion.";
 			// 
 			// Form1
 			// 
