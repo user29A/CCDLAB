@@ -2,21 +2,22 @@
 using System.Collections;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using JPFITS;
 
 namespace CCDLAB
 {
-	//MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
+	//MessageBox.Show(ex.Data + "	" + ex.InnerException + "	" + ex.Message + "	" + ex.Source + "	" + ex.StackTrace + "	" + ex.TargetSite);
+
+	//[DesignerCategory("Code")]
 
 	public partial class Form1 : Form
 	{
 		#region PROGRAM VARIABLES
 
-		static public string CCDLABPATH;// = "C:\\ProgramData\\Astrowerks\\CCDLAB\\";
+		static public string CCDLABPATH_USERAPPDATAROAMING;
 		public FITSImageSet IMAGESET;// = new FITSImageSet();
-		int FILELISTINDEX, OLD_INDEX;//image index for the FileListDrop
-		bool IWLCK;     //Image Window Left (mouse) Clicks
+		int IMAGESETINDEX, OLD_INDEX, OLD_WIDTH, OLD_HEIGHT;//image index for the FileListDrop
+		bool ROIFIXEDCURSOR;     //Image Window Left (mouse) Clicks
 		bool SHOWIMGTOOLTIP = false;
 		int[] SUBRANGE;
 		int[] PADDING;
@@ -30,7 +31,7 @@ namespace CCDLAB
 		double XPOS_CURSOR_RADEG, YPOS_CURSOR_DECDEG;//WCS position in image window(s)
 		string XPOS_CURSOR_RAHMS;
 		string YPOS_CURSOR_DECDMS;//WCS position in image window(s)
-		int SUBIMAGE_HWX, SUBIMAGE_HWY, SUBIMAGE_HWX_OLD, SUBIMAGE_HWY_OLD, ROIX0, ROIY0, ROIXRad, ROIYRad, SUBIMAGEX0OLD, SUBIMAGEY0OLD;
+		int SUBIMAGE_HWX, SUBIMAGE_HWY, ROIX0, ROIY0, ROIXRad, ROIYRad/*, SUBIMAGEX0OLD, SUBIMAGEY0OLD, SUBIMAGE_HWX_OLD, SUBIMAGE_HWY_OLD*/;
 		double[] DIMCLIM;// min/max contrast limits
 		double[] IMSTDLIM;
 		double CTSperPERCENT;
@@ -51,17 +52,16 @@ namespace CCDLAB
 		UVIT UVIT_Data;
 		ushort[,] UVBGArray;
 		string NORMKEY;
+		bool CLEAREDRECENT = false;
 
-		PointSourceExtractor[] PSES;
-		int PSESINDEX = -1;
-		Rectangle[][] PSESRECTS;
+		PointSourceExtractor.PSESet PSESET = new PointSourceExtractor.PSESet();
+		int PSESETINDEX = 0;
 		Color[] PSERECTCOLOURS;
 		bool PSESPLOTALL = false;
-		int PSECOUNT = 0;
+		bool PSESPLOTNONE = false;
 		bool PSEDRAWGROUPREGIONS = false;
 
-		TypeCode FILESAVEPREC;
-		Graphics IMAGEWINDOWGRFX;
+		DiskPrecision FILESAVEPREC;
 		Pen IMAGEWINDOWPEN;
 		SolidBrush IMAGEWINDOWBRUSH = new SolidBrush(Color.Red);
 		string[] BATCHLIST;
@@ -90,7 +90,7 @@ namespace CCDLAB
 
 		int RADIALPTX1, RADIALPTY1, RADIALPTX2, RADIALPTY2;
 		double RADIALPTX1_CENT, RADIALPTY1_CENT, RADIALPTX2_CENT, RADIALPTY2_CENT;
-		JPPlot RADIALLINE_PLOT;
+		Plotter RADIALLINE_PLOT;
 		bool PLOTRADIALLINE;
 		Point[] RADIALLINEBOXPOINTS;
 
@@ -161,24 +161,26 @@ namespace CCDLAB
 		int UVDRIFTBATCHFILESINDEX;
 		bool UVCONVERTLISTTOIMAGEBATCH;
 		string[] UVCONVERTLISTTOIMAGEBATCHFILES;
-		JPPlot XDRIFT_PLOT;
-		JPPlot YDRIFT_PLOT;
+		Plotter XDRIFT_PLOT;
+		Plotter YDRIFT_PLOT;
+		//JPPlot XDRIFT_PLOT;
+		//JPPlot YDRIFT_PLOT;
 		FITSImageSet SPAREFITSImageSet;
 		bool AUTOVISDRIFTAPPLY = false;
 		bool FUVDIREXISTS = false;
 		bool NUVDIREXISTS = false;
 		bool DONUVDRIFTNOW = false;
-
 		bool UVITBATCHOP = false;
-		bool UVITBATCHOP_CANCELLED = false;
+		//bool UVITBATCHOP_CANCELLED = false;
 		bool AUTOVISDRIFT = false;
 		bool UVITAUTOREGISTER = false;
-		string UVITBATCHMESG = "";
+		//string UVITBATCHMESG = "";
+
 		bool UVITPOSTMERGE = false;
 
 		bool COG_CURSOR;
-		JPPlot COG_PLOT;
-		JPPlot RAD_PLOT;
+		Plotter COG_PLOT;
+		Plotter RAD_PLOT;
 
 		bool AUTOLOADIMAGES;
 		string[] AUTOLOADIMAGESFILES;
@@ -190,6 +192,7 @@ namespace CCDLAB
 		//double[,] WCS_CENTROIDS;
 		bool WCSNEWPOINT;
 		bool SHOW_WCSCOORDS;
+		bool SHOW_WCSSOLUTIONPOINTS;
 		bool UVIT_DEROTATE_WCS;
 		string[] UVIT_DEROTATE_FILES;
 		WorldCoordinateSolution WCS_DEROT;
@@ -211,8 +214,17 @@ namespace CCDLAB
 		bool DO_TBC = false;
 		ArrayList TCTFILELIST = new ArrayList();
 		ArrayList LBTFILELIST = new ArrayList();
-		JPPlot ROWplot;
-		JPPlot COLplot;
+		Plotter ROWPLOT;
+		Plotter COLPLOT;
+
+		GifWriter GIFWRITER;
+		string GIFFILE = "";
+
+		//WorldCoordinateSolution WCS_INIT;
+
+		PointSourceModel ROIFITMODELNAME = PointSourceModel.CircularGaussian;//default;
+		PointSourceCompoundModel ROIFITCOMPOUNDMODELNAME = PointSourceCompoundModel.CircularGaussian;//default
+		FitMinimizationType ROIFITMINIMIZATIONTYPE = FitMinimizationType.LeastSquares;
 
 		#endregion
 
@@ -236,8 +248,8 @@ namespace CCDLAB
 		private void InitializeVars(string[] startargs)
 		{
 			AUTOLOADIMAGESFILES = startargs;
-			IWLCK = true;//fix cursor box
-			FILELISTINDEX = 0;
+			ROIFIXEDCURSOR = true;//fix cursor box
+			IMAGESETINDEX = 0;
 			OLD_INDEX = 0;
 			SUBRANGE = new int[] { -1, 0, 0, 0 };
 			LOADSUBRANGE = false;
@@ -251,12 +263,12 @@ namespace CCDLAB
 			SUBIMAGE_HWX = 10;
 			SUBIMAGE_HWY = 10;
 			DIMCLIM = new double[2];// min/max contrast limits
-			IMSTDLIM = new double[2];
+			IMSTDLIM = new double[2] { -0.5, 5 };
 			CTSperPERCENT = 100;
 			PREVMINCONTRASTVALUE = 0;
 			PREVMAXCONTRASTVALUE = 100;
 			FIRSTLOAD = true;
-			FILESAVEPREC = TypeCode.Double;
+			FILESAVEPREC = DiskPrecision.Double;
 			IMAGEWINDOWPEN = new Pen(Color.Yellow);
 			BATCHVIEWINDEX = -1;
 			UVPCMODEPADOFFSET = 0;
@@ -283,14 +295,11 @@ namespace CCDLAB
 			DOUVITMANREG = false;
 			DO_UVITDRIFTFILES = false;
 			COG_CURSOR = false;
-			COG_PLOT = new JPPlot();
-			RAD_PLOT = new JPPlot();
-			XDRIFT_PLOT = new JPPlot();
-			YDRIFT_PLOT = new JPPlot();
 			AUTOLOADIMAGES = false;
 			WCSMANUALRAD = false;
 			WCSMANUALRAD_CONTINUE = false;
 			SHOW_WCSCOORDS = false;
+			SHOW_WCSSOLUTIONPOINTS = false;
 			OPTIMGVIEWINVERTY = false;
 
 			FNDCOORDS_X = new int[1];
@@ -301,13 +310,6 @@ namespace CCDLAB
 
 			RADIALLINEBOXPOINTS = new Point[4];
 			RADIALPLOT_SETPHI = false;
-
-			ROWplot = new JPPlot();
-			ROWplot.Text = "Row Plot";
-			ROWplot.JPPlotMainMenu.Visible = true;
-			COLplot = new JPPlot();
-			COLplot.Text = "Column Plot";
-			COLplot.JPPlotMainMenu.Visible = true;
 		}
 		
 	}

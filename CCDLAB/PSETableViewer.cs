@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPFITS;
+using System;
 using System.IO;
 using System.Windows.Forms;
 
@@ -9,6 +10,34 @@ namespace CCDLAB
 		public PSETableViewer()
 		{
 			InitializeComponent();
+		}
+
+		public PSETableViewer(string[,] table)
+		{
+			InitializeComponent();
+
+			PSETable.ColumnCount = table.GetLength(0);
+			PSETable.RowCount = table.GetLength(1) - 1;
+
+			for (int i = 0; i < PSETable.ColumnCount; i++)
+				PSETable.Columns[i].HeaderText = table[i, 0];
+
+			string strvalue = "";
+			for (int i = 0; i < PSETable.ColumnCount; i++)
+				for (int j = 0; j < PSETable.RowCount; j++)
+				{
+					strvalue = table[i, j + 1];
+					if (JPMath.IsNumeric(strvalue))
+						if (strvalue == "0")
+							PSETable[i, j].Value = 0.0;
+						else
+							PSETable[i, j].Value = Convert.ToDouble(strvalue);
+					else
+						PSETable[i, j].Value = strvalue;
+				}
+
+			for (int j = 0; j < PSETable.RowCount; j++)
+				PSETable.Rows[j].HeaderCell.Value = (j + 1).ToString();
 		}
 
 		private void PSETableViewerSaveBtn_Click(object sender, EventArgs e)
@@ -88,18 +117,18 @@ namespace CCDLAB
 				{
 					x = Convert.ToDouble(PSETable[0, e.RowIndex].Value.ToString());
 					y = Convert.ToDouble(PSETable[1, e.RowIndex].Value.ToString());
-				}
+				}				
 
-				/*((CCDLAB.Form1 ^)(this.Owner)).PSESeachROIOnlyChck.SuspendLayout();
-				((CCDLAB.Form1 ^)(this.Owner)).PSESeachROIOnlyChck.Checked = false;
-				((CCDLAB.Form1 ^)(this.Owner)).PSESeachROIOnlyChck.ResumeLayout();
+				((CCDLAB.Form1)(this.Owner)).PSESeachROIOnlyChck.SuspendLayout();
+				((CCDLAB.Form1)(this.Owner)).PSESeachROIOnlyChck.Checked = false;
+				((CCDLAB.Form1)(this.Owner)).PSESeachROIOnlyChck.ResumeLayout();
 
-				((CCDLAB.Form1 ^)(this.Owner)).SubImageSlideX.Value = (int)x + 1;
-				((CCDLAB.Form1 ^)(this.Owner)).SubImageSlideY.Value = (int)y + 1;
-				((CCDLAB.Form1 ^)(this.Owner)).SubImageStatsUpD();
-				((CCDLAB.Form1 ^)(this.Owner)).SubImageUpD();
-				((CCDLAB.Form1 ^)(this.Owner)).ShowCrosshair.Checked = true;
-				((CCDLAB.Form1 ^)(this.Owner)).ImageWindow.Refresh();*/
+				((CCDLAB.Form1)(this.Owner)).SubImageSlideX.Value = (int)x + 1;
+				((CCDLAB.Form1)(this.Owner)).SubImageSlideY.Value = (int)y + 1;
+				((CCDLAB.Form1)(this.Owner)).SubImageStatsUpD();
+				((CCDLAB.Form1)(this.Owner)).SubImageUpD();
+				((CCDLAB.Form1)(this.Owner)).ShowCrosshair.Checked = true;
+				((CCDLAB.Form1)(this.Owner)).ImageWindow.Refresh();
 			}
 			catch { }
 		}

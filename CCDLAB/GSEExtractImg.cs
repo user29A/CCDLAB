@@ -1,15 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Collections;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using JPFITS;
 
 namespace CCDLAB
 {
@@ -235,7 +230,6 @@ namespace CCDLAB
 
 		private void ViewWordsBtn_Click(object sender, EventArgs e)
 		{
-
 			int Nwords = (int)NWordsUpD.Value;
 			int Nstartword = (int)StartWordUpD.Value;//1-based
 			int Nfile = FileListDrop.SelectedIndex;
@@ -267,7 +261,7 @@ namespace CCDLAB
 			}
 
 			fs.Position = (long)((Nstartword - 1) * 2);/*to zero based, and found in bytes not words*/
-			//bs.Read(arr,0,NWords*2);
+
 			for (int i = 0; i < Nwords; i++)
 			{
 				word = (ushort)(ReadWord(br));//little endian word
@@ -289,8 +283,6 @@ namespace CCDLAB
 			int Nfile = FileListDrop.SelectedIndex;
 			ushort word = 0;
 			ushort test = 0;
-			//string bits = "";
-			//string hex = "";
 			FileStream fs = new FileStream(FULLFILELIST[Nfile], FileMode.Open);
 			BinaryReader br = new BinaryReader(fs);
 			int Nsegment = (int)StartSegmentUpD.Value;//1-based
@@ -315,19 +307,16 @@ namespace CCDLAB
 			{
 				CHANNEL = "FUV";
 				EXTRCN_CHANNEL = 14;
-				//ChannelDrop.SelectedIndex = 0;
 			}
 			else if (test == 0x0F)
 			{
 				CHANNEL = "NUV";
 				EXTRCN_CHANNEL = 15;
-				//ChannelDrop.SelectedIndex = 1;
 			}
 			else if (test == 0x10)
 			{
 				CHANNEL = "VIS";
 				EXTRCN_CHANNEL = 16;
-				//ChannelDrop.SelectedIndex = 2;
 			}
 			else
 			{
@@ -815,9 +804,6 @@ namespace CCDLAB
 			SegmentInfoGrid[0, n].Value = "MCP V (TEL)";
 			SegmentInfoGrid[1, n].Value = MCPVOLTS_TEL;
 
-			//ANDVOLTS_TEL += MCPVOLTS_TEL;//anode is wrt to MCP
-			//SegmentInfoGrid[1,n-1].Value = ANDVOLTS_TEL;
-
 			//Photocathode Volts, Current Value
 			CATVOLTS_TEL = (int)(ReadWord(br) & 0xFFF);
 			n++;
@@ -915,7 +901,6 @@ namespace CCDLAB
 
 		private void SyncToDecBtn_Click(object sender, EventArgs e)
 		{
-
 			int Nfile = FileListDrop.SelectedIndex;
 			long Nstartword = (long)StartWordUpD.Value;
 			int word = -2;
@@ -980,14 +965,14 @@ namespace CCDLAB
 			long Nstartword = (long)StartWordUpD.Value;
 			FileStream fs = new FileStream(FULLFILELIST[Nfile], FileMode.Open);
 			BinaryReader br = new BinaryReader(fs);
-			//BufferedStream^ bs = new BufferedStream(fs,StartSegmentUpD.Increment*2048);
 
 			br.BaseStream.Position = (long)((Nstartword - 1) * 2);//go to selected word position
-																  //set the channel drop to the channel displayed
+
+			//set the channel drop to the channel displayed
 			ChannelDrop.SelectedIndex = EXTRCN_CHANNEL - 14;
 
 			//write the image
-			string fullfile = string.Concat(Form1.CCDLABPATH, IMFRCNT.ToString("0000000"), ".raw");
+			string fullfile = string.Concat(Form1.CCDLABPATH_USERAPPDATAROAMING, IMFRCNT.ToString("0000000"), ".raw");
 			bool success = WriteImage(fullfile, br);
 			br.Close();
 			fs.Close();
@@ -1084,7 +1069,7 @@ namespace CCDLAB
 						d2im[i, j] = image[(j + SUBRANGE[2]) * (XSIZE + 1) + i + SUBRANGE[0]];
 				JPFITS.FITSImage fit = new JPFITS.FITSImage(fullfilename, d2im, false, true);
 				AddImageInfoKeys(fit);
-				fit.WriteImage(TypeCode.UInt16, true);
+				fit.WriteImage(DiskPrecision.UInt16, true);
 			}
 
 			else if (MODE.Equals("Centroiding"))
@@ -1168,7 +1153,7 @@ namespace CCDLAB
 				}
 				JPFITS.FITSImage fit = new JPFITS.FITSImage(fullfilename, img, false, true);
 				AddImageInfoKeys(fit);
-				fit.WriteImage(TypeCode.UInt16, true);
+				fit.WriteImage(DiskPrecision.UInt16, true);
 			}
 
 			return true;//succeeded
@@ -1200,7 +1185,6 @@ namespace CCDLAB
 
 		private void ExtractImgWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-
 			long StartWord = (long)StartWordUpD.Value;
 			int Seg_Num = 0;//this param will control everything
 			int Seg_Type = 0;
@@ -1223,7 +1207,7 @@ namespace CCDLAB
 				xsize = SUBRANGE[1] - SUBRANGE[0];//zero-based
 				ysize = SUBRANGE[3] - SUBRANGE[2];//zero-based
 			}
-			//byte[] arr = new byte[524288000);
+			
 			int arr_length = 0;
 			ushort[] image = new ushort[IMSIZE];//just 1-D is fine cause we're just gonna write it
 			double[,] d2im = new double[xsize + 1, ysize + 1];
@@ -1282,8 +1266,6 @@ namespace CCDLAB
 								}
 								CurTime = (uint)((ARR[Seg_Num * 2048 + 14] << 24) | (ARR[Seg_Num * 2048 + 15] << 16) | (ARR[Seg_Num * 2048 + 16] << 8) | ARR[Seg_Num * 2048 + 17]);
 							}
-							//MessageBox.Show(Seg_Num.ToString(),"Ramp Finsihed at Segment Number (+5 seconds)");
-							//MessageBox.Show((CurTime - StartTime - 5000).ToString(),"Computed Ramp Time");
 						}
 						if (SkipToChck.Checked)//skip to image next
 						{
@@ -1373,11 +1355,8 @@ namespace CCDLAB
 								channn = "NUV";
 							if (EXTRCN_CHANNEL == 16)
 								channn = "VIS";
-							//write image with segment number as file name
-							//fullfile = filepath + channn + "_" + imgsess + "_" + (Seg_Num + k*256000).ToString("0000000000000") + ".fits";
-							fullfile = filepath + channn + "_" + imgsess + "_" + IMTIME.ToString("0000000000000") + ".fits";
-							//write image with frame number as file name
-							//fullfile = string.Concat(filepath,IMFRCNT.ToString("0000000"),"_",channn,".fits");
+							
+							fullfile = filepath + channn + "_" + imgsess + "_" + IMTIME.ToString("0000000000000") + ".fits";							
 							fits.FullFileName = fullfile;
 							fits.SetImage(fitsdum, false, true);
 							fits.Header.RemoveAllKeys(fitsdum);
@@ -1417,14 +1396,13 @@ namespace CCDLAB
 								fits.Header.AddKey("MAX", fits.Max.ToString(), "For Quick Extraction Only", -1);
 								fits.Header.AddKey("MEAN", fits.Mean.ToString(), "For Quick Extraction Only", -1);
 								fits.Header.AddKey("MEDIAN", fits.Median.ToString(), "For Quick Extraction Only", -1);
-								fits.Header.AddKey("STDV", fits.Std.ToString(), "For Quick Extraction Only", -1);
+								fits.Header.AddKey("STDV", fits.Stdv.ToString(), "For Quick Extraction Only", -1);
 								fits.Header.AddKey("SUM", fits.Sum.ToString(), "For Quick Extraction Only", -1);
 								fits.SetImage(fitsdum, false, true);//don't record the actual image in this mode (time saver)
 							}
 
-							fits.WriteImage(TypeCode.UInt16, true);
+							fits.WriteImage(DiskPrecision.UInt16, true);
 						}
-
 
 						//PBar. do progress bar accounting and check for cancel
 						double dprog = ((double)((Seg_Num + 1) * 2048) / (double)(arr_length)) * 100;
@@ -1448,7 +1426,6 @@ namespace CCDLAB
 
 		private void ExtractImgWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
-
 			int intprog = e.ProgressPercentage;
 			int k = (int)e.UserState;
 			wb.ProgressBar.Value = intprog;
@@ -1467,7 +1444,6 @@ namespace CCDLAB
 
 		public uint GetImageTime(BinaryReader br)//this assumes you're synced
 		{
-
 			long orpos = br.BaseStream.Position;
 			br.BaseStream.Position = br.BaseStream.Position + (7) * 2;
 			ushort msw16 = ReadWord(br);
@@ -1481,7 +1457,6 @@ namespace CCDLAB
 
 		public uint GetImageCount(BinaryReader br)//this assumes you're synced
 		{
-
 			long orpos = br.BaseStream.Position;
 			br.BaseStream.Position = br.BaseStream.Position + (6) * 2;
 			IMFRCNT = (uint)ReadWord(br);
@@ -1491,7 +1466,6 @@ namespace CCDLAB
 
 		private bool SeekNextImage(BinaryReader br)
 		{
-
 			ushort word = 0;
 			ushort test = 0;
 			ushort chan = 0;
@@ -1505,12 +1479,12 @@ namespace CCDLAB
 						continue;//i.e. exit this loop and start over, reading next word (above line)
 					if (((byte)(br.PeekChar()) - 1) != 0xFC)
 						continue;//i.e. exit loop and start over - this check is so that CRC of '1ACF' doesn't cause the whole segment to be skipped
-								 //note.NotifyTxt.Text = string.Concat(word,(unsigned __int8(br.PeekChar())-1).ToString());
-								 //note.ShowDialog();
+
 					word = (ushort)(ReadWord(br));
 					if (word != 0xFC1D)
 						continue;//i.e. exit this loop and start over - found 1ACF but it wasnt followed by FC1D, so not a sync
-								 //if got to here then found 1ACF followed by FC1D, so this is a segment header but need to determine if it is a "first" segment
+
+					//if got to here then found 1ACF followed by FC1D, so this is a segment header but need to determine if it is a "first" segment
 					chan = (ushort)(ReadWord(br) & 0x1F);//packet identification
 					word = (ushort)(ReadWord(br));//this should be packet sequence control...first 2 bits indicate segment type
 					test = (ushort)((word & 0xC000) >> 14);//zero irrelevant bits so logic below can work always, and shift first 2 relevant bits to bottom
@@ -1573,7 +1547,7 @@ namespace CCDLAB
 
 				int resln = (int)CentroidResolutionUpD.Value;
 				int dMm = (int)dMmUpD.Value;
-				//bool first = true;
+				
 				bool subim = SubImChck.Checked;
 				int xsize = XSIZE;//zero-based
 				int ysize = YSIZE;//zero-based
@@ -1587,8 +1561,6 @@ namespace CCDLAB
 				double[,] dMmimg = new double[(xsize + 1), (ysize + 1)];
 				double[,] darkimgcounter = new double[(xsize + 1), (ysize + 1)];
 				IMTIME = 0;//reset it
-				//uint imtime = 0;//IMTIME change tracker
-				//bool newim = false;
 
 				//for making fits photometry list of number of events in each frame (number of events, time)
 				int fr_phot = 0;
@@ -1604,7 +1576,7 @@ namespace CCDLAB
 				byte[] parity_temp = null;
 				if (extparity)
 				{
-					parity_fs = new FileStream(Form1.CCDLABPATH + "templeton_parity.tmp", FileMode.Create);
+					parity_fs = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_parity.tmp", FileMode.Create);
 					parity_ms = new MemoryStream(NumParityEvents * 16);//12MB = 786,432 parity errors, expected to be small number
 					parity_temp = new byte[16];//[UInt32_EventNumber_1based , UInt32_DataType (1,2 or 3 = xword,yword or cornerword) , UInt32_FileWordNumber_1based , UInt32_DataValue]
 				}
@@ -1634,9 +1606,9 @@ namespace CCDLAB
 
 				if (makefitslist)
 				{
-					centlist_fs_ixy = new FileStream(Form1.CCDLABPATH + "templeton_cent_ixy.tmp", FileMode.Create);
-					centlist_fs_fxy = new FileStream(Form1.CCDLABPATH + "templeton_cent_fxy.tmp", FileMode.Create);
-					centlist_fs_mxy = new FileStream(Form1.CCDLABPATH + "templeton_cent_mxy.tmp", FileMode.Create);
+					centlist_fs_ixy = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_ixy.tmp", FileMode.Create);
+					centlist_fs_fxy = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_fxy.tmp", FileMode.Create);
+					centlist_fs_mxy = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_mxy.tmp", FileMode.Create);
 					centlist_ms_ixy = new MemoryStream(NumBuffEvents * 2);//16MB
 					centlist_ms_fxy = new MemoryStream(NumBuffEvents * 1);//8MB
 					centlist_ms_mxy = new MemoryStream(NumBuffEvents * 2);//16MB
@@ -1644,11 +1616,11 @@ namespace CCDLAB
 					centlist_temp_fxy = new byte[2];//uint8 fracs: xfrac,yfrac,xfrac,yfrac...
 					centlist_temp_mxy = new byte[4];//uint16 corners: ...
 
-					timelist_fs = new FileStream(Form1.CCDLABPATH + "templeton_time.tmp", FileMode.Create);
+					timelist_fs = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_time.tmp", FileMode.Create);
 					timelist_ms = new MemoryStream(NumBuffEvents * 2);//16MB
 					timelist_temp = new byte[4];//uint32 times
 
-					framelist_fs = new FileStream(Form1.CCDLABPATH + "templeton_frame.tmp", FileMode.Create);
+					framelist_fs = new FileStream(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_frame.tmp", FileMode.Create);
 					framelist_ms = new MemoryStream(NumBuffEvents * 2);//16MB
 					framelist_temp = new byte[4];//uint32 times
 				}
@@ -1772,8 +1744,7 @@ namespace CCDLAB
 				GC.WaitForFullGCApproach();
 				GC.WaitForFullGCComplete();
 				GC.WaitForPendingFinalizers();
-				//array for reading in .img files Byte-wise (each up to 512MB)
-				//byte[] arr = new byte[1024*1024*512);
+				
 				try
 				{
 					for (int k = 0; k < Nfiles; k++)
@@ -1896,11 +1867,11 @@ namespace CCDLAB
 								if (firstframe)
 								{
 									firstframetime = IMTIME;
-									firstframenum = /*IMFRCNT*/ 1;
+									firstframenum = 1;
 									firstframe = false;
 								}
 								lastframetime = IMTIME;
-								lastframenum = /*IMFRCNT*/ lastframenum + 1;
+								lastframenum = lastframenum + 1;
 							}
 							if (Every_N_Count != 0)
 							{
@@ -1993,10 +1964,9 @@ namespace CCDLAB
 									int xpos, ypos;
 									if (subim)
 									{
-										//MessageBox.Show(   ((int)ixpos + (int)fxpos + 16).ToString()   ,    ((SubRange[1]+1 + XOFFSET)*32).ToString()   );
 										if (((int)ixpos + (int)fxpos + 16) < (SUBRANGE[0] + XOFFSET) * 32 || ((int)ixpos + (int)fxpos + 16) >= (SUBRANGE[1] + 1 + XOFFSET) * 32 || ((int)iypos + (int)fypos + 16) < (SUBRANGE[2] + YOFFSET) * 32 || ((int)iypos + (int)fypos + 16) >= (SUBRANGE[3] + 1 + YOFFSET) * 32)
 											continue;
-										//MessageBox.Show("test","test");
+										
 										xpos = ((int)ixpos + (int)fxpos - SUBRANGE[0] * 32 - XOFFSET * 32 + 16) * resln / 32;
 										ypos = ((int)iypos + (int)fypos - SUBRANGE[2] * 32 - YOFFSET * 32 + 16) * resln / 32;
 									}
@@ -2005,29 +1975,11 @@ namespace CCDLAB
 										xpos = ((int)ixpos + (int)fxpos - XOFFSET * 32 + 16) * resln / 32;
 										ypos = ((int)iypos + (int)fypos - YOFFSET * 32 + 16) * resln / 32;
 									}
-									try
-									{
-										//MessageBox.Show(xpos.ToString(),xpos.ToString());
-										img[xpos, ypos]++;
-										darkimg[xpos / resln, ypos / resln] += mc;
-										dMmimg[xpos / resln, ypos / resln] += dmm;
-										darkimgcounter[xpos / resln, ypos / resln]++;
-									}
-									catch
-									{   //ZULU ZULU ZULU ZULU ZULU ZULU ZULU ZULU ZULU ZULU ZULU
-										/*MessageBox.Show(string.Concat(e.StackTrace,"/r","Centroid possibly out of bounds (Code Section Zulu)"),e.Message);
-										MessageBox.Show(xcorr.ToString() + "	" + ycorr.ToString());
-										MessageBox.Show(ixpos.ToString() + "	" + iypos.ToString());
-										MessageBox.Show(xpos.ToString() + "	" + ypos.ToString());*/
 
-
-										//arr = new byte[1);//try to prevent out of memory error
-										//GC.ReRegisterForFinalize(arr);
-										/*GC.Collect();
-										GC.WaitForFullGCApproach();
-										GC.WaitForFullGCComplete();
-										GC.WaitForPendingFinalizers();*/
-									}
+									img[xpos, ypos]++;
+									darkimg[xpos / resln, ypos / resln] += mc;
+									dMmimg[xpos / resln, ypos / resln] += dmm;
+									darkimgcounter[xpos / resln, ypos / resln]++;
 
 									//parity check
 									//[UInt32_EventNumber_1based , UInt32_DataType (1,2 or 3 = xword,yword or cornerword) , UInt32_FileWordNumber_1based]
@@ -2119,7 +2071,6 @@ namespace CCDLAB
 										}
 									}
 
-									//makefitslist
 									if (makefitslist)
 									{
 										if (buff_events >= NumBuffEvents)
@@ -2205,12 +2156,12 @@ namespace CCDLAB
 									timelist_ms.Close();
 									framelist_fs.Close();
 									framelist_ms.Close();
-									File.Delete(Form1.CCDLABPATH + "templeton_cent_ixy.tmp");
-									File.Delete(Form1.CCDLABPATH + "templeton_cent_fxy.tmp");
-									File.Delete(Form1.CCDLABPATH + "templeton_cent_mxy.tmp");
-									File.Delete(Form1.CCDLABPATH + "templeton_time.tmp");
-									File.Delete(Form1.CCDLABPATH + "templeton_frame.tmp");
-									File.Delete(Form1.CCDLABPATH + "templeton_parity.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_ixy.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_fxy.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_mxy.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_time.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_frame.tmp");
+									File.Delete(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_parity.tmp");
 								}
 
 								GC.Collect();
@@ -2303,9 +2254,6 @@ namespace CCDLAB
 					MessageBox.Show("No Data Found to Extract...", "Warning");
 				}
 
-				//arr = new byte[1);//try to prevent out of memory error
-				//delete arr;
-				//GC.ReRegisterForFinalize(arr);
 				GC.Collect();
 				GC.WaitForFullGCApproach();
 				GC.WaitForFullGCComplete();
@@ -2363,7 +2311,6 @@ namespace CCDLAB
 			{
 				object[] result = (object[])e.Result;
 				SaveFileDialog fd = new SaveFileDialog();
-				//fd.InitialDirectory = (string)JPFITS.REG.GetReg("CCDLAB", "SaveFilesPath");
 				fd.InitialDirectory = (string)JPFITS.REG.GetReg("CCDLAB", "GSEOpenFilesPath");
 				fd.Title = "Please Save the Generated Fits Files";
 				fd.Filter = "Fits File (*.fits)|*.fits";
@@ -2456,7 +2403,7 @@ namespace CCDLAB
 				//}
 			}*/
 
-			img.WriteImage(TypeCode.UInt32, true);
+			img.WriteImage(DiskPrecision.UInt32, true);
 			int tot_events = (int)JPFITS.JPMath.Sum(img.Image, true);
 
 			if (AugFilesChck.Checked)
@@ -2464,29 +2411,29 @@ namespace CCDLAB
 				string darkname = string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_MinCorners", fullfilename.Substring(fullfilename.LastIndexOf(".")));
 				JPFITS.FITSImage darkimg = new JPFITS.FITSImage(darkname, (double[,])result[1], false, true);
 				AddImageInfoKeys(darkimg);
-				darkimg.WriteImage(TypeCode.UInt16, true);
+				darkimg.WriteImage(DiskPrecision.UInt16, true);
 
 				string dMmname = string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_deltaMaxMinCorners", fullfilename.Substring(fullfilename.LastIndexOf(".")));
 				JPFITS.FITSImage dMmimg = new JPFITS.FITSImage(dMmname, (double[,])result[2], false, true);
 				AddImageInfoKeys(dMmimg);
-				dMmimg.WriteImage(TypeCode.UInt16, true);
+				dMmimg.WriteImage(DiskPrecision.UInt16, true);
 
 				string imphotname = string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_PerImageCounts", fullfilename.Substring(fullfilename.LastIndexOf(".")));
 				JPFITS.FITSImage imphot = new JPFITS.FITSImage(imphotname, (uint[,])result[3], false, true);
 				imphot.Header.AddKey("ROW1", "Image Frame Time", "Milliseconds", -1);
 				imphot.Header.AddKey("ROW2", "Total Count", "In Single Frame", -1);
 				AddImageInfoKeys(imphot);
-				imphot.WriteImage(TypeCode.UInt32, true);
+				imphot.WriteImage(DiskPrecision.UInt32, true);
 			}
 
 			if (ExtParityChck.Checked == true)
 			{
-				int tot_parevents = (int)((new System.IO.FileInfo(Form1.CCDLABPATH + "templeton_parity.tmp").Length) / 16);
+				int tot_parevents = (int)((new System.IO.FileInfo(Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_parity.tmp").Length) / 16);
 				if (tot_parevents != 0)
 				{
 					double parody_rate = (double)(tot_parevents) / (double)(tot_events);
 					string fitsparityname = string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_Parity", fullfilename.Substring(fullfilename.LastIndexOf(".")));
-					JPFITS.FITSImage parity_fits = new JPFITS.FITSImage(fitsparityname, Form1.CCDLABPATH + "templeton_parity.tmp", TypeCode.UInt32, 4, tot_parevents);
+					JPFITS.FITSImage parity_fits = new JPFITS.FITSImage(fitsparityname, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_parity.tmp", DiskPrecision.UInt32, 4, tot_parevents);
 					parity_fits.Header.AddKey("PRTYRATE", Math.Round(parody_rate * 100, 4).ToString(), "Percent Rate of Parity Errors per Centroid", -1);
 					parity_fits.Header.AddKey("FILEINF0", "Parity Errors", "[EventNum DataFlag WordNumber DataValue]", -1);
 					parity_fits.Header.AddKey("FILEINF1", "DataFlag INFO", "1,2,or,3=xword,yword,cornerword", -1);
@@ -2507,45 +2454,45 @@ namespace CCDLAB
 
 				string fitstimename = string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_TimeList", fullfilename.Substring(fullfilename.LastIndexOf(".")));
 				FitsResultsWriteWrkr.ReportProgress(-1, string.Concat("Please wait a moment while I write: ", fitstimename.Substring(1 + fitstimename.LastIndexOf("\\"))));
-				JPFITS.FITSImage time_fits = new JPFITS.FITSImage(fitstimename, Form1.CCDLABPATH + "templeton_time.tmp", TypeCode.UInt32, 1, tot_events);
+				JPFITS.FITSImage time_fits = new JPFITS.FITSImage(fitstimename, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_time.tmp", DiskPrecision.UInt32, 1, tot_events);
 				time_fits.FileName = time_fits.FileName.Replace("_TimeList", "_" + FILENAMETIME.ToString("0000000000000") + "_TimeList");
 				fitstimename = time_fits.FullFileName;
 				time_fits.Header.AddKey("FILEINFO", "Time List", "Centroid Image Time (millisec)", -1);
 				AddImageInfoKeys(time_fits);
 				time_fits.WriteFileFromDiskBuffer(true);
 
-				string fitsframename = fitstimename.Replace("TimeList", "FrameList");//string.Concat(fullfilename.Substring(0, fullfilename.LastIndexOf(".")), "_FrameList", fullfilename.Substring(fullfilename.LastIndexOf(".")));
+				string fitsframename = fitstimename.Replace("TimeList", "FrameList");
 				FitsResultsWriteWrkr.ReportProgress(-1, string.Concat("Please wait a moment while I write: ", fitsframename.Substring(1 + fitsframename.LastIndexOf("\\"))));
-				JPFITS.FITSImage frame_fits = new JPFITS.FITSImage(fitsframename, Form1.CCDLABPATH + "templeton_frame.tmp", TypeCode.UInt32, 1, tot_events);
+				JPFITS.FITSImage frame_fits = new JPFITS.FITSImage(fitsframename, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_frame.tmp", DiskPrecision.UInt32, 1, tot_events);
 				frame_fits.Header.AddKey("FILEINFO", "Frame List", "Frame Count Number", -1);
 				AddImageInfoKeys(frame_fits);
 				frame_fits.WriteFileFromDiskBuffer(true);
 
-				string xyintslistname = fitstimename.Replace("TimeList", "XYInts_List");//string.Concat(fullfilename.Substring(0, img.FullFileName.LastIndexOf(".")), "_XYInts_List", fullfilename.Substring(img.FullFileName.LastIndexOf(".")));
+				string xyintslistname = fitstimename.Replace("TimeList", "XYInts_List");
 				if (distortioncorrectlist)
 					xyintslistname = xyintslistname.Replace("XYInts_List", "XYInts_List_deDIST");
 				if (FPNcorrectlist)
 					xyintslistname = xyintslistname.Replace("XYInts_List", "XYInts_List_deFPN");
 				FitsResultsWriteWrkr.ReportProgress(-1, string.Concat("Please wait a moment while I write: ", xyintslistname.Substring(1 + xyintslistname.LastIndexOf("\\"))));
-				JPFITS.FITSImage xy_ints_fits = new JPFITS.FITSImage(xyintslistname, Form1.CCDLABPATH + "templeton_cent_ixy.tmp", TypeCode.Int16, 2, tot_events);
+				JPFITS.FITSImage xy_ints_fits = new JPFITS.FITSImage(xyintslistname, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_ixy.tmp", DiskPrecision.Int16, 2, tot_events);
 				xy_ints_fits.Header.AddKey("FILEINFO", "Centroid List", "Centroid [X Y] Integers (*32)", -1);
 				AddImageInfoKeys(xy_ints_fits);
 				xy_ints_fits.WriteFileFromDiskBuffer(true);
 
-				string xyfraclistname = fitstimename.Replace("TimeList", "XYFrac_List");//string.Concat(fullfilename.Substring(0, img.FullFileName.LastIndexOf(".")), "_XYFrac_List", fullfilename.Substring(img.FullFileName.LastIndexOf(".")));
+				string xyfraclistname = fitstimename.Replace("TimeList", "XYFrac_List");
 				if (distortioncorrectlist)
 					xyfraclistname = xyfraclistname.Replace("XYFrac_List", "XYFrac_List_deDIST");
 				if (FPNcorrectlist)
 					xyfraclistname = xyfraclistname.Replace("XYFrac_List", "XYFrac_List_deFPN");
 				FitsResultsWriteWrkr.ReportProgress(-1, string.Concat("Please wait a moment while I write: ", xyfraclistname.Substring(1 + xyfraclistname.LastIndexOf("\\"))));
-				JPFITS.FITSImage xy_frac_fits = new JPFITS.FITSImage(xyfraclistname, Form1.CCDLABPATH + "templeton_cent_fxy.tmp", TypeCode.Byte, 2, tot_events);
+				JPFITS.FITSImage xy_frac_fits = new JPFITS.FITSImage(xyfraclistname, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_fxy.tmp", DiskPrecision.Byte, 2, tot_events);
 				xy_frac_fits.Header.AddKey("FILEINFO", "Centroid List", "Centroid [X Y] Fractions (*32)", -1);
 				AddImageInfoKeys(xy_frac_fits);
 				xy_frac_fits.WriteFileFromDiskBuffer(true);
 
-				string xymdmmlistname = fitstimename.Replace("TimeList", "XYmdMm_List");//string.Concat(fullfilename.Substring(0,img.FullFileName.LastIndexOf(".")),"_XYmdMm_List",fullfilename.Substring(img.FullFileName.LastIndexOf(".")));
+				string xymdmmlistname = fitstimename.Replace("TimeList", "XYmdMm_List");
 				FitsResultsWriteWrkr.ReportProgress(-1, string.Concat("Please wait a moment while I write: ", xymdmmlistname.Substring(1 + xymdmmlistname.LastIndexOf("\\"))));
-				JPFITS.FITSImage xy_mdmm_fits = new JPFITS.FITSImage(xymdmmlistname, Form1.CCDLABPATH + "templeton_cent_mxy.tmp", TypeCode.UInt16, 2, tot_events);
+				JPFITS.FITSImage xy_mdmm_fits = new JPFITS.FITSImage(xymdmmlistname, Form1.CCDLABPATH_USERAPPDATAROAMING + "templeton_cent_mxy.tmp", DiskPrecision.UInt16, 2, tot_events);
 				xy_mdmm_fits.Header.AddKey("FILEINFO", "Centroid List", "Centroid [Max  Max-min]", -1);
 				AddImageInfoKeys(xy_mdmm_fits);
 				xy_mdmm_fits.WriteFileFromDiskBuffer(true);
@@ -2602,7 +2549,7 @@ namespace CCDLAB
 			fit.Header.AddKey("MODE", MODE, "Data Collection Mode", -1);
 			fit.Header.AddKey("SOURCE", SOURCE, "Data Source", -1);
 			fit.Header.AddKey("ALGRITHM", ALGRTHM, "Centroiding Algorithm", -1);
-			fit.Header.AddKey("GAPTIME",/*Math.Round(*/ROWGAPT/*,3)*/.ToString(), "Row Gap Time (0-511)", -1);
+			fit.Header.AddKey("GAPTIME", ROWGAPT.ToString(), "Row Gap Time (0-511)", -1);
 			fit.Header.AddKey("GAIN", GAIN.ToString(), "Gain (1,2,4,8)", -1);
 			fit.Header.AddKey("NO_FRMS", STACKING.ToString(), "Stacking (1,2,4,8,16)", -1);
 			fit.Header.AddKey("NORMLZN", NORMLZN.ToString(), "Normalization (1,2,4,8,16)", -1);
@@ -2933,17 +2880,17 @@ namespace CCDLAB
 
 				string algorithm = fits.Header.GetKeyValue("ALGRITHM");
 
-				JPPlot Xhist = new JPPlot();
+				JPFITS.Plotter Xhist = new JPFITS.Plotter("XDecimalCentroids", true, true);
 				double[] x;
 				double[] y;
 				y = JPFITS.JPMath.Histogram_IntegerStep(X, 1, out x);
 				Xhist.Text = string.Concat(algorithm, " X Decimal Centroids");
-				Xhist.PlotLine(x, y, "X Decimal Centroid Position (*32)", "Number of Centroids", String.Concat(algorithm, " X Decimal Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "XDecimals");
+				Xhist.ChartGraph.PlotXYData(x, y, String.Concat(algorithm, " X Decimal Centroids"), "X Decimal Centroid Position (*32)", "Number of Centroids", JPChart.SeriesType.Column, "XDecimals");
 
-				JPPlot Yhist = new JPPlot();
+				JPFITS.Plotter Yhist = new JPFITS.Plotter("YDecimalCentroids", true, true);
 				y = JPFITS.JPMath.Histogram_IntegerStep(Y, 1, out x);
 				Yhist.Text = string.Concat(algorithm, " Y Decimal Centroids");
-				Yhist.PlotLine(x, y, "Y Decimal Centroid Position (*32)", "Number of Centroids", String.Concat(algorithm, " Y Decimal Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "XDecimals");
+				Yhist.ChartGraph.PlotXYData(x, y, String.Concat(algorithm, " Y Decimal Centroids"), "Y Decimal Centroid Position (*32)", "Number of Centroids", JPChart.SeriesType.Column, "XDecimals");
 			}
 		}
 
@@ -2965,17 +2912,17 @@ namespace CCDLAB
 
 				string algorithm = fits.Header.GetKeyValue("ALGRITHM");
 
-				JPPlot Xhist = new JPPlot();
+				JPFITS.Plotter Xhist = new JPFITS.Plotter("XIntCents", true, true);
 				double[] x;
 				double[] y;
 				y = JPFITS.JPMath.Histogram_IntegerStep(X, 1, out x);
 				Xhist.Text = string.Concat(algorithm, " X Integer Centroids");
-				Xhist.PlotLine(x, y, "X Integer Centroid Position (*32)", "Number of Centroids", string.Concat(algorithm, " X Integer Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "XInts");
+				Xhist.ChartGraph.PlotXYData(x, y, string.Concat(algorithm, " X Integer Centroids"), "X Integer Centroid Position (*32)", "Number of Centroids", JPChart.SeriesType.Column, "XInts");
 
-				JPPlot Yhist = new JPPlot();
+				JPFITS.Plotter Yhist = new JPFITS.Plotter("YIntCents", true, true);
 				y = JPFITS.JPMath.Histogram_IntegerStep(Y, 1, out x);
 				Yhist.Text = string.Concat(algorithm, " Y Integer Centroids");
-				Yhist.PlotLine(x, y, "Y Integer Centroid Position (*32)", "Number of Centroids", string.Concat(algorithm, " Y Integer Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "YInts");
+				Yhist.ChartGraph.PlotXYData(x, y, string.Concat(algorithm, " Y Integer Centroids"), "Y Integer Centroid Position (*32)", "Number of Centroids", JPChart.SeriesType.Column, "YInts");
 			}
 		}
 
@@ -2998,12 +2945,12 @@ namespace CCDLAB
 						a1[i + j * h] = a[j, i];
 
 				string algorithm = fits.Header.GetKeyValue("ALGRITHM");
-				JPPlot jpplot = new JPPlot();
+				JPFITS.Plotter jpplot = new JPFITS.Plotter("CMaxMin", true, true);
 				double[] x;
 				double[] y;
 				y = JPFITS.JPMath.Histogram_IntegerStep(a1, 1, out x);
 				jpplot.Text = string.Concat(algorithm, "Corner Max & Corner Max-Min");
-				jpplot.PlotLine(x, y, "Corner Max & Corner Max-Min(/16)", "Number of Centroids", string.Concat(algorithm, "Corner Max & Corner Max-Min"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "Max-Min");
+				jpplot.ChartGraph.PlotXYData(x, y, string.Concat(algorithm, "Corner Max & Corner Max-Min"), "Corner Max & Corner Max-Min(/16)", "Number of Centroids", JPChart.SeriesType.Column, "Max-Min");
 			}
 		}
 
@@ -3193,11 +3140,6 @@ namespace CCDLAB
 						//progress bar updating
 						if (i * 100 / NSegments > wb.ProgressBar.Value)
 							CRCWrkr.ReportProgress(i * 100 / NSegments, k);
-					}
-					//bool stopped = false;
-					if (wb.DialogResult == DialogResult.Cancel)
-					{
-						//stopped = true;
 					}
 				}
 			}
@@ -3433,8 +3375,6 @@ namespace CCDLAB
 							imfrcnt_cur = (uint)((ARR[SYNCHPOS + 12] << 8) | ARR[SYNCHPOS + 13]);
 							imfrtime_cur = (uint)((ARR[SYNCHPOS + 14] << 24) | (ARR[SYNCHPOS + 15] << 16) | (ARR[SYNCHPOS + 16] << 8) | ARR[SYNCHPOS + 17]);
 
-							//MessageBox.Show("Time = " + (imfrtime_cur).ToString() + "; NUVTime = " + NUVimfrtime_prev.ToString());
-
 							if (chan == 14)//FUV
 							{
 								if (Seg_Type == 1)//then possibly a new image session started, check checksum
@@ -3481,7 +3421,7 @@ namespace CCDLAB
 								if (Seg_Type == 1)//then possibly a new image session started, check checksum
 								{
 									dummysum = ImageParms(ARR, SYNCHPOS);
-									if (!CheckSum(NUVchcksum, dummysum) || /*Math.Abs((double)(NUVimfrtime_prev) - (double)(imfrtime_cur)) > 2000*/ Math.Abs((double)(NUVimfrcnt_prev) - (double)(imfrcnt_cur)) > 16)//then it is a new image session
+									if (!CheckSum(NUVchcksum, dummysum) || Math.Abs((double)(NUVimfrcnt_prev) - (double)(imfrcnt_cur)) > 16)//then it is a new image session
 									{
 										NUVchcksum = dummysum;
 										newNUVflag = true;
@@ -3522,7 +3462,7 @@ namespace CCDLAB
 								if (Seg_Type == 1)//then possibly a new image session started, check checksum
 								{
 									dummysum = ImageParms(ARR, SYNCHPOS);
-									if (!CheckSum(VISchcksum, dummysum) || /*Math.Abs((double)(VISimfrtime_prev) - (double)(imfrtime_cur)) > 2000*/ Math.Abs((double)(VISimfrcnt_prev) - (double)(imfrcnt_cur)) > 16)//then it is a new image session
+									if (!CheckSum(VISchcksum, dummysum) || Math.Abs((double)(VISimfrcnt_prev) - (double)(imfrcnt_cur)) > 16)//then it is a new image session
 									{
 										VISchcksum = dummysum;
 										newVISflag = true;
@@ -3797,7 +3737,7 @@ namespace CCDLAB
 
 			for (int i = 0; i < nDIFEPsegments; i++)
 			{
-				OBTTME = /*((ARR[LOC - 16])<<40) + ((ARR[LOC - 15])<<32) +*/ (uint)((ARR[LOC - 14] << 24) | (ARR[LOC - 13] << 16) | (ARR[LOC - 12] << 8) | ARR[LOC - 11]);
+				OBTTME = (uint)((ARR[LOC - 14] << 24) | (ARR[LOC - 13] << 16) | (ARR[LOC - 12] << 8) | ARR[LOC - 11]);
 				FRMCNT = (ushort)((ARR[LOC + 12] << 8) | ARR[LOC + 13]);
 				FRMTME = (uint)((ARR[LOC + 14] << 24) | (ARR[LOC + 15] << 16) | (ARR[LOC + 16] << 8) | ARR[LOC + 17]);
 				TCKTME = (uint)((ARR[LOC + 18] << 24) | (ARR[LOC + 19] << 16) | (ARR[LOC + 20] << 8) | ARR[LOC + 21]);
@@ -3825,11 +3765,9 @@ namespace CCDLAB
 			f.Header.AddKey("COL4", "TICK TIME", "", -1);
 			f.Header.AddKey("COL5", "TICK COUNT", "", -1);
 
-			f.WriteImage(TypeCode.Double, true);
+			f.WriteImage(DiskPrecision.Double, true);
 
 			JPFITS.REG.SetReg("CCDLAB", "OpenFilesPath", JPFITS.REG.GetReg("CCDLAB", "GSEOpenFilesPath"));
-
-
 		}
 
 		private void FixBadTimesHighValuesChck_Click(object sender, System.EventArgs e)
@@ -3910,13 +3848,12 @@ namespace CCDLAB
 
 				double timeperframe = (endtime - starttime) / (endframe - startframe);
 
-				//#pragma omp parallel for
 				for (int j = 0; j < times.Length; j++)
 					times[j] = (frames[j] - startframe) * timeperframe + starttime;
 
 				JPFITS.FITSImage newtimefits = new JPFITS.FITSImage(ofd.FileNames[i], times, false, true);
-				newtimefits.Header.CopyHeaderFrom(oldtimefits.Header);// CopyHeader(oldtimefits);
-				newtimefits.WriteImage(TypeCode.UInt32, true);
+				newtimefits.Header.CopyHeaderFrom(oldtimefits.Header);
+				newtimefits.WriteImage(DiskPrecision.UInt32, true);
 			}
 
 			MessageBox.Show("Complete...");

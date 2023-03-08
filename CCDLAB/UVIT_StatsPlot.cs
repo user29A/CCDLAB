@@ -149,37 +149,37 @@ namespace CCDLAB
 			MinMaxTxt.Text = MIN.Max.ToString();
 			MinMedianTxt.Text = MIN.Median.ToString();
 			MinMeanTxt.Text = Math.Round(MIN.Mean, 2).ToString();
-			MinStdvTxt.Text = Math.Round(MIN.Std, 2).ToString();
+			MinStdvTxt.Text = Math.Round(MIN.Stdv, 2).ToString();
 
 			MaxMinTxt.Text = MAX.Min.ToString();
 			MaxMaxTxt.Text = MAX.Max.ToString();
 			MaxMedianTxt.Text = MAX.Median.ToString();
 			MaxMeanTxt.Text = Math.Round(MAX.Mean, 2).ToString();
-			MaxStdvTxt.Text = Math.Round(MAX.Std, 2).ToString();
+			MaxStdvTxt.Text = Math.Round(MAX.Stdv, 2).ToString();
 
 			MedMinTxt.Text = MEDIAN.Min.ToString();
 			MedMaxTxt.Text = MEDIAN.Max.ToString();
 			MedMedianTxt.Text = MEDIAN.Median.ToString();
 			MedMeanTxt.Text = Math.Round(MEDIAN.Mean, 2).ToString();
-			MedStdvTxt.Text = Math.Round(MEDIAN.Std, 2).ToString();
+			MedStdvTxt.Text = Math.Round(MEDIAN.Stdv, 2).ToString();
 
 			MeanMinTxt.Text = Math.Round(MEAN.Min, 2).ToString();
 			MeanMaxTxt.Text = Math.Round(MEAN.Max, 2).ToString();
 			MeanMedianTxt.Text = Math.Round(MEAN.Median, 2).ToString();
 			MeanMeanTxt.Text = Math.Round(MEAN.Mean, 2).ToString();
-			MeanStdvTxt.Text = Math.Round(MEAN.Std, 2).ToString();
+			MeanStdvTxt.Text = Math.Round(MEAN.Stdv, 2).ToString();
 
 			StdMinTxt.Text = Math.Round(STDV.Min, 2).ToString();
 			StdMaxTxt.Text = Math.Round(STDV.Max, 2).ToString();
 			StdMedianTxt.Text = Math.Round(STDV.Median, 2).ToString();
 			StdMeanTxt.Text = Math.Round(STDV.Mean, 2).ToString();
-			StdStdvTxt.Text = Math.Round(STDV.Std, 2).ToString();
+			StdStdvTxt.Text = Math.Round(STDV.Stdv, 2).ToString();
 
-			jpChartMin.PlotXYData(tick, min, "", axisxLabel, "", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Min");
-			jpChartMax.PlotXYData(tick, max, "", axisxLabel, "", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Max");
-			jpChartMean.PlotXYData(tick, mean, "", axisxLabel, "", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Mean");
-			jpChartMedian.PlotXYData(tick, median, "", axisxLabel, "", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Median");
-			jpChartStdv.PlotXYData(tick, stdv, "", axisxLabel, "", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Stdv");
+			jpChartMin.PlotXYData(tick, min, "", axisxLabel, "", JPChart.SeriesType.Line, "Min", null);
+			jpChartMax.PlotXYData(tick, max, "", axisxLabel, "", JPChart.SeriesType.Line, "Max", null);
+			jpChartMean.PlotXYData(tick, mean, "", axisxLabel, "", JPChart.SeriesType.Line, "Mean", null);
+			jpChartMedian.PlotXYData(tick, median, "", axisxLabel, "", JPChart.SeriesType.Line, "Median", null);
+			jpChartStdv.PlotXYData(tick, stdv, "", axisxLabel, "", JPChart.SeriesType.Line, "Stdv", null);
 
 
 			this.Show();

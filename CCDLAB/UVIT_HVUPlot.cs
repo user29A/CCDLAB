@@ -145,30 +145,30 @@ public static int IND = 0;
 			AndMaxTxt.Text = ANODE.Max.ToString();
 			AndMedianTxt.Text = ANODE.Median.ToString();
 			AndMeanTxt.Text = Math.Round(ANODE.Mean, 2).ToString();
-			AndStdvTxt.Text = Math.Round(ANODE.Std, 2).ToString();
+			AndStdvTxt.Text = Math.Round(ANODE.Stdv, 2).ToString();
 
 			McpMinTxt.Text = MCP.Min.ToString();
 			McpMaxTxt.Text = MCP.Max.ToString();
 			McpMedianTxt.Text = MCP.Median.ToString();
 			McpMeanTxt.Text = Math.Round(MCP.Mean, 2).ToString();
-			McpStdvTxt.Text = Math.Round(MCP.Std, 2).ToString();
+			McpStdvTxt.Text = Math.Round(MCP.Stdv, 2).ToString();
 
 			CatMinTxt.Text = CATHODE.Min.ToString();
 			CatMaxTxt.Text = CATHODE.Max.ToString();
 			CatMedianTxt.Text = CATHODE.Median.ToString();
 			CatMeanTxt.Text = Math.Round(CATHODE.Mean, 2).ToString();
-			CatStdvTxt.Text = Math.Round(CATHODE.Std, 2).ToString();
+			CatStdvTxt.Text = Math.Round(CATHODE.Stdv, 2).ToString();
 
 			HVUMinTxt.Text = HVU.Min.ToString();
 			HVUMaxTxt.Text = HVU.Max.ToString();
 			HVUMedianTxt.Text = HVU.Median.ToString();
 			HVUMeanTxt.Text = Math.Round(HVU.Mean, 2).ToString();
-			HVUStdvTxt.Text = Math.Round(HVU.Std, 2).ToString();
+			HVUStdvTxt.Text = Math.Round(HVU.Stdv, 2).ToString();
 
-			jpChartAnode.PlotXYData(tick, anode, "", axisxLabel, "Volts",  System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Anode");
-			jpChartMCP.PlotXYData(tick, mcp, "", axisxLabel, "Volts", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "MCP");
-			jpChartCathode.PlotXYData(tick, cathode, "", axisxLabel, "Volts", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Cathode");
-			jpChartHVU.PlotXYData(tick, hvu, "", axisxLabel, "Volts", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "HVU");
+			jpChartAnode.PlotXYData(tick, anode, "", axisxLabel, "Volts", JPChart.SeriesType.Line, "Anode", null);
+			jpChartMCP.PlotXYData(tick, mcp, "", axisxLabel, "Volts", JPChart.SeriesType.Line, "MCP", null);
+			jpChartCathode.PlotXYData(tick, cathode, "", axisxLabel, "Volts", JPChart.SeriesType.Line, "Cathode", null);
+			jpChartHVU.PlotXYData(tick, hvu, "", axisxLabel, "Volts", JPChart.SeriesType.Line, "HVU", null);
 
 			this.Show();
 			this.Focus();

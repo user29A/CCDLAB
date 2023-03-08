@@ -31,7 +31,7 @@
 			this.components = new System.ComponentModel.Container();
 			this.McpMinTxt = new System.Windows.Forms.Label();
 			this.McpMeanTxt = new System.Windows.Forms.Label();
-			this.jpChartCathode = new JPChart.JPChart();
+			this.jpChartCathode = new JPChart.JPChartControl();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.exitThisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitCCDLABToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,10 +48,10 @@
 			this.label14 = new System.Windows.Forms.Label();
 			this.label15 = new System.Windows.Forms.Label();
 			this.McpMaxTxt = new System.Windows.Forms.Label();
-			this.jpChartAnode = new JPChart.JPChart();
-			this.jpChartMCP = new JPChart.JPChart();
+			this.jpChartAnode = new JPChart.JPChartControl();
+			this.jpChartMCP = new JPChart.JPChartControl();
 			this.TitleTxt = new System.Windows.Forms.Label();
-			this.jpChartHVU = new JPChart.JPChart();
+			this.jpChartHVU = new JPChart.JPChartControl();
 			this.McpMedianTxt = new System.Windows.Forms.Label();
 			this.AnodePanel = new System.Windows.Forms.GroupBox();
 			this.AndMinTxt = new System.Windows.Forms.Label();
@@ -624,7 +624,7 @@
 
 		public System.Windows.Forms.Label McpMinTxt;
 		public System.Windows.Forms.Label McpMeanTxt;
-		private JPChart.JPChart jpChartCathode;
+		private JPChart.JPChartControl jpChartCathode;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem exitThisToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitCCDLABToolStripMenuItem;
@@ -641,10 +641,10 @@
 		private System.Windows.Forms.Label label14;
 		private System.Windows.Forms.Label label15;
 		public System.Windows.Forms.Label McpMaxTxt;
-		private JPChart.JPChart jpChartAnode;
-		private JPChart.JPChart jpChartMCP;
+		private JPChart.JPChartControl jpChartAnode;
+		private JPChart.JPChartControl jpChartMCP;
 		public System.Windows.Forms.Label TitleTxt;
-		private JPChart.JPChart jpChartHVU;
+		private JPChart.JPChartControl jpChartHVU;
 		public System.Windows.Forms.Label McpMedianTxt;
 		public System.Windows.Forms.GroupBox AnodePanel;
 		public System.Windows.Forms.Label AndMinTxt;

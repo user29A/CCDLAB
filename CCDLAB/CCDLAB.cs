@@ -9,7 +9,6 @@ using JPFITS;
 using MathWorks.MATLAB.NET.Arrays;
 using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
-using System.Collections;
 
 namespace CCDLAB
 {
@@ -33,15 +32,11 @@ namespace CCDLAB
 					REG.SetReg("CCDLAB", "LicenseAgree", true);
 			}
 
-			CCDLABPATH = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Astrowerks\\CCDLAB\\";
-			if (!Directory.Exists(CCDLABPATH))
-				Directory.CreateDirectory(CCDLABPATH);
+			CCDLABPATH_USERAPPDATAROAMING = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Astrowerks", "CCDLAB") + "//";
+			if (!Directory.Exists(CCDLABPATH_USERAPPDATAROAMING))
+				Directory.CreateDirectory(CCDLABPATH_USERAPPDATAROAMING);
 
 			IMAGESET = new FITSImageSet();
-			//IWLC = 0;
-			IMAGEWINDOWGRFX = ImageWindow.CreateGraphics();
-			IMSTDLIM[0] = -1;
-			IMSTDLIM[1] = 2;
 
 			PSEFitStatsTypeDrop.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "PSEFitStatsTypeDrop"));
 			ROIFitStatsTypeDrop.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "ROIFitStatsTypeDrop"));
@@ -51,42 +46,41 @@ namespace CCDLAB
 			ROIXRad = Convert.ToInt32(REG.GetReg("CCDLAB", "ROIXRad"));
 			ROIYRad = Convert.ToInt32(REG.GetReg("CCDLAB", "ROIYRad"));
 
-			try
-			{
-				InfoStatic1.Text = (string)REG.GetReg("CCDLAB", "InfoStatic1");
-				InfoStatic2.Text = (string)REG.GetReg("CCDLAB", "InfoStatic2");
-				InfoStatic3.Text = (string)REG.GetReg("CCDLAB", "InfoStatic3");
-				InfoStatic4.Text = (string)REG.GetReg("CCDLAB", "InfoStatic4");
-				InfoStatic5.Text = (string)REG.GetReg("CCDLAB", "InfoStatic5");
-				MainTab.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "MainTabIndex"));
-				BatchOperationTab.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "BatchOperationTabIndex"));
-				StackUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "StackUpDValue"));
-				BatchRunningNumUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "RunningUpDValue"));
-				RadialPlotMedianBackgroundChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RadialMedianBG"));
-				XBinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "XBinUpD"));
-				YBinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "YBinUpD"));
-				BackgroundCountsPixelFrameTxt.Text = (string)REG.GetReg("CCDLAB", "BackgroundCountsPixelFrameTxt");
-				/*OptInvertImageView.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB","OPTIMGVIEWINVERTY"));
-				OPTIMGVIEWINVERTY = OptInvertImageView.Checked;*/
+			InfoStatic1.Text = (string)REG.GetReg("CCDLAB", "InfoStatic1");
+			InfoStatic2.Text = (string)REG.GetReg("CCDLAB", "InfoStatic2");
+			InfoStatic3.Text = (string)REG.GetReg("CCDLAB", "InfoStatic3");
+			InfoStatic4.Text = (string)REG.GetReg("CCDLAB", "InfoStatic4");
+			InfoStatic5.Text = (string)REG.GetReg("CCDLAB", "InfoStatic5");
+			MainTab.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "MainTabIndex"));
+			BatchOperationTab.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "BatchOperationTabIndex"));
+			StackUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "StackUpDValue"));
+			BatchRunningNumUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "RunningUpDValue"));
+			RadialPlotMedianBackgroundChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RadialMedianBG"));
+			XBinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "XBinUpD"));
+			YBinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "YBinUpD"));
+			BackgroundCountsPixelFrameTxt.Text = (string)REG.GetReg("CCDLAB", "BackgroundCountsPixelFrameTxt");
+			/*OptInvertImageView.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB","OPTIMGVIEWINVERTY"));
+			OPTIMGVIEWINVERTY = OptInvertImageView.Checked;*/
 
-				PSEPixelMinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixValMin"));
-				PSESaturationUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixSaturation"));
-				PSEKernelMinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSECountValMin"));
-				PSEPixelMaxUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixValMax"));
-				PSEKernelMaxUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSECountValMax"));
-				PSEKernelRadUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEWidth"));
-				PSESeparationUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSESeparation"));
-				PSEAutoBackgroundChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "PSE_AUTOBGCHCK"));
+			PSEPixelMinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixValMin"));
+			PSESaturationUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixSaturation"));
+			PSEKernelMinUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSECountValMin"));
+			PSEPixelMaxUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEPixValMax"));
+			PSEKernelMaxUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSECountValMax"));
+			PSEKernelRadUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEWidth"));
+			PSEBackgroundRadUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "PSEBackgroundRadUpD"));
+			PSEAutoBackgroundChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "PSEAutoBackgroundChck"));
+			SCMUpD.Value = Convert.ToDecimal(REG.GetReg("CCDLAB", "SCMUpD"));
 
-				UVPixelMinThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVPixelMinThresh"));
-				UVPixelMaxThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVPixelMaxThresh"));
-				UVShapeMinThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVShapeMinThresh"));
-				UVShapeMaxThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVShapeMaxThresh"));
-				StackingDirectoryTxt.Text = (string)REG.GetReg("CCDLAB", "StackingFilesPath");
+			UVPixelMinThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVPixelMinThresh"));
+			UVPixelMaxThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVPixelMaxThresh"));
+			UVShapeMinThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVShapeMinThresh"));
+			UVShapeMaxThresh.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "UVShapeMaxThresh"));
+			StackingDirectoryTxt.Text = (string)REG.GetReg("CCDLAB", "StackingFilesPath");
 
-				ImageFingerSortKeyValueTxt.Text = (string)REG.GetReg("CCDLAB", "ImageFingerSortKeyTxt");
-			}
-			catch { }
+			ImageFingerSortKeyValueTxt.Text = (string)REG.GetReg("CCDLAB", "ImageFingerSortKeyTxt");
+
+			PSEBackgroundSeparationRadiusLabel.Text = (string)REG.GetReg("CCDLAB", "PSEBackgroundSeparationRadiusLabel");
 
 			UVActiveBGChck.Checked = true;
 			UVGeneralRegistrationResolutionDrop.SelectedIndex = 2;
@@ -95,57 +89,36 @@ namespace CCDLAB
 			ReplaceImagePtsDrop.SelectedIndex = 0;
 			ContrastScaleDrop.SelectedIndex = 0;
 			ColourMapDrop.SelectedIndex = 0;
-			Chart1.SendToBack();
-
-			if (AUTOLOADIMAGESFILES.Length >= 1)
-			{
-				int ind = AUTOLOADIMAGESFILES[0].LastIndexOf("\\");
-				string dir = AUTOLOADIMAGESFILES[0].Substring(0, ind);
-				REG.SetReg("CCDLAB", "OpenFilesPath", dir);
-
-				AddToImageSet(AUTOLOADIMAGESFILES, true);
-				AUTOLOADIMAGESFILES = new string[0];
-			}
-
-			/*HalfWidthXUpD.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWX"));
-			HalfWidthYUpD.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWY"));*/
-			SubImageSizeTxt.Text = "Size: " + ((int)HalfWidthXUpD.Value * 2 + 1).ToString() + " x " + ((int)HalfWidthYUpD.Value * 2 + 1).ToString();
-
-			try
-			{
-				RecentFilesUpD();
-			}
-			catch
-			{
-				string[] files = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
-				for (int i = 0; i < files.Length; i++)
-					File.Delete(files[i]);
-				RecentFilesUpD();
-			}
+			Chart1.SendToBack();			
 
 			TBZipCopyChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "TBZipCopyChck"));
 			TBZipMoveChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "TBZipMoveChck"));
 
-			//AUTOVISDRIFTAPPLY = false;
-
 			SHOWIMGTOOLTIP = Convert.ToBoolean(REG.GetReg("CCDLAB", "ShowImgTooltip"));
 			if (SHOWIMGTOOLTIP)
-				ImageWndwShowCoordTooltipChck.PerformClick();			
-		}
+				ImageWndwShowCoordTooltipChck.PerformClick();
 
-		private void Form1_Resize(object sender, EventArgs e)
-		{
-			if (IMAGESET != null && IMAGESET.Count > 0)
-				IMAGESET[FILELISTINDEX].WCS.Grid_Refresh();
-		}
-
-		private void Form1_Shown(object sender, System.EventArgs e)
-		{
-			if (ImageWindow.Width > ImageWindow.Height)
+			if (Convert.ToBoolean(REG.GetReg("CCDLAB", "DisplayStateMax")) == false)
 			{
-				this.Size = new System.Drawing.Size(Width - (ImageWindow.Width - ImageWindow.Height), Height);
+				OptionsDisplayDefaultNorChck.Checked = true;
+				OptionsDisplayDefaultMaxChck.Checked = false;
+			}
+			else
+			{
+				OptionsDisplayDefaultNorChck.Checked = false;
+				OptionsDisplayDefaultMaxChck.Checked = true;
 			}
 
+			WCSPlotResidualScaleTxt.Text = (string)REG.GetReg("CCDLAB", "WCSPlotResidualScaleTxt");
+			WCSOptionsVerboseChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "WCSOptionsVerboseChck"));
+
+			OptionsHardDiskPerformanceExtremeChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "OptionsHardDiskPerformanceExtremeChck"));
+			OptionsHardDiskPerformanceStandardChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "OptionsHardDiskPerformanceStandardChck"));
+
+			if (ImageWindow.Width > ImageWindow.Height)
+			{
+				this.Size = new System.Drawing.Size(this.Width - (ImageWindow.Width - ImageWindow.Height), this.Height);
+			}
 			if (System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height >= 1080 && (SubImageSlideY.Right + SubImagePanel.Width) < (this.Right - 20))
 			{
 				int diff = this.Right - 20 - SubImageSlideY.Right - SubImagePanel.Width;
@@ -159,10 +132,67 @@ namespace CCDLAB
 				SubImageSlideY.Height = SubImageWindow.Height;
 
 				SubImagePanel.Location = new System.Drawing.Point(SubImageSlideY.Right + 10, SubImageWindow.Location.Y);
-			}			
+			}
+			if (OptionsDisplayDefaultNorChck.Checked == true)
+				this.WindowState = FormWindowState.Normal;
+			else
+				this.WindowState = FormWindowState.Maximized;
 
-			//KeyEventArgs uk = new KeyEventArgs(Keys.U | Keys.Alt | Keys.Control);
-			//Form1_KeyDown(sender, uk);
+			if (AUTOLOADIMAGESFILES.Length >= 1)
+			{
+				int ind = AUTOLOADIMAGESFILES[0].LastIndexOf("\\");
+				string dir = AUTOLOADIMAGESFILES[0].Substring(0, ind);
+				REG.SetReg("CCDLAB", "OpenFilesPath", dir);
+
+				AddToImageSet(AUTOLOADIMAGESFILES, true);
+				AUTOLOADIMAGESFILES = new string[0];
+			}
+
+			try
+			{
+				RecentFilesUpD();
+			}
+			catch
+			{
+				string[] files = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
+				for (int i = 0; i < files.Length; i++)
+					File.Delete(files[i]);
+				RecentFilesUpD();
+			}
+		}
+
+		private void Form1_Resize(object sender, EventArgs e)
+		{
+			if (IMAGESET != null && IMAGESET.Count > 0)
+				IMAGESET[IMAGESETINDEX].WCS.Grid_Refresh();
+		}
+
+		private void Form1_Shown(object sender, System.EventArgs e)
+		{
+			//if (ImageWindow.Width > ImageWindow.Height)
+			//{
+			//	this.Size = new System.Drawing.Size(this.Width - (ImageWindow.Width - ImageWindow.Height), this.Height);
+			//}
+
+			//if (System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height >= 1080 && (SubImageSlideY.Right + SubImagePanel.Width) < (this.Right - 20))
+			//{
+			//	int diff = this.Right - 20 - SubImageSlideY.Right - SubImagePanel.Width;
+			//	SubImageWindow.Location = new System.Drawing.Point(SubImageWindow.Location.X, SubImageWindow.Location.Y - diff);
+			//	SubImageWindow.Size = new System.Drawing.Size(SubImageWindow.Size.Width + diff, SubImageWindow.Size.Height + diff);
+
+			//	SubImageSlideX.Location = new System.Drawing.Point(SubImageWindow.Location.X, SubImageWindow.Location.Y - SubImageSlideX.Height);
+			//	SubImageSlideX.Width = SubImageWindow.Width;
+
+			//	SubImageSlideY.Location = new System.Drawing.Point(SubImageWindow.Right, SubImageWindow.Location.Y);
+			//	SubImageSlideY.Height = SubImageWindow.Height;
+
+			//	SubImagePanel.Location = new System.Drawing.Point(SubImageSlideY.Right + 10, SubImageWindow.Location.Y);
+			//}
+
+			//if (OptionsDisplayDefaultNorChck.Checked == true)
+			//	this.WindowState = FormWindowState.Normal;
+			//else
+			//	this.WindowState = FormWindowState.Maximized;
 		}
 
 		private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -188,21 +218,39 @@ namespace CCDLAB
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			if (PSEEllipticalROI.Checked)
+			if (IMAGESET != null && IMAGESET.Count > 0)
 			{
-				SUBIMAGE_HWX = SUBIMAGE_HWX_OLD;
-				SUBIMAGE_HWY = SUBIMAGE_HWY_OLD;
-				SubImageSlideX.Value = SUBIMAGEX0OLD + 1;
-				SubImageSlideY.Value = SUBIMAGEY0OLD + 1;
+				REG.SetReg("CCDLAB", "LastImageWidth", IMAGESET[IMAGESETINDEX].Width.ToString());
+				REG.SetReg("CCDLAB", "LastImageHeight", IMAGESET[IMAGESETINDEX].Height.ToString());
+				REG.SetReg("CCDLAB", "SubImageHWX", HalfWidthXUpD.Value.ToString());
+				REG.SetReg("CCDLAB", "SubImageHWY", HalfWidthYUpD.Value.ToString());
+				REG.SetReg("CCDLAB", "SubImageSlideX", SubImageSlideX.Value.ToString());
+				REG.SetReg("CCDLAB", "SubImageSlideY", SubImageSlideY.Value.ToString());
 			}
 
-			REG.SetReg("CCDLAB", "SubImageHWX", SUBIMAGE_HWX.ToString());
-			REG.SetReg("CCDLAB", "SubImageHWY", SUBIMAGE_HWY.ToString());
-			REG.SetReg("CCDLAB", "XPOS_CURSOR", (SubImageSlideX.Value - 1).ToString());
-			REG.SetReg("CCDLAB", "YPOS_CURSOR", (SubImageSlideY.Value - 1).ToString());
-			REG.SetReg("CCDLAB", "PSE_AUTOBGCHCK", PSEAutoBackgroundChck.Checked);
+			File.Delete(CCDLABPATH_USERAPPDATAROAMING + "ccdlabfoundfilelist.CFL");
+		}
 
-			File.Delete(CCDLABPATH + "ccdlabfoundfilelist.CFL");
+		private void OptionsHardDiskPerformanceExtremeChck_Click(object sender, EventArgs e)
+		{
+			OptionsHardDiskPerformanceExtremeChck.Checked = true;
+			OptionsHardDiskPerformanceStandardChck.Checked = false;
+
+			OptsMenu.ShowDropDown();
+			OptionsHardDiskPerformanceMenu.ShowDropDown();
+			REG.SetReg("CCDLAB", "OptionsHardDiskPerformanceExtremeChck", true);
+			REG.SetReg("CCDLAB", "OptionsHardDiskPerformanceStandardChck", false);
+		}
+
+		private void OptionsHardDiskPerformanceStandardChck_Click(object sender, EventArgs e)
+		{
+			OptionsHardDiskPerformanceExtremeChck.Checked = false;
+			OptionsHardDiskPerformanceStandardChck.Checked = true;
+
+			OptsMenu.ShowDropDown();
+			OptionsHardDiskPerformanceMenu.ShowDropDown();
+			REG.SetReg("CCDLAB", "OptionsHardDiskPerformanceStandardChck", true);
+			REG.SetReg("CCDLAB", "OptionsHardDiskPerformanceExtremeChck", false);
 		}
 
 		private void EditMenuRGBColorImageCreatorBtn_Click(object sender, EventArgs e)
@@ -247,22 +295,17 @@ namespace CCDLAB
 			TBZipAllBtn.ShowDropDown();
 		}
 
-		private void FormLoadBGW_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-		{
-
-		}
-
-		private void TEST_TEXT_BOX_TextChanged(object sender, EventArgs e)
+		private void NUMERIC_TEXTBOX_TextChanged(object sender, EventArgs e)
 		{
 			CHECKTEXTBOXTONUM((ToolStripTextBox)sender);
 		}
 
-		private void TEST_TEXT_BOX_MouseEnter(object sender, EventArgs e)
+		private void NUMERIC_TEXTBOX_MouseEnter(object sender, EventArgs e)
 		{
-			TEXTBOXENTER((ToolStripTextBox)sender);
+			NUMERIC_TEXTBOX_ENTER((ToolStripTextBox)sender);
 		}
 
-		private void TEXTBOXENTER(ToolStripTextBox textbox)
+		private void NUMERIC_TEXTBOX_ENTER(ToolStripTextBox textbox)
 		{
 			LASTTEXT = textbox.Text;
 		}
@@ -289,6 +332,8 @@ namespace CCDLAB
 
 			LASTTEXT = textbox.Text;
 			REG.SetReg("CCDLAB", textbox.Name, textbox.Text);
+
+			//MessageBox.Show(textbox.Name + "  " + textbox.Text);
 		}
 
 		private void OptInvertImageView_Click(object sender, EventArgs e)
@@ -319,11 +364,11 @@ namespace CCDLAB
 
 		private void OptViewSpectrum_Click(object sender, EventArgs e)
 		{
-			if (IMAGESET[FILELISTINDEX].Height > 512)
+			if (IMAGESET[IMAGESETINDEX].Height > 512)
 				if (MessageBox.Show("Plotting more than 512 lines can slow performance, are you sure?", "Warning...", MessageBoxButtons.YesNo) == DialogResult.No)
 					return;
 
-			if (IMAGESET[FILELISTINDEX].Width == 1)
+			if (IMAGESET[IMAGESETINDEX].Width == 1)
 			{
 				MessageBox.Show("Plot vector has unit width...can't plot.", "Error...", MessageBoxButtons.YesNo);
 				return;
@@ -359,6 +404,9 @@ namespace CCDLAB
 
 		private void HalfWidthXUpD_ValueChanged(object sender, EventArgs e)
 		{
+			if (FIRSTLOAD)
+				return;
+
 			SubImageSizeTxt.Text = "Size: " + ((int)HalfWidthXUpD.Value * 2 + 1).ToString() + " x " + ((int)HalfWidthYUpD.Value * 2 + 1).ToString();
 
 			if (HalfWidthXUpD.Tag.ToString().Equals("YUpD"))
@@ -367,36 +415,15 @@ namespace CCDLAB
 				return;
 			}
 
-			SUBIMAGE_HWX = (int)(HalfWidthXUpD.Value);
 			if (EqualHWChck.Checked)
 			{
-				SUBIMAGE_HWY = SUBIMAGE_HWX;
 				HalfWidthYUpD.Tag = "XUpD";
-				HalfWidthYUpD.Value = SUBIMAGE_HWY;
-			}
+				HalfWidthYUpD.Value = HalfWidthXUpD.Value;
+			}			
 
-			if (IMAGESET.Count > 0)
-			{
-				int width = IMAGESET[FILELISTINDEX].Width;
-				if (SUBIMAGE_HWX > (width - 1) / 2)
-				{
-					HalfWidthXUpD.Value = (int)((width - 1) / 2);
-					SUBIMAGE_HWX = (int)HalfWidthXUpD.Value;
-					return;
-				}
-			}
-
-			XSUBRANGE = new int[SUBIMAGE_HWX * 2 + 1];
-			YSUBRANGE = new int[SUBIMAGE_HWY * 2 + 1];
-			SUBIMAGE = new double[SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWY * 2 + 1];
-			SUBIMAGEBMP = new Bitmap(SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWY * 2 + 1, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-			if (IMAGESET.Count > 0)
-			{
-				SubImageStatsUpD();
-				SubImageUpD();
-				ImageWindow.Refresh();
-			}
+			SubImageStatsUpD();
+			SubImageUpD();
+			ImageWindow.Refresh();
 
 			if (ImageWndwCntxtPlotRow.Checked && ImageWndwCntxtPlotRowSubOnly.Checked)
 				ROWplotUpD(false);
@@ -407,46 +434,29 @@ namespace CCDLAB
 
 		private void HalfWidthYUpD_ValueChanged(object sender, EventArgs e)
 		{
+			if (FIRSTLOAD)
+				return;
+
 			SubImageSizeTxt.Text = "Size: " + ((int)HalfWidthXUpD.Value * 2 + 1).ToString() + " x " + ((int)HalfWidthYUpD.Value * 2 + 1).ToString();
 
 			if (HalfWidthYUpD.Tag.ToString().Equals("XUpD"))
 			{
 				if (ImageWndwCntxtPlotCol.Checked && ImageWndwCntxtPlotColSubOnly.Checked)
 					COLplotUpD(false);
+
 				HalfWidthYUpD.Tag = "";
 				return;
 			}
 
-			SUBIMAGE_HWY = (int)(HalfWidthYUpD.Value);
-			if (EqualHWChck.Checked || HalfWidthXUpD.Value == HalfWidthYUpD.Value)
+			if (EqualHWChck.Checked)
 			{
-				SUBIMAGE_HWX = SUBIMAGE_HWY;
 				HalfWidthXUpD.Tag = "YUpD";
-				HalfWidthXUpD.Value = SUBIMAGE_HWX;
+				HalfWidthXUpD.Value = HalfWidthYUpD.Value;
 			}
 
-			if (IMAGESET.Count > 0)
-			{
-				int height = IMAGESET[FILELISTINDEX].Height;
-				if (SUBIMAGE_HWY > (height - 1) / 2)
-				{
-					HalfWidthYUpD.Value = (int)((height - 1) / 2);
-					SUBIMAGE_HWY = (int)HalfWidthYUpD.Value;
-					return;
-				}
-			}
-
-			XSUBRANGE = new int[SUBIMAGE_HWX * 2 + 1];
-			YSUBRANGE = new int[SUBIMAGE_HWY * 2 + 1];
-			SUBIMAGE = new double[SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWY * 2 + 1];
-			SUBIMAGEBMP = new Bitmap(SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWY * 2 + 1, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-			if (IMAGESET.Count > 0)
-			{
-				SubImageStatsUpD();
-				SubImageUpD();
-				ImageWindow.Refresh();
-			}
+			SubImageStatsUpD();
+			SubImageUpD();
+			ImageWindow.Refresh();
 
 			if (ImageWndwCntxtPlotCol.Checked && ImageWndwCntxtPlotColSubOnly.Checked)
 				COLplotUpD(false);
@@ -461,8 +471,8 @@ namespace CCDLAB
 			{
 				int HWx = (int)HalfWidthXUpD.Value;
 				int HWy = (int)HalfWidthYUpD.Value;
-				int w = Math.Min(HWx, IMAGESET[FILELISTINDEX].Height);
-				int h = Math.Min(HWy, IMAGESET[FILELISTINDEX].Width);
+				int w = Math.Min(HWx, IMAGESET[IMAGESETINDEX].Height);
+				int h = Math.Min(HWy, IMAGESET[IMAGESETINDEX].Width);
 				if (w < h)
 					HalfWidthYUpD.Value = w;
 				else if (h < w)
@@ -491,14 +501,18 @@ namespace CCDLAB
 			if (ofd.ShowDialog() == DialogResult.Cancel)
 				return;
 
-			if (JPFITS.FITSBinTable.GetAllExtensionNames(ofd.FileName).Length == 0)
+			string[] list = FITSBinTable.GetAllExtensionNames(ofd.FileName);
+
+			if (list.Length == 0)
 			{
 				MessageBox.Show("No BINTABLE extensions exist in the file...", "Error");
 				return;
 			}
 
 			REG.SetReg("CCDLAB", "OpenFilesPath", ofd.FileName.Substring(0, ofd.FileName.LastIndexOf("\\")));
-			JPFITS.FitsBinTableViewer view = new FitsBinTableViewer(ofd.FileName);
+
+			JPFITS.FitsBinTableViewer btv = new FitsBinTableViewer(ofd.FileName);
+			btv.Show();
 		}
 
 		private void FMLoadSubFrame_Click(object sender, EventArgs e)
@@ -535,7 +549,6 @@ namespace CCDLAB
 			DialogResult ans = MessageBox.Show("Are you sure you would like to Exit?", "Program Exit Warning...", MessageBoxButtons.OKCancel);
 			if (ans == DialogResult.OK)
 				Application.Exit();
-
 		}
 
 		private void FMReload_Click(object sender, EventArgs e)
@@ -543,14 +556,20 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure you want to reload the files and discard all/any changes?", "Proceed?", MessageBoxButtons.OKCancel) == DialogResult.OK)
 			{
 				AUTOLOADIMAGES = true;
-				AUTOLOADIMAGESFILES = new string[IMAGESET.Count];
 
-				for (int i = 0; i < FileListDrop.Items.Count; i++)
-					AUTOLOADIMAGESFILES[i] = IMAGESET[i].FullFileName;
+				int c = 0;
+				for (int i = 0; i < IMAGESET.Count; i++)
+					if (File.Exists(IMAGESET[i].FullFileName))
+						c++;
+				AUTOLOADIMAGESFILES = new string[c];
+
+				c = 0;
+				for (int i = 0; i < IMAGESET.Count; i++)
+                    if (File.Exists(IMAGESET[i].FullFileName))
+                        AUTOLOADIMAGESFILES[c++] = IMAGESET[i].FullFileName;
 
 				IMAGESET = new FITSImageSet();
 				FMLoad_Click(sender, e);
-				//FMLoad.PerformClick();
 			}
 		}
 
@@ -559,16 +578,16 @@ namespace CCDLAB
 			string fullfile = SaveFileDlg.FileName;
 			int q = fullfile.LastIndexOf("\\");
 			string file = fullfile.Substring(q + 1);
-			FileListDrop.Items[FILELISTINDEX] = file;
+			FileListDrop.Items[IMAGESETINDEX] = file;
 			string ext = Path.GetExtension(fullfile);
 
 			if (ext == ".fts" || ext == ".fit" || ext == ".fits")
-				IMAGESET[FILELISTINDEX].WriteImage(fullfile, FILESAVEPREC, true);
+				IMAGESET[IMAGESETINDEX].WriteImage(fullfile, FILESAVEPREC, true);
 			if (ext == ".raw")//.raw
-				IMAGESET[FILELISTINDEX].WriteImage(fullfile, TypeCode.Int16, true);
+				IMAGESET[IMAGESETINDEX].WriteImage(fullfile, DiskPrecision.Int16, true);
 			if (ext == ".jpg" || ext == ".jpeg")
 			{
-				if (IMAGESET[FILELISTINDEX].Width < 256 || IMAGESET[FILELISTINDEX].Height < 256)
+				if (IMAGESET[IMAGESETINDEX].Width < 256 || IMAGESET[IMAGESETINDEX].Height < 256)
 				{
 					Bitmap bmp1 = new Bitmap(ImageWindow.Width, ImageWindow.Height);
 					ImageWindow.DrawToBitmap(bmp1, ImageWindow.DisplayRectangle);
@@ -576,15 +595,15 @@ namespace CCDLAB
 				}
 				else
 				{
-					Bitmap bmp1 = JPBitMap.ArrayToBmp(IMAGESET[FILELISTINDEX].Image, ContrastScaleDrop.SelectedIndex, ColourMapDrop.SelectedIndex, InvertContrastChck.Checked, DIMCLIM, IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height, OPTIMGVIEWINVERTY);
+					Bitmap bmp1 = JPBitMap.ArrayToBmp(IMAGESET[IMAGESETINDEX].Image, ContrastScaleDrop.SelectedIndex, ColourMapDrop.SelectedIndex, InvertContrastChck.Checked, DIMCLIM, IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height, OPTIMGVIEWINVERTY);
 					bmp1.Save(fullfile, System.Drawing.Imaging.ImageFormat.Jpeg);
 				}
 			}
 			if (ext == ".zip")
 			{
-				string ziplist = CCDLABPATH + "tozip.txt";
+				string ziplist = CCDLABPATH_USERAPPDATAROAMING + "tozip.txt";
 				StreamWriter sw = new StreamWriter(ziplist);
-				sw.WriteLine(IMAGESET[FILELISTINDEX].FullFileName);
+				sw.WriteLine(IMAGESET[IMAGESETINDEX].FullFileName);
 				sw.Close();
 
 				Process p = new Process();
@@ -604,44 +623,38 @@ namespace CCDLAB
 
 		private void ViewNextBtn_Click(object sender, EventArgs e)
 		{
-			int i = FILELISTINDEX;
+			int i = IMAGESETINDEX;
 			if (i == FileListDrop.Items.Count - 1)
 				i = 0;
 			else
 				i++;
-			FileListDrop.SelectedIndex = i;
+			FileListDrop.SelectedIndex = i;			
 		}
 
 		private void ViewLastbtn_Click(object sender, EventArgs e)
 		{
-			int i = FILELISTINDEX;
+			int i = IMAGESETINDEX;
 			if (i == 0)
 				i = FileListDrop.Items.Count - 1;
 			else
 				i--;
 			FileListDrop.SelectedIndex = i;
-		}
-
-		private void BlinkTimer_Tick(object sender, EventArgs e)
-		{
-			BlinkTimer.Interval = (int)(Convert.ToDouble(BlinkTime.Value) * 1000) + 1;//+1 to aprivate void 0, 1 = 1ms
-			ViewNextBtn_Click(sender, e);
-		}
+		}		
 
 		private void ContrastScaleDrop_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (IMAGESET.Count == 0)
 				return;
 
-			int width = IMAGESET[FILELISTINDEX].Width;
-			int height = IMAGESET[FILELISTINDEX].Height;
+			int width = IMAGESET[IMAGESETINDEX].Width;
+			int height = IMAGESET[IMAGESETINDEX].Height;
 			SubImageSlideX.Maximum = width;
-			SubImageSlideY.Maximum = height;
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			SubImageSlideY.Maximum = height;			
 			FileTxtsUpD();
 			StatTxtsUpD();
 			SubImageStatsUpD();
 			SubImageUpD();
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 		}
 
 		private void FMSave_Click(object sender, EventArgs e)
@@ -656,15 +669,15 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			int width = IMAGESET[FILELISTINDEX].Width;
-			int height = IMAGESET[FILELISTINDEX].Height;
+			int width = IMAGESET[IMAGESETINDEX].Width;
+			int height = IMAGESET[IMAGESETINDEX].Height;
 			SubImageSlideX.Maximum = width;
-			SubImageSlideY.Maximum = height;
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			SubImageSlideY.Maximum = height;			
 			FileTxtsUpD();
 			StatTxtsUpD();
 			SubImageStatsUpD();
 			SubImageUpD();
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 		}
 
 		private void ScaleContrastChck_CheckedChanged(object sender, EventArgs e)
@@ -678,7 +691,6 @@ namespace CCDLAB
 
 		private void TBSaveBatch_Click(object sender, EventArgs e)
 		{
-			//WriteImageSet();
 			JPFITS.FITSImageSetSaver fiss = new JPFITS.FITSImageSetSaver(IMAGESET);
 			fiss.ShowDialog();
 		}
@@ -691,46 +703,6 @@ namespace CCDLAB
 			fiss.ZipContextCopyChck.Checked = TBZipCopyChck.Checked;
 			fiss.ZipContextMoveChck.Checked = TBZipMoveChck.Checked;
 			fiss.ShowDialog();
-			return;
-
-			/*SaveFileDialog^ sfd = new SaveFileDialog();
-			sfd.Filter = "ZIP|*.zip";
-			sfd.InitialDirectory = IMAGESET.GetCommonDirectory();
-			sfd.FileName = sfd.InitialDirectory.Remove(sfd.InitialDirectory.LastIndexOf("\\"));
-			sfd.FileName = sfd.FileName.Substring(sfd.FileName.LastIndexOf("\\") + 1);
-			if (sfd.ShowDialog() == DialogResult.Cancel)
-				return;
-
-			String^ ziplist = CCDLABPATH + "tozip.txt";
-			StreamWriter^ sw = new StreamWriter(ziplist);
-			for (int i = 0; i < IMAGESET.Count; i++)
-				sw.WriteLine(IMAGESET[i].FullFileName);
-			sw.Close();
-
-			Process^ p = new Process();
-			p.StartInfo.FileName = "c:\\Program Files\\7-Zip\\7z.exe";
-			p.StartInfo.Arguments = "\"a\" " + "\"-tzip\" " + "\"" + sfd.FileName + "\" " + "\"@" + ziplist;
-			p.Start();
-			p.WaitForExit();
-			if (p.ExitCode != 0)
-			{
-				File.Delete(sfd.FileName);
-				return;
-			}
-
-			if (TBZipMoveChck.Checked)
-				for (int i = 0; i < IMAGESET.Count; i++)
-					File.Delete(IMAGESET[i].FullFileName);*/
-
-			//String^ pardir = Directory.GetParent(sfd.FileName).FullName;
-			//if (Directory.Exists(pardir + "\\VIS") && Directory.Exists(pardir + "\\archive"))
-			//	if (MessageBox.Show("Delete all intermediate UVIT reduction folders (excluding archive) under \r'" + pardir + "' ?", "Delete UVIT?", MessageBoxButtons.OKCancel) == DialogResult.OK)
-			//	{
-			//		string[] folds = Directory.GetDirectories(pardir);
-			//		for (int i = 0; i < folds.Length; i++)
-			//			if (!folds[i].Contains("archive"))
-			//				Directory.Delete(folds[i], true);
-			//	}
 		}
 
 		private void RelativeContrast_CheckedChanged(object sender, EventArgs e)
@@ -749,25 +721,25 @@ namespace CCDLAB
 
 		private void HeaderKeyTxt_KeyDown(object sender, KeyEventArgs e)
 		{
-			ListBox lb = (ListBox)sender;
+			ListBox headerlistbox = (ListBox)sender;
 
 			if (e.Control && e.KeyCode == Keys.C)//copy
 			{
 				e.SuppressKeyPress = true;
 
 				string str = "";
-				CLIPBRDHEADERKEYS = new string[lb.SelectedIndices.Count];
-				CLIPBRDHEADERVALS = new string[lb.SelectedIndices.Count];
-				CLIPBRDHEADERCOMS = new string[lb.SelectedIndices.Count];
-				CLIPBRDHEADERINDS = new int[lb.SelectedIndices.Count];
+				CLIPBRDHEADERKEYS = new string[headerlistbox.SelectedIndices.Count];
+				CLIPBRDHEADERVALS = new string[headerlistbox.SelectedIndices.Count];
+				CLIPBRDHEADERCOMS = new string[headerlistbox.SelectedIndices.Count];
+				CLIPBRDHEADERINDS = new int[headerlistbox.SelectedIndices.Count];
 
 				for (int i = 0; i < HeaderTxt.SelectedIndices.Count; i++)
 				{
-					str += IMAGESET[FILELISTINDEX].Header[lb.SelectedIndices[i]].GetFullyFomattedFITSLine() + "\r\n";
-					CLIPBRDHEADERKEYS[i] = IMAGESET[FILELISTINDEX].Header.GetKeyName(lb.SelectedIndices[i]);
-					CLIPBRDHEADERVALS[i] = IMAGESET[FILELISTINDEX].Header.GetKeyValue(lb.SelectedIndices[i]);
-					CLIPBRDHEADERCOMS[i] = IMAGESET[FILELISTINDEX].Header.GetKeyComment(lb.SelectedIndices[i]);
-					CLIPBRDHEADERINDS[i] = lb.SelectedIndices[i];
+					str += IMAGESET[IMAGESETINDEX].Header[headerlistbox.SelectedIndices[i]].GetFullyFomattedFITSLine() + "\r\n";
+					CLIPBRDHEADERKEYS[i] = IMAGESET[IMAGESETINDEX].Header.GetKeyName(headerlistbox.SelectedIndices[i]);
+					CLIPBRDHEADERVALS[i] = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(headerlistbox.SelectedIndices[i]);
+					CLIPBRDHEADERCOMS[i] = IMAGESET[IMAGESETINDEX].Header.GetKeyComment(headerlistbox.SelectedIndices[i]);
+					CLIPBRDHEADERINDS[i] = headerlistbox.SelectedIndices[i];
 				}
 
 				Clipboard.SetText(str);
@@ -780,17 +752,17 @@ namespace CCDLAB
 				for (int i = 0; i < CLIPBRDHEADERKEYS.Length; i++)
 				{
 					//first check to see if the key exists
-					int ind = IMAGESET[FILELISTINDEX].Header.GetKeyIndex(CLIPBRDHEADERKEYS[i], false);
+					int ind = IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(CLIPBRDHEADERKEYS[i], false);
 					//if it does then set the key
 					if (ind != -1)
 					{
-						IMAGESET[FILELISTINDEX].Header.SetKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], false, 0);
+						IMAGESET[IMAGESETINDEX].Header.SetKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], false, 0);
 						CLIPBRDHEADERINDS[i] = ind;
 					}
 					else
 					{
-						IMAGESET[FILELISTINDEX].Header.AddKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], CLIPBRDHEADERINDS[i]);
-						CLIPBRDHEADERINDS[i] = IMAGESET[FILELISTINDEX].Header.GetKeyIndex(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i]);
+						IMAGESET[IMAGESETINDEX].Header.AddKey(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i], CLIPBRDHEADERINDS[i]);
+						CLIPBRDHEADERINDS[i] = IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(CLIPBRDHEADERKEYS[i], CLIPBRDHEADERVALS[i], CLIPBRDHEADERCOMS[i]);
 					}
 				}
 
@@ -812,20 +784,18 @@ namespace CCDLAB
 			if (e.KeyCode == Keys.Delete)
 			{
 				e.SuppressKeyPress = true;
-				/*if (MessageBox.Show("Remove the selected header lines?", "Warning...", MessageBoxButtons.YesNo) == DialogResult.No)
-					return;*/
 
-				int ind0 = lb.SelectedIndices[0];
+				int ind0 = headerlistbox.SelectedIndices[0];
 
-				for (int i = lb.SelectedIndices.Count - 1; i >= 0; i--)
+				for (int i = headerlistbox.SelectedIndices.Count - 1; i >= 0; i--)
 				{
-					if (!FITSHeader.ValidKeyEdit(IMAGESET[FILELISTINDEX].Header.GetKeyName(lb.SelectedIndices[i]), false))
+					if (!FITSHeader.ValidKeyEdit(IMAGESET[IMAGESETINDEX].Header.GetKeyName(headerlistbox.SelectedIndices[i]), false))
 					{
-						if (MessageBox.Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction: " + IMAGESET[FILELISTINDEX].Header.GetKeyName(lb.SelectedIndices[i]), MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+						if (MessageBox.Show("Sorry, but this is a Restricted Key! You don't have access.", "FITS Restriction: " + IMAGESET[IMAGESETINDEX].Header.GetKeyName(headerlistbox.SelectedIndices[i]), MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 							return;
 					}
 					else
-						IMAGESET[FILELISTINDEX].Header.RemoveKey(lb.SelectedIndices[i]);
+						IMAGESET[IMAGESETINDEX].Header.RemoveKey(headerlistbox.SelectedIndices[i]);
 				}
 
 				FileTxtsUpD();
@@ -886,7 +856,7 @@ namespace CCDLAB
 				int headinds = HeaderTxt.SelectedIndices.Count;
 				string[] keys = new string[headinds];
 				for (int i = 0; i < headinds; i++)
-					keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+					keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 				PlotKeyList(keys, filenames);
 			}
@@ -898,7 +868,7 @@ namespace CCDLAB
 			string[] keys = new string[headinds];
 
 			for (int i = 0; i < headinds; i++)
-				keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+				keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 			PlotKeyList(keys, IMAGESET.FullFileNames);
 		}
@@ -945,9 +915,9 @@ namespace CCDLAB
 					ydata[i] = allkeyvalues[i, j];
 				}
 
-				JPPlot jpplot = new JPPlot();
-				jpplot.Text = keys[j];
-				jpplot.PlotLine(xdata, ydata, "Image Number", keys[j] + ": " + f.Header.GetKeyComment(keys[j]), keys[j], System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, keys[j]);
+				Plotter plot = new Plotter("", false, false);
+				plot.Text = keys[j];
+				plot.ChartGraph.PlotXYData(xdata, ydata, keys[j], "Image Number", keys[j] + ": " + f.Header.GetKeyComment(keys[j]), JPChart.SeriesType.Line, keys[j], null);
 			}
 		}
 
@@ -957,7 +927,7 @@ namespace CCDLAB
 			string[] keys = new string[headinds];
 
 			for (int i = 0; i < headinds; i++)
-				keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+				keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 			CopyKeyList(keys, IMAGESET.FullFileNames);
 		}
@@ -986,7 +956,7 @@ namespace CCDLAB
 				int headinds = HeaderTxt.SelectedIndices.Count;
 				string[] keys = new string[headinds];
 				for (int i = 0; i < headinds; i++)
-					keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+					keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 				CopyKeyList(keys, filenames);
 			}
@@ -1021,7 +991,7 @@ namespace CCDLAB
 			string[] keys = new string[headinds];
 
 			for (int i = 0; i < headinds; i++)
-				keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+				keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 			ExtractKeyList(keys, IMAGESET.FullFileNames);
 		}
@@ -1050,7 +1020,7 @@ namespace CCDLAB
 				int headinds = HeaderTxt.SelectedIndices.Count;
 				string[] keys = new string[headinds];
 				for (int i = 0; i < headinds; i++)
-					keys[i] = IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
+					keys[i] = IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name;
 
 				ExtractKeyList(keys, filenames);
 			}
@@ -1108,7 +1078,7 @@ namespace CCDLAB
 
 		private void HeaderCntxtMenu_Click(object sender, EventArgs e)
 		{
-			//if (sender.Equals(
+			
 		}
 
 		private void EMFileBias_Click(object sender, EventArgs e)
@@ -1118,11 +1088,50 @@ namespace CCDLAB
 
 		private void EMBatchFlat_Click(object sender, EventArgs e)
 		{
+
+		}
+
+		private void RegistrationDrop_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (RegistrationDrop.SelectedIndex == 0)
+				RegistrationDrop.SelectedIndex = 1;
+
+			if (RegistrationDrop.SelectedIndex == 2)
+				EqualHWChck.Checked = true;
+		}
+
+		private void RegisterBtn_Click(object sender, EventArgs e)
+		{
+			if (RegistrationDrop.SelectedIndex == -1)
+				RegistrationDrop.SelectedIndex = 1;
+
+			if (RegistrationDrop.SelectedIndex == 1)
+				AutoRegBtn_Click(sender, e);
+			else if (RegistrationDrop.SelectedIndex == 2)
+				ManRegBtn_Click(sender, e);
 		}
 
 		private void AutoRegBtn_Click(object sender, EventArgs e)
 		{
-			int refim = 0;//(int)(RegRefIndex.Value-1);//reference image
+            RotateBtnCntxtBiLinear.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtBiLinear"));
+            RotateBtnCntxtLanczos3.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos3"));
+            RotateBtnCntxtLanczos4.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos4"));
+            RotateBtnCntxtLanczos5.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos5"));
+            RotateBtnCntxtNearest.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtNearest"));
+
+			string interp = "";
+            if (RotateBtnCntxtNearest.Checked)
+                interp = "nearest";
+            if (RotateBtnCntxtBiLinear.Checked)
+                interp = "bilinear";
+            if (RotateBtnCntxtLanczos3.Checked)
+                interp = "lanc_3";
+            if (RotateBtnCntxtLanczos4.Checked)
+                interp = "lanc_4";
+            if (RotateBtnCntxtLanczos5.Checked)
+                interp = "lanc_5";
+
+            int refim = 0;//(int)(RegRefIndex.Value-1);//reference image
 			bool dostats = true;//possibly false if auto-batch
 
 			if (!IMAGESET.CoDimensional)
@@ -1131,7 +1140,7 @@ namespace CCDLAB
 				return;
 			}
 
-			FITSImageSet.Register(IMAGESET, refim, dostats);
+			IMAGESET.Register(refim, interp, dostats, true);
 			FileListDrop_SelectedIndexChanged(sender, e);
 		}
 
@@ -1140,28 +1149,28 @@ namespace CCDLAB
 			int ind = HeaderTxt.SelectedIndex;
 			if (ind >= 0)
 			{
-				bool valid = FITSHeader.ValidKeyEdit(IMAGESET[FILELISTINDEX].Header[ind].Name, false);
-				//ValidKeyChck();
+				bool valid = FITSHeader.ValidKeyEdit(IMAGESET[IMAGESETINDEX].Header[ind].Name, false);
+				
 				if (valid == true)
 				{
-					FITSHeaderKeyDialog ekd = new FITSHeaderKeyDialog(IMAGESET[FILELISTINDEX].Header[ind]);
+					FITSHeaderKeyDialog ekd = new FITSHeaderKeyDialog(IMAGESET[IMAGESETINDEX].Header[ind]);
 					ekd.ShowDialog();
 
 					if (ekd.DialogResult == DialogResult.OK)
 					{
-						if (IMAGESET[FILELISTINDEX].Header[ind].IsCommentKey)
-							IMAGESET[FILELISTINDEX].Header[ind].Comment = ekd.CommentKeyLineTxt.Text;
+						if (IMAGESET[IMAGESETINDEX].Header[ind].IsCommentKey)
+							IMAGESET[IMAGESETINDEX].Header[ind].Comment = ekd.CommentKeyLineTxt.Text;
 						else
 						{
-							IMAGESET[FILELISTINDEX].Header[ind].Name = ekd.KeyNameTxt.Text;
-							IMAGESET[FILELISTINDEX].Header[ind].Value = ekd.KeyValueTxt.Text;
-							IMAGESET[FILELISTINDEX].Header[ind].Comment = ekd.KeyCommentTxt.Text;
+							IMAGESET[IMAGESETINDEX].Header[ind].Name = ekd.KeyNameTxt.Text;
+							IMAGESET[IMAGESETINDEX].Header[ind].Value = ekd.KeyValueTxt.Text;
+							IMAGESET[IMAGESETINDEX].Header[ind].Comment = ekd.KeyCommentTxt.Text;
 						}
 
 						int topi = HeaderTxt.TopIndex;
 						HeaderTxt.BeginUpdate();
 						HeaderTxt.Items.Clear();
-						HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
+						HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
 						HeaderTxt.SelectedIndex = ind;
 						HeaderTxt.TopIndex = topi;
 						HeaderTxt.EndUpdate();
@@ -1169,7 +1178,7 @@ namespace CCDLAB
 				}
 				else
 				{
-					MessageBox.Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction...");
+					MessageBox.Show("Sorry, but this is a Restricted Key! You don't have access.", "FITS Restriction...");
 				}
 			}
 		}
@@ -1179,14 +1188,14 @@ namespace CCDLAB
 			int ind = HeaderTxt.SelectedIndex;
 			if (ind < 0)
 				return;
-			bool valid = FITSHeader.ValidKeyEdit(IMAGESET[FILELISTINDEX].Header[ind].Name, false);
+			bool valid = FITSHeader.ValidKeyEdit(IMAGESET[IMAGESETINDEX].Header[ind].Name, false);
 			if (!valid)
 			{
-				MessageBox.Show("Sorry, but this is a Restricted Key!  You don't have access.", "FITS Restriction...");
+				MessageBox.Show("Sorry, but this is a Restricted Key! You don't have access.", "FITS Restriction...");
 				return;
 			}
 
-			FITSHeaderKeyDialog ekd = new FITSHeaderKeyDialog(IMAGESET[FILELISTINDEX].Header[ind]);
+			FITSHeaderKeyDialog ekd = new FITSHeaderKeyDialog(IMAGESET[IMAGESETINDEX].Header[ind]);
 			ekd.ShowDialog();
 
 			if (ekd.DialogResult == DialogResult.Cancel)
@@ -1206,7 +1215,7 @@ namespace CCDLAB
 			int topi = HeaderTxt.TopIndex;
 			HeaderTxt.BeginUpdate();
 			HeaderTxt.Items.Clear();
-			HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
+			HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
 			HeaderTxt.SelectedIndex = ind;
 			HeaderTxt.TopIndex = topi;
 			HeaderTxt.EndUpdate();
@@ -1223,20 +1232,20 @@ namespace CCDLAB
 			bool iscommentline = ekd.CommentKeyLineChck.Checked;
 
 			if (iscommentline)
-				IMAGESET[FILELISTINDEX].Header.AddCommentKeyLine(ekd.CommentKeyLineTxt.Text, index);
+				IMAGESET[IMAGESETINDEX].Header.AddCommentKeyLine(ekd.CommentKeyLineTxt.Text, index);
 			else
 			{
-				if (!FITSHeader.ValidKeyEdit(ekd.KeyNameTxt.Text, false) || IMAGESET[FILELISTINDEX].Header.GetKeyIndex(ekd.KeyNameTxt.Text, false) != -1)
+				if (!FITSHeader.ValidKeyEdit(ekd.KeyNameTxt.Text, false) || IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(ekd.KeyNameTxt.Text, false) != -1)
 				{
 					MessageBox.Show("Sorry, but this is either a restricted key or it already exists! Can Not Insert.", "FITS Restriction...");
 					return;
 				}
 
-				IMAGESET[FILELISTINDEX].Header.AddKey(ekd.KeyNameTxt.Text, ekd.KeyValueTxt.Text, ekd.KeyCommentTxt.Text, index);
+				IMAGESET[IMAGESETINDEX].Header.AddKey(ekd.KeyNameTxt.Text, ekd.KeyValueTxt.Text, ekd.KeyCommentTxt.Text, index);
 			}
 
 			HeaderTxt.Items.Clear();
-			HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
+			HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
 			HeaderTxt.SelectedIndex = index;
 		}
 
@@ -1273,7 +1282,7 @@ namespace CCDLAB
 			ProgressBar.Value = 0;
 
 			HeaderTxt.Items.Clear();
-			HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
+			HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
 			HeaderTxt.SelectedIndex = index;
 		}
 
@@ -1281,20 +1290,20 @@ namespace CCDLAB
 		{
 			for (int j = 0; j < HeaderTxt.SelectedIndices.Count; j++)
 				for (int i = 0; i < IMAGESET.Count; i++)
-					if (i == FILELISTINDEX)
+					if (i == IMAGESETINDEX)
 						continue;
 					else
-						IMAGESET[i].Header.SetKey(IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[j]].Name, IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[j]].Value, IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[j]].Comment, true, HeaderTxt.SelectedIndices[j]);
+						IMAGESET[i].Header.SetKey(IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[j]].Name, IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[j]].Value, IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[j]].Comment, true, HeaderTxt.SelectedIndices[j]);
 		}
 
 		private void HCRemoveCurrent_Click(object sender, EventArgs e)
 		{
 			for (int i = HeaderTxt.SelectedIndices.Count - 1; i >= 0; i--)
-				if (FITSHeader.ValidKeyEdit(IMAGESET[FILELISTINDEX].Header[HeaderTxt.SelectedIndices[i]].Name, false))
-					IMAGESET[FILELISTINDEX].Header.RemoveKey(HeaderTxt.SelectedIndices[i]);
+				if (FITSHeader.ValidKeyEdit(IMAGESET[IMAGESETINDEX].Header[HeaderTxt.SelectedIndices[i]].Name, false))
+					IMAGESET[IMAGESETINDEX].Header.RemoveKey(HeaderTxt.SelectedIndices[i]);
 
 			HeaderTxt.Items.Clear();
-			HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
+			HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
 		}
 
 		private void HCRemoveBatch_Click(object sender, EventArgs e)
@@ -1326,12 +1335,9 @@ namespace CCDLAB
 						if (!YDRIFT_PLOT.IsDisposed)
 							YDRIFT_PLOT.Close();
 
-					IWLCK = false;//allow cursor box to move
+					ROIFIXEDCURSOR = false;//allow cursor box to move
 					DOMANREG = true;
 					Cursor.Hide();
-
-					EqualHWChck.Checked = true;
-					HalfWidthXUpD.Value = ManRegTrkHWUpD.Value;
 
 					FNDCOORDS_X = new int[1];//this is for plotting the local max point in the ROI
 					FNDCOORDS_Y = new int[1];
@@ -1363,7 +1369,6 @@ namespace CCDLAB
 						return;
 					}
 
-					Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = 100;
 					WAITBAR.Text = "Point Source Registration...";
@@ -1399,7 +1404,7 @@ namespace CCDLAB
 					}
 
 					DOMANREG = false;
-					CreateDriftFromINTMenuItem_Click(sender, e);
+					UVITCreateDriftFromINTMenuItem_Click(sender, e);
 					return;
 				}
 			}
@@ -1411,19 +1416,38 @@ namespace CCDLAB
 
 		private void ManRegWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+            RotateBtnCntxtBiLinear.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtBiLinear"));
+            RotateBtnCntxtLanczos3.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos3"));
+            RotateBtnCntxtLanczos4.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos4"));
+            RotateBtnCntxtLanczos5.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos5"));
+            RotateBtnCntxtNearest.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtNearest"));
+            string interp = "";
+            if (RotateBtnCntxtNearest.Checked)
+                interp = "nearest";
+            if (RotateBtnCntxtBiLinear.Checked)
+                interp = "bilinear";
+            if (RotateBtnCntxtLanczos3.Checked)
+                interp = "lanc_3";
+            if (RotateBtnCntxtLanczos4.Checked)
+                interp = "lanc_4";
+            if (RotateBtnCntxtLanczos5.Checked)
+                interp = "lanc_5";
+
+            float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 			bool UVITdisplay = PointSrcINTDriftDisplayChck.Checked;
 			int UVITdisplaycadence = Convert.ToInt32(PointSrcINTDriftDisplayCadenceDrop.SelectedItem);
 
 			int i = 0;
 			try
 			{
-				int SRC_HW = (int)ManRegSrcHWUpD.Value;
+				int SRC_HW = (int)PSEKernelRadUpD.Value;
+				if (DO_UVITDRIFTFILES)
+					SRC_HW = 2;
 				double[,] src = new double[SRC_HW * 2 + 1, SRC_HW * 2 + 1];
 				double[,] src_X = new double[SRC_HW * 2 + 1, SRC_HW * 2 + 1];
 				double[,] src_Y = new double[SRC_HW * 2 + 1, SRC_HW * 2 + 1];
-				int TRK_HW = (int)ManRegTrkHWUpD.Value;
+				int TRK_HW = (int)HalfWidthXUpD.Value;
 				double[,] box = new double[TRK_HW * 2 + 1, TRK_HW * 2 + 1];
 				double[,] box_X = new double[TRK_HW * 2 + 1, TRK_HW * 2 + 1];
 				double[,] box_Y = new double[TRK_HW * 2 + 1, TRK_HW * 2 + 1];
@@ -1443,7 +1467,7 @@ namespace CCDLAB
 				}
 
 				FITSImage img;
-				int intprog = 0, /*ntrackdivergingimgs = 0,*/ ntracksremoved = 0;
+				int intprog = 0, ntracksremoved = 0;
 				int[] divergcount = new int[NSrc];
 				for (i = 0; i < Nim; i++)
 				{
@@ -1481,7 +1505,7 @@ namespace CCDLAB
 
 						//do background subtraction here
 						if (!DO_UVITDRIFTFILES)//not needed for UVIT VIS files
-							box = JPMath.MatrixSubScalar(box, JPMath.Median(box), false);       //= JPMath.MatrixSubScalar(box, JPMath.Min(box, true));//median or min?
+							box = JPMath.MatrixSubScalar(box, JPMath.Median(box), false);//= JPMath.MatrixSubScalar(box, JPMath.Min(box, true));//median or min?
 
 						//now make a little centroid box
 						int xm = 0, ym = 0;
@@ -1588,7 +1612,6 @@ namespace CCDLAB
 										UVITINTMODEDRIFTPOLYPOINTS[j, ii] = tempUVITINTMODEDRIFTPOLYPOINTS[j, ii];
 									}
 								goto checkagain;
-								//break;
 							}
 					}
 
@@ -1617,8 +1640,8 @@ namespace CCDLAB
 						x_drift /= NSrc;
 						y_drift /= NSrc;
 
-						IMAGESET[i].Image = JPMath.ShiftArrayInt(IMAGESET[i].Image, -(int)Math.Round(x_drift), -(int)Math.Round(y_drift), true);
-					}
+						IMAGESET[i].SetImage(JPMath.RotateShiftArray(IMAGESET[i].Image, 0, Double.MaxValue, Double.MaxValue, interp, -x_drift, -y_drift, true), true, true);
+                    }
 				}
 			}
 			catch (Exception ee)
@@ -1653,8 +1676,6 @@ namespace CCDLAB
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
 			{
 				WAITBAR.Close();
-				Enabled = true;
-				BringToFront();
 
 				if (UVITBADTRACK)
 				{
@@ -1663,7 +1684,7 @@ namespace CCDLAB
 					DialogResult res = MessageBox.Show("Retry point source tracking?", "Error...", MessageBoxButtons.YesNo);
 					if (res == DialogResult.Yes)
 					{
-						CreateDriftFromINTMenuItem_Click(sender, new EventArgs());
+						UVITCreateDriftFromINTMenuItem_Click(sender, new EventArgs());
 						return;
 					}
 					else
@@ -1683,18 +1704,13 @@ namespace CCDLAB
 			try
 			{
 				if (!DO_UVITDRIFTFILES)
-				{
 					WAITBAR.Close();
-					Enabled = true;
-				}
 
 				if (DO_UVITDRIFTFILES)
 				{
 					if (UVITBADTRACK)
 					{
 						WAITBAR.Close();
-						Enabled = true;
-						BringToFront();
 						SPAREFITSImageSet.Clear();
 						UVITBADTRACK = false;
 						DialogResult res = MessageBox.Show("Manually retry point source tracking?", "Bad Track Detected...", MessageBoxButtons.YesNo);
@@ -1702,7 +1718,7 @@ namespace CCDLAB
 						{
 							PointSrcINTDriftNoPlotConfChck.Checked = false;
 							PointSrcINTDriftNoPSEConfChck.Checked = false;
-							CreateDriftFromINTMenuItem_Click(sender, new EventArgs());
+							UVITCreateDriftFromINTMenuItem_Click(sender, new EventArgs());
 							return;
 						}
 					}
@@ -1713,7 +1729,7 @@ namespace CCDLAB
 					object[] arg = new object[2];
 					arg[0] = (Object)UVITMANREGFILELIST;
 					arg[1] = (Object)CrossCorrINTDriftChck.Checked;
-					DriftFromINTWrkr.RunWorkerAsync(arg);
+					UVITDriftFromINTWrkr.RunWorkerAsync(arg);
 				}
 			}
 			catch (Exception ee)
@@ -1734,22 +1750,22 @@ namespace CCDLAB
 			if (ReplaceImagePtsDrop.SelectedIndex == 1)//image min value
 			{
 				ReplaceImagePtsTxt.Enabled = false;
-				ReplaceImagePtsTxt.Text = IMAGESET[FILELISTINDEX].Min.ToString();
+				ReplaceImagePtsTxt.Text = IMAGESET[IMAGESETINDEX].Min.ToString();
 			}
 			if (ReplaceImagePtsDrop.SelectedIndex == 2)//image max value
 			{
 				ReplaceImagePtsTxt.Enabled = false;
-				ReplaceImagePtsTxt.Text = IMAGESET[FILELISTINDEX].Max.ToString();
+				ReplaceImagePtsTxt.Text = IMAGESET[IMAGESETINDEX].Max.ToString();
 			}
 			if (ReplaceImagePtsDrop.SelectedIndex == 3)//image median value
 			{
 				ReplaceImagePtsTxt.Enabled = false;
-				ReplaceImagePtsTxt.Text = IMAGESET[FILELISTINDEX].Median.ToString();
+				ReplaceImagePtsTxt.Text = IMAGESET[IMAGESETINDEX].Median.ToString();
 			}
 			if (ReplaceImagePtsDrop.SelectedIndex == 4)//image mean value
 			{
 				ReplaceImagePtsTxt.Enabled = false;
-				ReplaceImagePtsTxt.Text = IMAGESET[FILELISTINDEX].Mean.ToString();
+				ReplaceImagePtsTxt.Text = IMAGESET[IMAGESETINDEX].Mean.ToString();
 			}
 		}
 
@@ -1767,9 +1783,9 @@ namespace CCDLAB
 		private void SCMChck_CheckedChanged(object sender, EventArgs e)
 		{
 			if (SCMChck.Checked == true)
-				ScmTxt.Enabled = true;
+				SCMUpD.Enabled = true;
 			else
-				ScmTxt.Enabled = false;
+				SCMUpD.Enabled = false;
 		}
 
 		private void textBox1_TextChanged(object sender, EventArgs e)
@@ -1806,8 +1822,8 @@ namespace CCDLAB
 
 		private void centerToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SubImageSlideX.Value = (int)(IMAGESET[FILELISTINDEX].Width / 2);
-			SubImageSlideY.Value = (int)(IMAGESET[FILELISTINDEX].Height / 2);
+			SubImageSlideX.Value = (int)(IMAGESET[IMAGESETINDEX].Width / 2);
+			SubImageSlideY.Value = (int)(IMAGESET[IMAGESETINDEX].Height / 2);
 			SubImageStatsUpD();
 			SubImageUpD();
 			ImageWindow.Refresh();
@@ -1815,65 +1831,26 @@ namespace CCDLAB
 
 		private void SubImageSurfFacet_Click(object sender, EventArgs e)
 		{
-			/*double xstart = (double)XSUBRANGE[0];
-			double xend = (double)XSUBRANGE[XSUBRANGE.Length - 1];
-			double ystart = (double)YSUBRANGE[0];
-			double yend = (double)YSUBRANGE[YSUBRANGE.Length - 1];
-			FITSImage^ ff = new FITSImage(CCDLABPATH + "\\surf.fits", SUBIMAGE, false);
-			ff.WriteImage(TypeCode.Double);
-
-			String^ pypath = (String^)REG.GetReg("CCDLAB", "PythonExePath");
-			ProcessStartInfo^ psi = new ProcessStartInfo();
-			psi.FileName = pypath;
-
-			String^ script = "D:\\Documents\\Visual Studio 2019\\Projects 2019\\Python Scripts\\Surface Plot matplotlib\\surface.py";
-			//psi.Arguments = String.Format("\"" + script + "\"");
-
-			psi.Arguments = String.Format("\"" + script + "\"" + " {0} {1} {2} {3} {4}", "\"" + ff.FullFileName + "\"", xstart, xend, ystart, yend);
-
-			psi.UseShellExecute = false;
-			psi.CreateNoWindow = true;
-			psi.RedirectStandardError = true;
-			psi.RedirectStandardOutput = true;
-			String^ errs = "";
-			String^ res = "";
-			Process^ proc = Process.Start(psi);*/
-			//proc.WaitForExit();
-
-			/*errs = proc.StandardError.ReadToEnd();
-			res = proc.StandardOutput.ReadToEnd();
-			MessageBox.Show(errs + "\r\n" + res);*/
-
-
-
-			/*if (!toolStripMenuItem1.Checked)
-				return;*/
-
-			Enabled = false;
 			SurfWrkr.RunWorkerAsync(1);
 		}
 
 		private void SubImageSurfSmooth_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			SurfWrkr.RunWorkerAsync(2);
 		}
 
 		private void SubImageSurfMetal_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			SurfWrkr.RunWorkerAsync(3);
 		}
 
 		private void SubImageSurfMesh_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			SurfWrkr.RunWorkerAsync(4);
 		}
 
 		private void SubImSurfColumnMenuBtn_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			SurfWrkr.RunWorkerAsync(5);
 		}
 
@@ -1924,7 +1901,7 @@ namespace CCDLAB
 
 		private void SurfWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			Enabled = true;
+			
 		}
 
 		private void OptFileSavePrecDbl_Click(object sender, EventArgs e)
@@ -1938,7 +1915,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.Black;
-			FILESAVEPREC = TypeCode.Double;
+			FILESAVEPREC = DiskPrecision.Double;
 
 			OptsMenu.ShowDropDown();
 			fileSavingPrecisionToolStripMenuItem.ShowDropDown();
@@ -1956,7 +1933,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.Black;
-			FILESAVEPREC = TypeCode.Double;
+			FILESAVEPREC = DiskPrecision.Double;
 
 			TBFileSavePrecOpts.ShowDropDown();
 			TBOptFileSavePrecDbl.Select();
@@ -1973,7 +1950,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.Blue;
-			FILESAVEPREC = TypeCode.Int32;
+			FILESAVEPREC = DiskPrecision.Int32;
 
 			OptsMenu.ShowDropDown();
 			fileSavingPrecisionToolStripMenuItem.ShowDropDown();
@@ -1991,7 +1968,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.Blue;
-			FILESAVEPREC = TypeCode.Int32;
+			FILESAVEPREC = DiskPrecision.Int32;
 
 			TBFileSavePrecOpts.ShowDropDown();
 			TBOptFileSavePrecInt32.Select();
@@ -2008,7 +1985,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = true;
 			OptsMenu.ForeColor = Color.Yellow;
-			FILESAVEPREC = TypeCode.Int16;
+			FILESAVEPREC = DiskPrecision.Int16;
 
 			OptsMenu.ShowDropDown();
 			fileSavingPrecisionToolStripMenuItem.ShowDropDown();
@@ -2026,7 +2003,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = false;
 			TBOptFileSavePrecInt16.Checked = true;
 			OptsMenu.ForeColor = Color.Yellow;
-			FILESAVEPREC = TypeCode.Int16;
+			FILESAVEPREC = DiskPrecision.Int16;
 
 			TBFileSavePrecOpts.ShowDropDown();
 			TBOptFileSavePrecInt16.Select();
@@ -2043,7 +2020,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = true;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.LimeGreen;
-			FILESAVEPREC = TypeCode.UInt16;
+			FILESAVEPREC = DiskPrecision.UInt16;
 
 			OptsMenu.ShowDropDown();
 			fileSavingPrecisionToolStripMenuItem.ShowDropDown();
@@ -2061,7 +2038,7 @@ namespace CCDLAB
 			TBOptFileSavePrecUInt16.Checked = true;
 			TBOptFileSavePrecInt16.Checked = false;
 			OptsMenu.ForeColor = Color.LimeGreen;
-			FILESAVEPREC = TypeCode.UInt16;
+			FILESAVEPREC = DiskPrecision.UInt16;
 
 			TBFileSavePrecOpts.ShowDropDown();
 			TBOptFileSavePrecUInt16.Select();
@@ -2081,12 +2058,12 @@ namespace CCDLAB
 			{
 				case (1)://make a histogram of the current image or the batch of images
 				{
-					double[] values = new double[IMAGESET[FILELISTINDEX].Image.Length];
+					double[] values = new double[IMAGESET[IMAGESETINDEX].Image.Length];
 
-					Parallel.For(0, IMAGESET[FILELISTINDEX].Width, i =>
+					Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, i =>
 					{
-						for (int j = 0; j < IMAGESET[FILELISTINDEX].Height; j++)
-							values[i * IMAGESET[FILELISTINDEX].Height + j] = IMAGESET[FILELISTINDEX][i, j];
+						for (int j = 0; j < IMAGESET[IMAGESETINDEX].Height; j++)
+							values[i * IMAGESET[IMAGESETINDEX].Height + j] = IMAGESET[IMAGESETINDEX][i, j];
 					});
 
 					resultinfo = new object[2];
@@ -2110,7 +2087,6 @@ namespace CCDLAB
 
 		private void ImageCntxtViewWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			Enabled = true;
 			ProgressBar.Value = 0;
 
 			object[] res = (object[])e.Result;
@@ -2119,9 +2095,9 @@ namespace CCDLAB
 				double[] x;
 				double[] y = JPMath.Histogram_IntegerStep((double[])res[1], 1, out x);
 
-				JPPlot jpplot = new JPPlot();
+				Plotter jpplot = new Plotter("VHist", true, true);
 				jpplot.Text = "Image Values Histogram";
-				jpplot.PlotLine(x, y, "Image Value", "Number of Elements", "Image Values Histogram", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "Histogram");
+				jpplot.ChartGraph.PlotXYData(x, y, "Image Values Histogram", "Image Value", "Number of Elements", JPChart.SeriesType.Column, "Histogram");
 			}
 		}
 
@@ -2137,7 +2113,7 @@ namespace CCDLAB
 			//yes can code that of course, but whatever, it doesn't NEED to go into a BG worker because there's no need for a "cancel" button option
 
 			EditValueDlg dlg = new EditValueDlg();
-			double oldval = IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR];
+			double oldval = IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR];
 			dlg.EditValueTxt.Text = Convert.ToString(oldval);
 			dlg.ShowDialog();
 
@@ -2158,7 +2134,7 @@ namespace CCDLAB
 						return;
 					if (dr == DialogResult.No)
 					{
-						indeces = new int[] { FILELISTINDEX };
+						indeces = new int[] { IMAGESETINDEX };
 						BatchCorrectionChck.Checked = false;
 					}
 					if (dr == DialogResult.Yes)
@@ -2169,7 +2145,7 @@ namespace CCDLAB
 					}
 				}
 				else
-					indeces = new int[] { FILELISTINDEX };
+					indeces = new int[] { IMAGESETINDEX };
 
 				ProgressBar.Maximum = indeces.Length;
 				for (int k = 0; k < indeces.Length; k++)
@@ -2178,23 +2154,23 @@ namespace CCDLAB
 					ProgressBar.Refresh();
 
 					if (!outsideROI)
-						IMAGESET[indeces[k]].Image[XPOS_CURSOR, YPOS_CURSOR] = newval;
+						IMAGESET[indeces[k]][XPOS_CURSOR, YPOS_CURSOR] = newval;
 					else
 					{
 						Parallel.For(0, IMAGESET[indeces[k]].Width, i =>
 						{
 							for (int j = 0; j < IMAGESET[indeces[k]].Height; j++)
-								IMAGESET[indeces[k]].Image[i, j] = newval;
+								IMAGESET[indeces[k]][i, j] = newval;
 						});
 
-						IMAGESET[indeces[k]].Image[XPOS_CURSOR, YPOS_CURSOR] = oldval;
+						IMAGESET[indeces[k]][XPOS_CURSOR, YPOS_CURSOR] = oldval;
 					}
 					IMAGESET[indeces[k]].StatsUpD(true);
 				}
 				ProgressBar.Value = 0;
 				FileListDrop_SelectedIndexChanged(sender, e);
 			}
-			else /*if (dlg.modecode == -1)//numeric error, try again.*/
+			else
 			{
 				EditValueCntxt_Click(sender, e);
 			}
@@ -2231,7 +2207,7 @@ namespace CCDLAB
 					return;
 				if (dr == DialogResult.No)
 				{
-					indeces = new int[] { FILELISTINDEX };
+					indeces = new int[] { IMAGESETINDEX };
 					BatchCorrectionChck.Checked = false;
 				}
 				if (dr == DialogResult.Yes)
@@ -2242,7 +2218,7 @@ namespace CCDLAB
 				}
 			}
 			else
-				indeces = new int[] { FILELISTINDEX };
+				indeces = new int[] { IMAGESETINDEX };
 			ProgressBar.Maximum = indeces.Length;
 
 			if (PSEDrawROI.Checked)
@@ -2254,20 +2230,20 @@ namespace CCDLAB
 
 					if (!outsideROI)
 					{
-						Parallel.For(0, IMAGESET[FILELISTINDEX].Width, x =>
+						Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
 						{
-							for (int y = 0; y < IMAGESET[FILELISTINDEX].Height; y++)
+							for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
 								if (ROI_REGION[x, y])
-									IMAGESET[indeces[k]].Image[x, y] = val;
+									IMAGESET[indeces[k]][x, y] = val;
 						});
 					}
 					else
 					{
-						Parallel.For(0, IMAGESET[FILELISTINDEX].Width, x =>
+						Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
 						{
-							for (int y = 0; y < IMAGESET[FILELISTINDEX].Height; y++)
+							for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
 								if (!ROI_REGION[x, y])
-									IMAGESET[indeces[k]].Image[x, y] = val;
+									IMAGESET[indeces[k]][x, y] = val;
 						});
 					}
 				}
@@ -2299,31 +2275,31 @@ namespace CCDLAB
 
 					if (!outsideROI)
 					{
-						Parallel.For(0, IMAGESET[FILELISTINDEX].Width, x =>
+						Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
 						{
 							double dx2 = (double)x - roix0;
 							dx2 *= dx2;
 							dx2 /= roixrad2;
-							for (int y = 0; y < IMAGESET[FILELISTINDEX].Height; y++)
+							for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
 							{
 								double dy = (double)y;
 								if ((dx2 + (dy - roiy0) * (dy - roiy0) / roiyrad2) <= 1)
-									IMAGESET[indeces[k]].Image[x, y] = val;
+									IMAGESET[indeces[k]][x, y] = val;
 							}
 						});
 					}
 					else
 					{
-						Parallel.For(0, IMAGESET[FILELISTINDEX].Width, x =>
+						Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
 						{
 							double dx2 = (double)x - roix0;
 							dx2 *= dx2;
 							dx2 /= roixrad2;
-							for (int y = 0; y < IMAGESET[FILELISTINDEX].Height; y++)
+							for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
 							{
 								double dy = (double)y;
 								if ((dx2 + (dy - roiy0) * (dy - roiy0) / roiyrad2) > 1)
-									IMAGESET[indeces[k]].Image[x, y] = val;
+									IMAGESET[indeces[k]][x, y] = val;
 							}
 						});
 					}
@@ -2345,7 +2321,7 @@ namespace CCDLAB
 					Parallel.For(0, XSUBRANGE.Length, i =>
 					{
 						for (int j = 0; j < YSUBRANGE.Length; j++)
-							IMAGESET[indeces[k]].Image[XSUBRANGE[i], YSUBRANGE[j]] = val;
+							IMAGESET[indeces[k]][XSUBRANGE[i], YSUBRANGE[j]] = val;
 					});
 				}
 				else
@@ -2355,21 +2331,21 @@ namespace CCDLAB
 					Parallel.For(0, XSUBRANGE.Length, i =>
 					{
 						for (int j = 0; j < YSUBRANGE.Length; j++)
-							tempsubim[i, j] = IMAGESET[indeces[k]].Image[XSUBRANGE[i], YSUBRANGE[j]];
+							tempsubim[i, j] = IMAGESET[indeces[k]][XSUBRANGE[i], YSUBRANGE[j]];
 					});
 
 					//obliterate the entire image
 					Parallel.For(0, IMAGESET[indeces[k]].Width, i =>
 					{
 						for (int j = 0; j < IMAGESET[indeces[k]].Height; j++)
-							IMAGESET[indeces[k]].Image[i, j] = val;
+							IMAGESET[indeces[k]][i, j] = val;
 					});
 
 					//reinsert the temp unmodifed subimage
 					Parallel.For(0, XSUBRANGE.Length, i =>
 					{
 						for (int j = 0; j < YSUBRANGE.Length; j++)
-							IMAGESET[indeces[k]].Image[XSUBRANGE[i], YSUBRANGE[j]] = tempsubim[i, j];
+							IMAGESET[indeces[k]][XSUBRANGE[i], YSUBRANGE[j]] = tempsubim[i, j];
 					});
 				}
 				IMAGESET[indeces[k]].StatsUpD(true);
@@ -2386,7 +2362,6 @@ namespace CCDLAB
 
 			if (FITSFINDER.DialogResult != DialogResult.OK)
 				return;
-
 
 			int numfilesfound = FITSFINDER.FoundFiles.Length;
 			if (numfilesfound == 0)//no files found
@@ -2413,11 +2388,9 @@ namespace CCDLAB
 				return;
 			}
 
-			string[] selectfiles = new string[Ninds];
-			for (int j = 0; j < Ninds; j++)
-				selectfiles[j] = FITSFINDERFILES[FITSFOUND.FileListTxt.SelectedIndices[j]];
+			string[] selectfiles = FITSFOUND.SelectedFiles;
 
-			switch (FITSFOUND.DialogResult)
+            switch (FITSFOUND.DialogResult)
 			{
 				case (DialogResult.Cancel):
 				{
@@ -2433,7 +2406,6 @@ namespace CCDLAB
 
 					IMAGESET = new FITSImageSet();
 					FMLoad_Click(new object(), new EventArgs());
-					//FMLoad.PerformClick();
 					break;
 				}
 				case (DialogResult.Ignore)://for ADDING to existing IMAGESET
@@ -2465,24 +2437,20 @@ namespace CCDLAB
 					return;
 				}
 
-				string[] selectfiles = new string[Ninds];
-				for (int j = 0; j < Ninds; j++)
-				{
-					selectfiles[j] = FITSFINDERFILES[FITSFOUND.FileListTxt.SelectedIndices[j]];
+                string[] selectfiles = FITSFOUND.SelectedFiles;
 
+                for (int j = 0; j < Ninds; j++)
 					if (!File.Exists(selectfiles[j]))
 					{
-						MessageBox.Show("Some of the files don't exist on the specified path.  The list file may be old.", "Error...");
+						MessageBox.Show("Some of the files don't exist on the specified path. The list file may be old: " + selectfiles[j], "Error...");
 						ViewFoundList();
 						return;
 					}
-				}
 
 				switch (FITSFOUND.DialogResult)
 				{
 					case (DialogResult.Cancel):
 					{
-						//FindFiles();
 						break;
 					}
 					case (DialogResult.OK)://for loading NEW IMAGESET
@@ -2494,7 +2462,6 @@ namespace CCDLAB
 
 						IMAGESET = new FITSImageSet();
 						FMLoad_Click(new object(), new EventArgs());
-						//FMLoad.PerformClick();
 						break;
 					}
 					case (DialogResult.Ignore)://for ADDING to existing IMAGESET
@@ -2539,9 +2506,25 @@ namespace CCDLAB
 			ViewFoundList();
 		}
 
+		private void FMExtendizeImageLayerStack_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog ofd = new OpenFileDialog();
+			ofd.InitialDirectory = (string)REG.GetReg("CCDLAB", "OpenFilesPath");
+			ofd.Filter = "FITS|*.fits;*.fit;*.fts;|All|*.*";
+			ofd.FilterIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "FilterIndex"));
+			ofd.Multiselect = false;
+			if (ofd.ShowDialog() == DialogResult.Cancel)
+				return;
+
+			FITSImageSet set = FITSImageSet.ReadPrimaryImageCubeAsSet(ofd.FileName);
+
+			FITSImageExtensionsSaver fies = new FITSImageExtensionsSaver(set);
+			fies.ShowDialog();
+		}
+
 		private void SingleOutBtn_Click(object sender, EventArgs e)
 		{
-			JPFITS.FITSImage tmp = IMAGESET[FILELISTINDEX];// new FITSImage(IMAGESET[FILELISTINDEX].FullFileName, IMAGESET[FILELISTINDEX].Image, true, true);
+			JPFITS.FITSImage tmp = IMAGESET[IMAGESETINDEX];
 			IMAGESET.Clear();
 			IMAGESET.Add(tmp);
 			AUTOLOADIMAGES = true;
@@ -2557,32 +2540,65 @@ namespace CCDLAB
 				SUBRANGE[0] = -1;
 			else
 				LOADSUBRANGE = false;//forget why
-
-			OpenFileDialog ofd;
+						
 			string[] filenames;
 
 			if (!AUTOLOADIMAGES)
 			{
-				ofd = new OpenFileDialog();
+				OpenFileDialog ofd = new OpenFileDialog();
 				ofd.InitialDirectory = (string)REG.GetReg("CCDLAB", "OpenFilesPath");
-				ofd.FilterIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "FilterIndex"));
 				ofd.Filter = "FITS|*.fits;*.fit;*.fts;|All|*.*";
+				ofd.FilterIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "FilterIndex"));
 				ofd.Multiselect = true;
 				if (ofd.ShowDialog() == DialogResult.Cancel)
 					return;
 				filenames = ofd.FileNames;
 				REG.SetReg("CCDLAB", "FilterIndex", ofd.FilterIndex.ToString());
+
 				if (filenames.Length == 1)
 				{
 					FITSImage check = new FITSImage(filenames[0], null, true, false, false, false);
+
 					if (Convert.ToInt32(check.Header.GetKeyValue("NAXIS")) == 0)
 					{
-						JPFITS.FitsBinTableViewer view = new FitsBinTableViewer(ofd.FileName);
-						view.BringToFront();
+						string[] list = FITSBinTable.GetAllExtensionNames(ofd.FileName);
+
+						if (list.Length > 0)
+						{
+							JPFITS.FitsBinTableViewer btv = new FitsBinTableViewer(ofd.FileName);
+							btv.Show();
+							return;
+						}
+					}
+
+					else if (JPFITS.FITSImage.GetAllExtensionNames(ofd.FileName).Length > 0)
+					{
+						JPFITS.FITSImageExtensionsLister iel = new FITSImageExtensionsLister(ofd.FileName);
+
+						if (iel.ShowDialog() == DialogResult.Cancel)
+							return;
+
+						IMAGESET = new JPFITS.FITSImageSet();
+
+						if (iel.IncludePrimaryChck.Checked)
+							IMAGESET.Add(new JPFITS.FITSImage(ofd.FileName, null, true, true, true, true));
+
+						IMAGESET.LoadExtensions(ofd.FileName, iel.ExtensionIndexesOneBased, null, true, "Loading extensions");
+
+						AUTOLOADIMAGES = true;
+						AUTOLOADIMAGESFILES = new string[] { "SingleOut" };
+						FMLoad_Click(iel, new EventArgs());
 						return;
 					}
+
+					else if (Convert.ToInt32(check.Header.GetKeyValue("NAXIS")) == 3)
+					{
+						IMAGESET = FITSImageSet.ReadPrimaryImageCubeAsSet(filenames[0]);
+						filenames = new string[1] { "SingleOut" };
+					}
 				}
-				IMAGESET = new FITSImageSet();
+				if (filenames[0] != "SingleOut")
+					IMAGESET = new FITSImageSet();
 			}
 			else
 				filenames = AUTOLOADIMAGESFILES;
@@ -2598,22 +2614,22 @@ namespace CCDLAB
 				UVOpenDirDlg.SelectedPath = dir;
 
 				if (!AUTOLOADIMAGES)
-					FILELISTINDEX = 0;
+					IMAGESETINDEX = 0;
 				else
 				{
 					if (IMAGESET == null || IMAGESET.Count == 0)
-						FILELISTINDEX = 0;
+						IMAGESETINDEX = 0;
 					else
-						FILELISTINDEX = FileListDrop.Items.Count;
+						IMAGESETINDEX = FileListDrop.Items.Count;
 					AUTOLOADIMAGES = false;
 				}
 
-				if (!IMAGESET.Load(filenames, SUBRANGE, true, true, true, "Loading Images"))
+				if (!IMAGESET.Load(filenames, SUBRANGE, true, OptionsHardDiskPerformanceExtremeChck.Checked, "Loading Images"))
 					return;
 			}
 			else
 			{
-				FILELISTINDEX = 0;
+				IMAGESETINDEX = 0;
 				AUTOLOADIMAGES = false;
 			}
 
@@ -2688,15 +2704,7 @@ namespace CCDLAB
 			BatchMinimumChck.Checked = false;
 			System.GC.Collect();
 
-			//try
-			//{
-			FileListDrop.SelectedIndex = FILELISTINDEX;
-			//}
-			//catch
-			//{
-			//FileListDrop.SelectedIndex = 0;
-			//}
-
+			FileListDrop.SelectedIndex = IMAGESETINDEX;
 			RecentFilesUpD();
 		}
 
@@ -2716,13 +2724,12 @@ namespace CCDLAB
 			AUTOLOADIMAGES = true;
 			AUTOLOADIMAGESFILES = afd.FileNames;
 			FMLoad_Click(sender, e);
-			//FMLoad.PerformClick();
 		}
 
 		private void RecentFilesUpD()
 		{
 			//check that all files exists and remove if not
-			string[] recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
+			string[] recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
 			for (int i = 0; i < recentlists.Length; i++)
 			{
 				StreamReader sr = new StreamReader(recentlists[i]);
@@ -2740,7 +2747,7 @@ namespace CCDLAB
 			if (!FIRSTLOAD)
 			{
 				//first find the recentfileslists and create/modify as needed
-				recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
+				recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
 
 				for (int i = recentlists.Length - 1; i >= 0; i--)
 				{
@@ -2748,58 +2755,61 @@ namespace CCDLAB
 					File.Move(file, file.Replace("_" + i.ToString("00"), "_" + (i + 1).ToString("00")));
 				}
 
-				FileStream fs = new FileStream(CCDLABPATH + "recentfileslist_00.txt", System.IO.FileMode.Create, FileAccess.Write);
-				StreamWriter sw = new StreamWriter(fs);
-				sw.WriteLine(IMAGESET.Count);
-				for (int i = 0; i < IMAGESET.Count; i++)
-					sw.WriteLine(IMAGESET[i].FullFileName);
-				sw.Flush();
-				fs.Flush();
-				sw.Close();
-				fs.Close();
-
-				//if there are more lists than RECENTFILESLISTLENGTH, then delete the oldest one and rename/move up the previous ones
-				recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
-				if (recentlists.Length > RECENTFILESLISTLENGTH)
-					for (int i = RECENTFILESLISTLENGTH; i < recentlists.Length; i++)
-						if (File.Exists(CCDLABPATH + "recentfileslist_" + i.ToString("00") + ".txt"))
-							File.Delete(CCDLABPATH + "recentfileslist_" + i.ToString("00") + ".txt");
-
-				//should go through the recent lists and check for duplicates...and delete all older dupes
-				recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
-				FileInfo fi0 = new FileInfo(recentlists[0]);
-				byte[] fc0 = File.ReadAllBytes(recentlists[0]);
-
-				bool dupe = false;
-				for (int j = 1; j < recentlists.Length; j++)
+				if (!CLEAREDRECENT)
 				{
-					FileInfo fij = new FileInfo(recentlists[j]);
-					if (fi0.Length != fij.Length)
-						continue;
+					FileStream fs = new FileStream(CCDLABPATH_USERAPPDATAROAMING + "recentfileslist_00.txt", System.IO.FileMode.Create, FileAccess.Write);
+					StreamWriter sw = new StreamWriter(fs);
+					sw.WriteLine(IMAGESET.Count);
+					for (int i = 0; i < IMAGESET.Count; i++)
+						sw.WriteLine(IMAGESET[i].FullFileName);
+					sw.Flush();
+					fs.Flush();
+					sw.Close();
+					fs.Close();				
 
-					byte[] fcj = File.ReadAllBytes(recentlists[j]);
-					int i = 0;
-					for (i = 0; i < fcj.Length; i++)
+					//if there are more lists than RECENTFILESLISTLENGTH, then delete the oldest one and rename/move up the previous ones
+					recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
+					if (recentlists.Length > RECENTFILESLISTLENGTH)
+						for (int i = RECENTFILESLISTLENGTH; i < recentlists.Length; i++)
+							if (File.Exists(CCDLABPATH_USERAPPDATAROAMING + "recentfileslist_" + i.ToString("00") + ".txt"))
+								File.Delete(CCDLABPATH_USERAPPDATAROAMING + "recentfileslist_" + i.ToString("00") + ".txt");
+
+					//should go through the recent lists and check for duplicates...and delete all older dupes
+					recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
+					FileInfo fi0 = new FileInfo(recentlists[0]);
+					byte[] fc0 = File.ReadAllBytes(recentlists[0]);
+
+					bool dupe = false;
+					for (int j = 1; j < recentlists.Length; j++)
+					{
+						FileInfo fij = new FileInfo(recentlists[j]);
+						if (fi0.Length != fij.Length)
+							continue;
+
+						byte[] fcj = File.ReadAllBytes(recentlists[j]);
+						int i = 0;
+						for (i = 0; i < fcj.Length; i++)
+							if (fcj[i] != fc0[i])
+								break;
+						if (i == fcj.Length)
+							i--;
 						if (fcj[i] != fc0[i])
-							break;
-					if (i == fcj.Length)
-						i--;
-					if (fcj[i] != fc0[i])
-						continue;
+							continue;
 
-					File.Delete(recentlists[j]);
-					dupe = true;
-				}
+						File.Delete(recentlists[j]);
+						dupe = true;
+					}				
 
-				if (dupe)
-				{
-					recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
-					for (int i = 0; i < recentlists.Length; i++)
-						File.Move(recentlists[i], CCDLABPATH + "recentfileslist_" + i.ToString("00") + ".txt");
+					if (dupe)
+					{
+						recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
+						for (int i = 0; i < recentlists.Length; i++)
+							File.Move(recentlists[i], CCDLABPATH_USERAPPDATAROAMING + "recentfileslist_" + i.ToString("00") + ".txt");
+					}
 				}
 			}
 
-			recentlists = Directory.GetFiles(CCDLABPATH, "*recentfileslist_*.txt");
+			recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
 			ToolStripButton[] tsbc = new ToolStripButton[recentlists.Length];
 
 			for (int i = 0; i < recentlists.Length; i++)
@@ -2846,6 +2856,42 @@ namespace CCDLAB
 			}
 			TBRecentFiles.DropDownItems.Clear();
 			TBRecentFiles.DropDownItems.AddRange(tsbc);
+
+			if (recentlists.Length != 0)
+			{
+				ToolStripButton clearall = new ToolStripButton("Clear History");
+				clearall.Width = clearall.Width * 3;
+				clearall.MouseDown += new MouseEventHandler(RecentFilesClear_Click);
+				TBRecentFiles.DropDownItems.Add(clearall);
+			}
+			else
+			{
+				ToolStripButton empty = new ToolStripButton("No History...");
+				empty.Width = empty.Width * 3;
+				empty.Enabled = false;
+				TBRecentFiles.DropDownItems.Add(empty);
+			}
+		}
+
+		private void RecentFilesClear_Click(object sender, EventArgs e)
+		{
+			if (MessageBox.Show("Are you sure you want to clear the file history?", "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+				return;
+
+			string[] recentlists = Directory.GetFiles(CCDLABPATH_USERAPPDATAROAMING, "*recentfileslist_*.txt");
+			foreach (string file in recentlists)
+				File.Delete(file);
+
+			CLEAREDRECENT = true;
+			RecentFilesUpD();
+			CLEAREDRECENT = false;
+
+			TBRecentFiles.HideDropDown();
+		}
+
+		private void SCMUpD_ValueChanged(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", "SCMUpD", SCMUpD.Value);
 		}
 
 		private void RecentFilesLoadAll_DoubleClick(object sender, EventArgs e)
@@ -2884,7 +2930,6 @@ namespace CCDLAB
 				IMAGESET = new FITSImageSet();
 				AUTOLOADIMAGES = true;
 				FMLoad_Click(sender, e);
-				//FMLoad.PerformClick();
 			}
 
 			if (e.Button == MouseButtons.Right)//add images
@@ -2897,7 +2942,6 @@ namespace CCDLAB
 						return;
 				AUTOLOADIMAGES = true;
 				FMLoad_Click(sender, e);
-				//FMLoad.PerformClick();
 			}
 		}
 
@@ -2906,13 +2950,42 @@ namespace CCDLAB
 			FITSImage tblcheck = new FITSImage(fullpathlist[0], null, true, false, false, false);
 			if (Convert.ToInt32(tblcheck.Header.GetKeyValue("NAXIS")) == 0)
 			{
-				JPFITS.FitsBinTableViewer view = new FitsBinTableViewer(fullpathlist[0]);
-				view.TopMost = true;
-				return;
+				string[] list = FITSBinTable.GetAllExtensionNames(fullpathlist[0]);
+
+				if (list.Length > 0)
+				{
+					JPFITS.FitsBinTableViewer btv = new FitsBinTableViewer(fullpathlist[0]);
+					btv.Show();
+					return;
+				}
+
+				if (JPFITS.FITSImage.GetAllExtensionNames(fullpathlist[0]).Length > 0)
+				{
+					JPFITS.FITSImageExtensionsLister iel = new FITSImageExtensionsLister(fullpathlist[0]);
+
+					if (iel.ShowDialog() == DialogResult.Cancel)
+						return;
+
+					IMAGESET = new JPFITS.FITSImageSet();
+
+					if (iel.IncludePrimaryChck.Checked)
+						IMAGESET.Add(new JPFITS.FITSImage(fullpathlist[0], null, true, true, true, true));
+
+					IMAGESET.LoadExtensions(fullpathlist[0], iel.ExtensionIndexesOneBased, null, true, "Loading extensions");
+
+					AUTOLOADIMAGES = true;
+					AUTOLOADIMAGESFILES = new string[] { "SingleOut" };
+					FMLoad_Click(iel, new EventArgs());
+					return;
+				}
+			}
+			else if (Convert.ToInt32(tblcheck.Header.GetKeyValue("NAXIS")) == 3)
+			{
+				IMAGESET = FITSImageSet.ReadPrimaryImageCubeAsSet(fullpathlist[0]);
+				fullpathlist = new string[0];
 			}
 
 			int c = FileListDrop.Items.Count;
-			string[] files = new string[fullpathlist.Length + c];
 
 			if (!UVREGISTRATION)
 				ProgressBar.Maximum = fullpathlist.Length;
@@ -2933,9 +3006,7 @@ namespace CCDLAB
 				ProgressBar.Value = 0;
 
 			FileListDrop.Items.Clear();
-			for (int i = 0; i < fullpathlist.Length + c; i++)
-				files[i] = IMAGESET[i].FileName;
-			FileListDrop.Items.AddRange(files);
+			FileListDrop.Items.AddRange(IMAGESET.FileNames);
 
 			if (Convert.ToInt32(REG.GetReg("CCDLAB", "FilterIndex")) == 2)//UVIT *.raw
 			{
@@ -3025,22 +3096,16 @@ namespace CCDLAB
 			bool invert = InvertContrastChck.Checked;
 			SetContrast();
 			IMAGEBMP = JPBitMap.ArrayToBmp(image, scaling, colour, invert, DIMCLIM, ImageWindow.Size.Width, ImageWindow.Size.Height, OPTIMGVIEWINVERTY);
-
-			//IMAGEBMP = JPBitMap.ArrayTo16bppGSBmp(image, scaling, colour, invert, DIMCLIM, ImageWindow.Size.Width, ImageWindow.Size.Height, OPTIMGVIEWINVERTY);
-
 			ImageWindow.Refresh();
 		}
 
 		[MethodImpl(256)]
-		private void SubImageUpD()
+		public void SubImageUpD()
 		{
 			bool invert = InvertContrastChck.Checked;
 			int scaling = ContrastScaleDrop.SelectedIndex;
 			int colour = ColourMapDrop.SelectedIndex;
 			bool matchscale = ScaleContrastChck.Checked;
-
-			if (PSEEllipticalROI.Checked)
-				return;
 
 			if (!matchscale)
 			{
@@ -3055,19 +3120,28 @@ namespace CCDLAB
 		}
 
 		[MethodImpl(256)]
-		private void SubImageStatsUpD()
-		{
-			int w = IMAGESET[FILELISTINDEX].Width;
-			int h = IMAGESET[FILELISTINDEX].Height;
-			//int c = 0;  //counter
-			int L = SUBIMAGE.Length;
-			double N = (double)(L);
+		public void SubImageStatsUpD()
+		{			
 			SUBIMAGESUM = 0.0;
 			SUBIMAGEMIN = System.Double.MaxValue;
 			SUBIMAGEMAX = System.Double.MinValue;
 			SUBIMAGEMEDIAN = 0.0;
 			SUBIMAGEMEAN = 0.0;
 			SUBIMAGESTD = 0.0;
+
+			SUBIMAGE_HWX = (int)HalfWidthXUpD.Value;			
+			SUBIMAGE_HWY = (int)HalfWidthYUpD.Value;
+			int sihwt2p1X = SUBIMAGE_HWX * 2 + 1;
+			int sihwt2p1Y = SUBIMAGE_HWY * 2 + 1;
+			if (XSUBRANGE.Length != sihwt2p1X)
+				XSUBRANGE = new int[sihwt2p1X];
+			if (YSUBRANGE.Length != sihwt2p1Y)
+				YSUBRANGE = new int[sihwt2p1Y];
+			if (SUBIMAGE == null || SUBIMAGE.GetLength(0) != XSUBRANGE.Length || SUBIMAGE.GetLength(1) != YSUBRANGE.Length)
+			{
+				SUBIMAGE = new double[sihwt2p1X, sihwt2p1Y];
+				SUBIMAGEBMP = new Bitmap(sihwt2p1X, sihwt2p1Y, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+			}
 
 			int x = SubImageSlideX.Value - 1;
 			int y = SubImageSlideY.Value - 1;
@@ -3076,27 +3150,26 @@ namespace CCDLAB
 				x = SUBIMAGE_HWX;
 			if (y < SUBIMAGE_HWY)
 				y = SUBIMAGE_HWY;
-			if (x > w - SUBIMAGE_HWX - 1)
-				x = w - SUBIMAGE_HWX - 1;
-			if (y > h - SUBIMAGE_HWY - 1)
-				y = h - SUBIMAGE_HWY - 1;
-
-			int sihwt2p1X = SUBIMAGE_HWX * 2 + 1;
+			if (x > IMAGESET[IMAGESETINDEX].Width - SUBIMAGE_HWX - 1)
+				x = IMAGESET[IMAGESETINDEX].Width - SUBIMAGE_HWX - 1;
+			if (y > IMAGESET[IMAGESETINDEX].Height - SUBIMAGE_HWY - 1)
+				y = IMAGESET[IMAGESETINDEX].Height - SUBIMAGE_HWY - 1;
+			
 			for (int k = 0; k < sihwt2p1X; k++)
 				XSUBRANGE[k] = x - SUBIMAGE_HWX + k;
-
-			int sihwt2p1Y = SUBIMAGE_HWY * 2 + 1;
+			
 			for (int k = 0; k < sihwt2p1Y; k++)
 				YSUBRANGE[k] = y - SUBIMAGE_HWY + k;
 
 			SubImageXTxt.Text = (XSUBRANGE[SUBIMAGE_HWX] + 1).ToString();
 			SubImageYTxt.Text = (YSUBRANGE[SUBIMAGE_HWY] + 1).ToString();
-			if (IMAGESET[FILELISTINDEX].WCS.Exists())
+
+			if (IMAGESET[IMAGESETINDEX].WCS.Exists())
 			{
 				double cval1, cval2;
 				string sx1;
 				string sx2;
-				IMAGESET[FILELISTINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2, out sx1, out sx2);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2, out sx1, out sx2);
 				sx1 = sx1.Replace(" ", "");
 				sx2 = sx2.Replace(" ", "");
 				if (sx1.Contains("."))
@@ -3106,9 +3179,6 @@ namespace CCDLAB
 				SubImageRATxt.Text = sx1;
 				SubImageDecTxt.Text = sx2;
 			}
-
-			if (PSEEllipticalROI.Checked)
-				return;
 
 			var rangePartitioner = Partitioner.Create(0, sihwt2p1X);
 			object locker = new object();
@@ -3122,7 +3192,7 @@ namespace CCDLAB
 				for (int i = range.Item1; i < range.Item2; i++)
 					for (int j = 0; j < sihwt2p1Y; j++)
 					{
-						SUBIMAGE[i, j] = IMAGESET[FILELISTINDEX].Image[XSUBRANGE[i], YSUBRANGE[j]];
+						SUBIMAGE[i, j] = IMAGESET[IMAGESETINDEX][XSUBRANGE[i], YSUBRANGE[j]];
 						sum += SUBIMAGE[i, j];
 
 						if (SUBIMAGE[i, j] < mn)
@@ -3151,7 +3221,7 @@ namespace CCDLAB
 				}
 			});
 
-			SUBIMAGEMEAN = SUBIMAGESUM / N;
+			SUBIMAGEMEAN = SUBIMAGESUM / (double)(SUBIMAGE.Length);
 			SUBIMAGEMEDIAN = JPMath.Median(SUBIMAGE);
 
 			Parallel.ForEach(rangePartitioner, (range, loopState) =>
@@ -3167,7 +3237,7 @@ namespace CCDLAB
 					SUBIMAGESTD += std;
 				}
 			});
-			SUBIMAGESTD = Math.Sqrt(SUBIMAGESTD / (N - 1.0));
+			SUBIMAGESTD = Math.Sqrt(SUBIMAGESTD / ((double)(SUBIMAGE.Length) - 1.0));
 
 			SubImageSumTxt.Text = SUBIMAGESUM.ToString();
 			SubImageMinTxt.Text = SUBIMAGEMIN.ToString();
@@ -3179,32 +3249,51 @@ namespace CCDLAB
 
 		private void StatTxtsUpD()
 		{
-			ImageSumTxt.Text = IMAGESET[FILELISTINDEX].Sum.ToString();
-			ImageMinTxt.Text = IMAGESET[FILELISTINDEX].Min.ToString();
-			ImageMaxTxt.Text = IMAGESET[FILELISTINDEX].Max.ToString();
-			ImageMeanTxt.Text = IMAGESET[FILELISTINDEX].Mean.ToString();
-			ImageMedianTxt.Text = IMAGESET[FILELISTINDEX].Median.ToString();
-			ImageStdTxt.Text = IMAGESET[FILELISTINDEX].Std.ToString();
-			ImageSizeTxt.Text = String.Concat(IMAGESET[FILELISTINDEX].Width.ToString(), "x", IMAGESET[FILELISTINDEX].Height.ToString());
+			ImageSumTxt.Text = IMAGESET[IMAGESETINDEX].Sum.ToString();
+			ImageMinTxt.Text = IMAGESET[IMAGESETINDEX].Min.ToString();
+			ImageMaxTxt.Text = IMAGESET[IMAGESETINDEX].Max.ToString();
+			ImageMeanTxt.Text = IMAGESET[IMAGESETINDEX].Mean.ToString();
+			ImageMedianTxt.Text = IMAGESET[IMAGESETINDEX].Median.ToString();
+			ImageStdTxt.Text = IMAGESET[IMAGESETINDEX].Stdv.ToString();
+			ImageSizeTxt.Text = String.Concat(IMAGESET[IMAGESETINDEX].Width.ToString(), "x", IMAGESET[IMAGESETINDEX].Height.ToString());
+
+			//ImageSumTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Sum);
+			//ImageMinTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Min);
+			//ImageMaxTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Max);
+			//ImageMeanTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Mean);
+			//ImageMedianTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Median);
+			//ImageStdTxt.Text = FormatNumber(IMAGESET[IMAGESETINDEX].Stdv);
+			//ImageSizeTxt.Text = String.Concat(IMAGESET[IMAGESETINDEX].Width.ToString(), "x", IMAGESET[IMAGESETINDEX].Height.ToString());
+		}
+
+		private string FormatNumber(double val)
+		{
+			if (val == 0)
+				return "0";
+
+			if (Math.Abs(val) <= 1e-4 || Math.Abs(val) >= 1e4)
+				return val.ToString("0.###e+00");
+			else
+				return val.ToString("0.###");
 		}
 
 		private void FileTxtsUpD()
 		{
-			this.Text = IMAGESET[FILELISTINDEX].FullFileName;
-			//DirectoryLabel.Text = IMAGESET[FILELISTINDEX].FullFileName;
+			this.Text = IMAGESET[IMAGESETINDEX].FullFileName;
+			
 			try
 			{
-				FileDirectoryTxt.Text = ".." + Directory.GetParent(Directory.GetParent(IMAGESET[FILELISTINDEX].FilePath).FullName).Name + "\\" + Directory.GetParent(IMAGESET[FILELISTINDEX].FullFileName).Name;
+				FileDirectoryTxt.Text = ".." + Directory.GetParent(Directory.GetParent(IMAGESET[IMAGESETINDEX].FilePath).FullName).Name + "\\" + Directory.GetParent(IMAGESET[IMAGESETINDEX].FullFileName).Name;
 			}
 			catch { }
-			FileDirectoryTxt.Tag = IMAGESET[FILELISTINDEX].FilePath;
-			Tooltip.SetToolTip(FileDirectoryTxt, IMAGESET[FILELISTINDEX].FilePath);
-			FileNameTxt.Text = IMAGESET[FILELISTINDEX].FileName;
-			InfoTxt1.Text = IMAGESET[FILELISTINDEX].Header.GetKeyValue(InfoStatic1.Text.Substring(0, InfoStatic1.Text.IndexOf(':')));
-			InfoTxt2.Text = IMAGESET[FILELISTINDEX].Header.GetKeyValue(InfoStatic2.Text.Substring(0, InfoStatic2.Text.IndexOf(':')));
-			InfoTxt3.Text = IMAGESET[FILELISTINDEX].Header.GetKeyValue(InfoStatic3.Text.Substring(0, InfoStatic3.Text.IndexOf(':')));
-			InfoTxt4.Text = IMAGESET[FILELISTINDEX].Header.GetKeyValue(InfoStatic4.Text.Substring(0, InfoStatic4.Text.IndexOf(':')));
-			InfoTxt5.Text = IMAGESET[FILELISTINDEX].Header.GetKeyValue(InfoStatic5.Text.Substring(0, InfoStatic5.Text.IndexOf(':')));
+			FileDirectoryTxt.Tag = IMAGESET[IMAGESETINDEX].FilePath;
+			Tooltip.SetToolTip(FileDirectoryTxt, IMAGESET[IMAGESETINDEX].FilePath);
+			FileNameTxt.Text = IMAGESET[IMAGESETINDEX].FileName;
+			InfoTxt1.Text = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(InfoStatic1.Text.Substring(0, InfoStatic1.Text.IndexOf(':')));
+			InfoTxt2.Text = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(InfoStatic2.Text.Substring(0, InfoStatic2.Text.IndexOf(':')));
+			InfoTxt3.Text = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(InfoStatic3.Text.Substring(0, InfoStatic3.Text.IndexOf(':')));
+			InfoTxt4.Text = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(InfoStatic4.Text.Substring(0, InfoStatic4.Text.IndexOf(':')));
+			InfoTxt5.Text = IMAGESET[IMAGESETINDEX].Header.GetKeyValue(InfoStatic5.Text.Substring(0, InfoStatic5.Text.IndexOf(':')));
 
 			if (ViewHeaderBtn.Checked)
 			{
@@ -3217,13 +3306,13 @@ namespace CCDLAB
 
 				HeaderTxt.BeginUpdate();
 				HeaderTxt.Items.Clear();
-				HeaderTxt.Items.AddRange(IMAGESET[FILELISTINDEX].Header.GetFormattedHeaderBlock(false, true));
-				ind = IMAGESET[FILELISTINDEX].Header.GetKeyIndex(key, false);
+				HeaderTxt.Items.AddRange(IMAGESET[IMAGESETINDEX].Header.GetFormattedHeaderBlock(FITSHeader.HeaderUnitType.Primary, true));
+				ind = IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(key, false);
 				HeaderTxt.TopIndex = ind;
 
 				for (int i = 0; i < c; i++)
 				{
-					int indx = IMAGESET[FILELISTINDEX].Header.GetKeyIndex(keys[i], false);
+					int indx = IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(keys[i], false);
 					HeaderTxt.SelectedIndex = indx;
 				}
 
@@ -3261,46 +3350,19 @@ namespace CCDLAB
 			ProgressBar.Refresh();
 		}
 
-		//bool ValidKeyChck(string checkkey)
-		//{
-		//	bool result = true;
-		//	string[] checks = new string[]{ "SIMPLE","BITPIX","NAXIS","NAXIS1","NAXIS2","BZERO","BSCALE","END","EXTEND"};
-		//	for (int i = 0; i < checks.Length; i++)
-		//	{
-		//		if (checkkey.CompareTo(checks[i]) == 0)
-		//			result = false;
-		//	}
-		//	return result;
-		//}
-
-		//bool ValidKeyChck(string checkkey, string[] keys)
-		//{
-		//	bool result = true;
-		//	for (int i = 0; i < keys.Length; i++)
-		//	{
-		//		if (checkkey.CompareTo(keys[i]) == 0)
-		//		{
-		//			result = false;
-		//			if (checkkey.Equals("COMMENT"))
-		//				result = true;
-		//		}
-		//	}
-		//	return result;
-		//}
-
 		private void ColourMapDrop_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (IMAGESET.Count > 0)
 			{
-				int width = IMAGESET[FILELISTINDEX].Width;
-				int height = IMAGESET[FILELISTINDEX].Height;
+				int width = IMAGESET[IMAGESETINDEX].Width;
+				int height = IMAGESET[IMAGESETINDEX].Height;
 				SubImageSlideX.Maximum = width;
-				SubImageSlideY.Maximum = height;
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
+				SubImageSlideY.Maximum = height;				
 				FileTxtsUpD();
 				StatTxtsUpD();
 				SubImageStatsUpD();
 				SubImageUpD();
+				ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			}
 		}
 
@@ -3332,8 +3394,8 @@ namespace CCDLAB
 					return;
 				}
 
-				double std = IMAGESET[FILELISTINDEX].Std;
-				double mean = IMAGESET[FILELISTINDEX].Mean;
+				double std = IMAGESET[IMAGESETINDEX].Stdv;
+				double mean = IMAGESET[IMAGESETINDEX].Mean;
 
 				DIMCLIM[0] = min;
 				IMSTDLIM[0] = (min - mean) / std;
@@ -3342,7 +3404,7 @@ namespace CCDLAB
 
 				MinContrastSlider.Value = 1;
 
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
+				ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 				SubImageUpD();
 
 				ContrastWideRad.Checked = false;
@@ -3377,8 +3439,8 @@ namespace CCDLAB
 					return;
 				}
 
-				double std = IMAGESET[FILELISTINDEX].Std;
-				double mean = IMAGESET[FILELISTINDEX].Mean;
+				double std = IMAGESET[IMAGESETINDEX].Stdv;
+				double mean = IMAGESET[IMAGESETINDEX].Mean;
 
 				DIMCLIM[1] = max;
 				IMSTDLIM[1] = (max - mean) / std;
@@ -3387,7 +3449,7 @@ namespace CCDLAB
 
 				MaxContrastSlider.Value = 300;
 
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
+				ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 				SubImageUpD();
 
 				ContrastWideRad.Checked = false;
@@ -3422,8 +3484,8 @@ namespace CCDLAB
 					return;
 				}
 
-				double std = IMAGESET[FILELISTINDEX].Std;
-				double mean = IMAGESET[FILELISTINDEX].Mean;
+				double std = IMAGESET[IMAGESETINDEX].Stdv;
+				double mean = IMAGESET[IMAGESETINDEX].Mean;
 
 				IMSTDLIM[0] = min;
 				DIMCLIM[0] = mean + min * std;
@@ -3432,7 +3494,7 @@ namespace CCDLAB
 
 				MinContrastSlider.Value = 1;
 
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
+				ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 				SubImageUpD();
 
 				ContrastWideRad.Checked = false;
@@ -3467,8 +3529,8 @@ namespace CCDLAB
 					return;
 				}
 
-				double std = IMAGESET[FILELISTINDEX].Std;
-				double mean = IMAGESET[FILELISTINDEX].Mean;
+				double std = IMAGESET[IMAGESETINDEX].Stdv;
+				double mean = IMAGESET[IMAGESETINDEX].Mean;
 
 				IMSTDLIM[1] = max;
 				DIMCLIM[1] = mean + max * std;
@@ -3477,7 +3539,7 @@ namespace CCDLAB
 
 				MaxContrastSlider.Value = 300;
 
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
+				ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 				SubImageUpD();
 
 				ContrastWideRad.Checked = false;
@@ -3498,8 +3560,8 @@ namespace CCDLAB
 		{
 			int val = MinContrastSlider.Value;
 			MaxContrastSlider.Minimum = val;
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;
+			double std = IMAGESET[IMAGESETINDEX].Stdv;
+			double mean = IMAGESET[IMAGESETINDEX].Mean;
 			double delta = (double)(val - PREVMINCONTRASTVALUE);
 			PREVMINCONTRASTVALUE = val;
 
@@ -3509,7 +3571,7 @@ namespace CCDLAB
 			MinContrastCountTxt.Text = Math.Round(DIMCLIM[0], 5).ToString();
 			MinContrastStdTxt.Text = Math.Round(IMSTDLIM[0], 4).ToString();
 
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			SubImageUpD();
 		}
 
@@ -3517,8 +3579,8 @@ namespace CCDLAB
 		{
 			int val = MaxContrastSlider.Value;
 			MinContrastSlider.Maximum = val;
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;
+			double std = IMAGESET[IMAGESETINDEX].Stdv;
+			double mean = IMAGESET[IMAGESETINDEX].Mean;
 			double delta = (double)(val - PREVMAXCONTRASTVALUE);
 			PREVMAXCONTRASTVALUE = val;
 
@@ -3528,14 +3590,14 @@ namespace CCDLAB
 			MaxContrastCountTxt.Text = Math.Round(DIMCLIM[1], 5).ToString();
 			MaxContrastStdTxt.Text = Math.Round(IMSTDLIM[1], 4).ToString();
 
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			SubImageUpD();
 		}
 
 		private void ContrastWideRad_Click(object sender, EventArgs e)
 		{
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;//from image
+			double std = IMAGESET[IMAGESETINDEX].Stdv;
+			double mean = IMAGESET[IMAGESETINDEX].Mean;//from image
 			IMSTDLIM[0] = -0.5;//-1.0;
 			IMSTDLIM[1] = 5.0;//2.0;
 			DIMCLIM[0] = mean + IMSTDLIM[0] * std;
@@ -3552,15 +3614,14 @@ namespace CCDLAB
 			MinContrastStdTxt.Text = Math.Round(IMSTDLIM[0], 4).ToString();
 			MaxContrastCountTxt.Text = Math.Round(DIMCLIM[1], 5).ToString();
 			MaxContrastStdTxt.Text = Math.Round(IMSTDLIM[1], 4).ToString();
-			//FileListDrop_SelectedIndexChanged(sender,e);
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			SubImageUpD();
 		}
 
 		private void ContrastNarrowRad_Click(object sender, EventArgs e)
 		{
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;//from image
+			double std = IMAGESET[IMAGESETINDEX].Stdv;
+			double mean = IMAGESET[IMAGESETINDEX].Mean;//from image
 			IMSTDLIM[0] = -1.0;//-0.333333333;
 			IMSTDLIM[1] = 2.0;//0.333333333;
 			DIMCLIM[0] = mean + IMSTDLIM[0] * std;
@@ -3577,21 +3638,21 @@ namespace CCDLAB
 			MinContrastStdTxt.Text = Math.Round(IMSTDLIM[0], 4).ToString();
 			MaxContrastCountTxt.Text = Math.Round(DIMCLIM[1], 5).ToString();
 			MaxContrastStdTxt.Text = Math.Round(IMSTDLIM[1], 4).ToString();
-			//FileListDrop_SelectedIndexChanged(sender,e);
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			SubImageUpD();
 		}
 
 		private void ContrastFullRad_Click(object sender, EventArgs e)
 		{
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;//from image
-			double min = IMAGESET[FILELISTINDEX].Min;//from image
-			double max = IMAGESET[FILELISTINDEX].Max;//from image
+			double std = IMAGESET[IMAGESETINDEX].Stdv;
+			double mean = IMAGESET[IMAGESETINDEX].Mean;//from image
+			double min = IMAGESET[IMAGESETINDEX].Min;//from image
+			double max = IMAGESET[IMAGESETINDEX].Max;//from image
+
 			IMSTDLIM[0] = (min - mean) / std;
 			IMSTDLIM[1] = (max - mean) / std;
-			DIMCLIM[0] = mean + IMSTDLIM[0] * std;
-			DIMCLIM[1] = mean + IMSTDLIM[1] * std;
+			DIMCLIM[0] = min;
+			DIMCLIM[1] = max;
 
 			MaxContrastSlider.Minimum = 1;
 			MinContrastSlider.Maximum = 300;
@@ -3604,62 +3665,77 @@ namespace CCDLAB
 			MinContrastStdTxt.Text = Math.Round(IMSTDLIM[0], 4).ToString();
 			MaxContrastCountTxt.Text = Math.Round(DIMCLIM[1], 5).ToString();
 			MaxContrastStdTxt.Text = Math.Round(IMSTDLIM[1], 4).ToString();
-			//FileListDrop_SelectedIndexChanged(sender,e);
-			ImageUpD(IMAGESET[FILELISTINDEX].Image);
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 			SubImageUpD();
 		}
 
 		private void SetContrast()
 		{
-			double std = IMAGESET[FILELISTINDEX].Std;
-			double mean = IMAGESET[FILELISTINDEX].Mean;//from image
-			double min = IMAGESET[FILELISTINDEX].Min;//from image
-			double max = IMAGESET[FILELISTINDEX].Max;//from image
-
-			if (AutoContrast.Checked)//keep contrast scale fixed, change DIMCLIM/IMCLIM
+			if (AutoContrast.Checked)//keep contrast stdv limits fixed, change DIMCLIM
 			{
 				if (ContrastFullRad.Checked == true)
 				{
-					DIMCLIM[0] = min;
-					DIMCLIM[1] = max;
-
-					IMSTDLIM[0] = (min - mean) / std;
-					IMSTDLIM[1] = (max - mean) / std;
+					IMSTDLIM[0] = (IMAGESET[IMAGESETINDEX].Min - IMAGESET[IMAGESETINDEX].Mean) / IMAGESET[IMAGESETINDEX].Stdv;
+					IMSTDLIM[1] = (IMAGESET[IMAGESETINDEX].Max - IMAGESET[IMAGESETINDEX].Mean) / IMAGESET[IMAGESETINDEX].Stdv;
+					DIMCLIM[0] = IMAGESET[IMAGESETINDEX].Min;
+					DIMCLIM[1] = IMAGESET[IMAGESETINDEX].Max;
 
 					MinContrastStdTxt.Text = Math.Round(IMSTDLIM[0], 4).ToString();
 					MaxContrastStdTxt.Text = Math.Round(IMSTDLIM[1], 4).ToString();
 				}
 				else
 				{
-					DIMCLIM[0] = mean + IMSTDLIM[0] * std;
-					DIMCLIM[1] = mean + IMSTDLIM[1] * std;
+					DIMCLIM[0] = IMAGESET[IMAGESETINDEX].Mean + IMSTDLIM[0] * IMAGESET[IMAGESETINDEX].Stdv;
+					DIMCLIM[1] = IMAGESET[IMAGESETINDEX].Mean + IMSTDLIM[1] * IMAGESET[IMAGESETINDEX].Stdv;
 				}
 
 				MinContrastCountTxt.Text = Math.Round(DIMCLIM[0], 5).ToString();
 				MaxContrastCountTxt.Text = Math.Round(DIMCLIM[1], 5).ToString();
 			}
-			else if (RelativeContrast.Checked)//keep DIMCLIM/IMCLIM fixed, change contrast
+			else if (RelativeContrast.Checked)//keep DIMCLIM fixed, change contrast stdv limits
 			{
-				double stdmin = (DIMCLIM[0] - mean) / std;
+				double stdmin = (DIMCLIM[0] - IMAGESET[IMAGESETINDEX].Mean) / IMAGESET[IMAGESETINDEX].Stdv;
 				MinContrastStdTxt.Text = Math.Round(stdmin, 4).ToString();
-				double stdmax = (DIMCLIM[1] - mean) / std;
+				double stdmax = (DIMCLIM[1] - IMAGESET[IMAGESETINDEX].Mean) / IMAGESET[IMAGESETINDEX].Stdv;
 				MaxContrastStdTxt.Text = Math.Round(stdmax, 4).ToString();
 			}
+		}
+
+		private void ScanBtnContextMakeGifBtn_Click(object sender, EventArgs e)
+		{
+			BlinkChck.Checked = false;
+			GIFFILE = "";
+
+			SaveFileDialog sfd = new SaveFileDialog
+			{
+				Filter = "GIF|*.gif",
+				InitialDirectory = IMAGESET[IMAGESETINDEX].FilePath,
+				Title = "Save GIF"
+			};
+
+			if (sfd.ShowDialog() == DialogResult.Cancel)
+				return;
+
+			GIFFILE = sfd.FileName;
+			FileListDrop.SelectedIndex = 0;
+			BlinkChck.Checked = true;
 		}
 
 		private void BlinkChck_CheckedChanged(object sender, EventArgs e)
 		{
 			if (BlinkChck.Checked)
 			{
+				if (GIFFILE != "")
+					GIFWRITER = new GifWriter(GIFFILE, 25 , 0);
+
 				MainTab.Enabled = false;
 				double t = Convert.ToDouble(BlinkTime.Text);
-				t = t * 1000;       //convert sendonds to milliseconds  (.2*1000 = 200)
+				t = t * 1000;//convert sendonds to milliseconds  (.2*1000 = 200)
 				int T;
 				T = Convert.ToInt32(Math.Round(t));
 				if (T < 1)
-				{
 					T = 1;
-				}
+
 				BlinkChck.Text = "Stop";
 				BlinkChck.BackColor = Color.Red;
 				BlinkTimer.Interval = T;
@@ -3671,92 +3747,87 @@ namespace CCDLAB
 				BlinkTimer.Enabled = false;
 				BlinkChck.Text = "Scan";
 				BlinkChck.BackColor = Color.FromName(this.BackColor.ToString());//Gray;
+
+				if (GIFFILE != "")
+				{
+					DialogResult res = MessageBox.Show("Open GIF file?" + Environment.NewLine + "Yes = Open File" + Environment.NewLine + "No = Open Directory", "View?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+					if (res == DialogResult.No)
+						Process.Start("Explorer.exe", (new DirectoryInfo(GIFFILE)).Parent.FullName);
+					else if (res == DialogResult.Yes)
+						Process.Start("Explorer.exe", GIFFILE);
+
+					GIFFILE = "";
+					GIFWRITER.Dispose();
+				}
 			}
 		}
 
-		private void FileListDrop_MouseClick(object sender, MouseEventArgs e)
+		private void BlinkTimer_Tick(object sender, EventArgs e)
 		{
+			if (GIFFILE != "")
+			{
+				Bitmap bmp = new Bitmap(ImageWindow.Width, ImageWindow.Height);
+				ImageWindow.DrawToBitmap(bmp, ImageWindow.DisplayRectangle);
+				GIFWRITER.WriteFrame(bmp, 25);
 
+				if (IMAGESETINDEX == IMAGESET.Count - 1)
+				{
+					BlinkTimer.Enabled = false;
+					BlinkChck.Checked = false;
+				}
+			}
+
+			BlinkTimer.Interval = (int)(Convert.ToDouble(BlinkTime.Value) * 1000) + 1;//+1 to aprivate void 0, 1 = 1ms
+			ViewNextBtn_Click(sender, e);
 		}
 
 		private void FileListDrop_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			//ReplaceImagePtsBtn.Enabled = false;
-			FILELISTINDEX = FileListDrop.SelectedIndex;
-			int width = IMAGESET[FILELISTINDEX].Width;
-			int height = IMAGESET[FILELISTINDEX].Height;
-			if (SUBIMAGE_HWX > (width - 1) / 2)
-			{
-				HalfWidthXUpD.Value = (int)((width - 1) / 2);
-				SUBIMAGE_HWX = (int)HalfWidthXUpD.Value;
-			}
-			if (SUBIMAGE_HWY > (height - 1) / 2)
-			{
-				HalfWidthYUpD.Value = (int)((height - 1) / 2);
-				SUBIMAGE_HWY = (int)HalfWidthYUpD.Value;
-			}
-			int C = IMAGESET.Count;
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", C.ToString());
+			IMAGESETINDEX = FileListDrop.SelectedIndex;
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count);
 
-			int xposnew = (int)(((double)(SubImageSlideX.Value) / (double)(SubImageSlideX.Maximum) * (double)(width)));
-			int yposnew = (int)(((double)(SubImageSlideY.Value) / (double)(SubImageSlideY.Maximum) * (double)(height)));
-			int xhalfwidthnew = (int)(((double)(HalfWidthXUpD.Value) * (double)(width) / (double)(SubImageSlideX.Maximum)));
-			int yhalfwidthnew = (int)(((double)(HalfWidthYUpD.Value) * (double)(height) / (double)(SubImageSlideY.Maximum)));
-
+			int width = IMAGESET[IMAGESETINDEX].Width;
+			int height = IMAGESET[IMAGESETINDEX].Height;
 			SubImageSlideX.Maximum = width;
 			SubImageSlideY.Maximum = height;
 			HalfWidthXUpD.Maximum = (width - 1) / 2;
 			HalfWidthYUpD.Maximum = (height - 1) / 2;
 
-			if (FIRSTLOAD != true)
+			if (FIRSTLOAD == true)
 			{
-				try
+				EqualHWChck.Checked = false;
+
+				//check if first loaded image dimenson is identical to last exit and if so then set things there
+				if (width == Convert.ToInt32(REG.GetReg("CCDLAB", "LastImageWidth")) && height == Convert.ToInt32(REG.GetReg("CCDLAB", "LastImageHeight")))
 				{
-					SubImageSlideX.Value = xposnew;
-					SubImageSlideY.Value = yposnew;
-					HalfWidthXUpD.Value = xhalfwidthnew;
-					HalfWidthYUpD.Value = yhalfwidthnew;
+					HalfWidthXUpD.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWX"));
+					HalfWidthYUpD.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWY"));
+					SubImageSlideX.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageSlideX"));
+					SubImageSlideY.Value = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageSlideY"));
 				}
-				catch { }
-			}
-
-			if (FIRSTLOAD == true)//first load?...set contrast to wide
-			{
-				FIRSTLOAD = false;
-				ContrastWideRad.PerformClick();
-				try
+				else
 				{
-					SUBIMAGE_HWX = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWX"));
-					HalfWidthXUpD.Value = SUBIMAGE_HWX;
-					SUBIMAGE_HWY = Convert.ToInt32(REG.GetReg("CCDLAB", "SubImageHWY"));
-					HalfWidthYUpD.Value = SUBIMAGE_HWY;
-					XPOS_CURSOR = Convert.ToInt32(REG.GetReg("CCDLAB", "XPOS_CURSOR"));
-					SubImageSlideX.Value = XPOS_CURSOR + 1;
-					YPOS_CURSOR = Convert.ToInt32(REG.GetReg("CCDLAB", "YPOS_CURSOR"));
-					SubImageSlideY.Value = YPOS_CURSOR + 1;
-					SubImageStatsUpD();
+					HalfWidthXUpD.Value = IMAGESET[IMAGESETINDEX].Width / 25;
+					HalfWidthYUpD.Value = IMAGESET[IMAGESETINDEX].Height / 25;
+					SubImageSlideX.Value = (int)Math.Ceiling((double)IMAGESET[IMAGESETINDEX].Width / 2);
+					SubImageSlideY.Value = (int)Math.Ceiling((double)IMAGESET[IMAGESETINDEX].Height / 2);
 				}
-				catch { }
-			}
 
-			try
-			{
-				ImageUpD(IMAGESET[FILELISTINDEX].Image);
-				FileTxtsUpD();
-				StatTxtsUpD();
-				SubImageStatsUpD();
-				SubImageUpD();
-				SpAxesUpD();
+				if (HalfWidthXUpD.Value == HalfWidthYUpD.Value)
+					EqualHWChck.Checked = true;
 			}
-			catch { }
-
-			OLD_INDEX = FILELISTINDEX;
-			try
+			else//not a first load but subsequent, so figure out how to handle changes if any
 			{
-				double val = IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR];
-				XYImageValueTxt.Text = val.ToString();
+				FIRSTLOAD = true;
+				if (OLD_WIDTH != width || OLD_HEIGHT != height)
+				{
+					SubImageSlideX.Value = (int)Math.Round((((double)(XSUBRANGE[SUBIMAGE_HWX]) / (double)(OLD_WIDTH) * (double)(width)))) + 1;
+					SubImageSlideY.Value = (int)Math.Round((((double)(YSUBRANGE[SUBIMAGE_HWY]) / (double)(OLD_HEIGHT) * (double)(height)))) + 1;
+					HalfWidthXUpD.Value = (int)Math.Round((((double)(HalfWidthXUpD.Value) / (double)(OLD_WIDTH)) * (double)(width)));
+					HalfWidthYUpD.Value = (int)Math.Round((((double)(HalfWidthYUpD.Value) / (double)(OLD_HEIGHT)) * (double)(height)));
+				}
 			}
-			catch { }
 
 			if (SubImTrackPSChck.Checked)
 			{
@@ -3767,15 +3838,23 @@ namespace CCDLAB
 				PRVXPOS_CURSOR = SubImageSlideX.Value - 1;
 				PRVYPOS_CURSOR = SubImageSlideY.Value - 1;
 
-				SubImageStatsUpD();
-				SubImageUpD();
-				ImageWindow.Refresh();
-
 				if (ImageWndwCntxtPlotRow.Checked)
 					ROWplotUpD(false);
 				if (ImageWndwCntxtPlotCol.Checked)
 					COLplotUpD(false);
 			}
+
+			FIRSTLOAD = false;
+			OLD_INDEX = IMAGESETINDEX;
+			OLD_WIDTH = width;
+			OLD_HEIGHT = height;
+
+			FileTxtsUpD();
+			StatTxtsUpD();
+			SubImageStatsUpD();
+			SubImageUpD();
+			SpAxesUpD();
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 
 			if (ImageWndwCntxtPlotRow.Checked)
 				ROWplotUpD(false);
@@ -3792,12 +3871,12 @@ namespace CCDLAB
 				if (MessageBox.Show("Are you sure you want to delete the file (to Recylce Bin)?", "WARNING!", MessageBoxButtons.YesNo) == DialogResult.No)
 					return;
 				else
-					Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(IMAGESET[FILELISTINDEX].FullFileName, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+					Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(IMAGESET[IMAGESETINDEX].FullFileName, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
 			}
 
 			if (e.Button == MouseButtons.Right || e.Button == MouseButtons.Left)
 			{
-				int index = FILELISTINDEX;
+				int index = IMAGESETINDEX;
 				IMAGESET.RemoveAt(index);
 				FileListDrop.Items.RemoveAt(index);
 				int C = FileListDrop.Items.Count;
@@ -3842,7 +3921,7 @@ namespace CCDLAB
 
 		private void MoveUpBtn_Click(object sender, EventArgs e)
 		{
-			int index = FILELISTINDEX;
+			int index = IMAGESETINDEX;
 			FITSImage img1 = IMAGESET[index];
 			int C = FileListDrop.Items.Count;
 			string[] files = new string[C];
@@ -3873,7 +3952,7 @@ namespace CCDLAB
 
 		private void MoveDownBtn_Click(object sender, EventArgs e)
 		{
-			int index = FILELISTINDEX;
+			int index = IMAGESETINDEX;
 			FITSImage img1 = IMAGESET[index];
 			int C = FileListDrop.Items.Count;
 			string[] files = new string[C];
@@ -3908,15 +3987,15 @@ namespace CCDLAB
 			ReplaceImagePtsTxt.Text = FindImagePtsTxt.Text;
 
 			string style = FindPtsDrop.Items[FindPtsDrop.SelectedIndex].ToString();
-			JPMath.Find(IMAGESET[FILELISTINDEX].Image, val, style, true, out FNDCOORDS_X, out FNDCOORDS_Y);
+			JPMath.Find(IMAGESET[IMAGESETINDEX].Image, val, style, true, out FNDCOORDS_X, out FNDCOORDS_Y);
 			if (FNDCOORDS_X.Length == 0)
 			{
 				MessageBox.Show("No Points Found Matching Search Parameters...", "Warning");
 				return;
 			}
 
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 			FNDCOORDRECTS = new Rectangle[FNDCOORDS_X.Length];
 			Parallel.For(0, FNDCOORDS_X.Length, i =>
 			{
@@ -3961,13 +4040,13 @@ namespace CCDLAB
 				double[] radeg = new double[FNDCOORDS_X.Length];
 				double[] decdeg = new double[FNDCOORDS_X.Length];
 
-				if (SHOW_WCSCOORDS && IMAGESET[FILELISTINDEX].WCS.Exists())
+				if (SHOW_WCSCOORDS && IMAGESET[IMAGESETINDEX].WCS.Exists())
 					for (int i = 0; i < FNDCOORDS_X.Length; i++)
 					{
 						double ra, dec;
 						string r;
 						string d;
-						IMAGESET[FILELISTINDEX].WCS.Get_Coordinate(FNDCOORDS_X[i], FNDCOORDS_Y[i], true, "TAN", out ra, out dec, out r, out d);
+						IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(FNDCOORDS_X[i], FNDCOORDS_Y[i], true, "TAN", out ra, out dec, out r, out d);
 						radeg[i] = ra;
 						decdeg[i] = dec;
 					}
@@ -3984,7 +4063,7 @@ namespace CCDLAB
 
 				for (int i = 0; i < FNDCOORDS_X.Length; i++)
 				{
-					line = IMAGESET[FILELISTINDEX].Image[FNDCOORDS_X[i], FNDCOORDS_Y[i]].ToString() + "	" + FNDCOORDS_X[i].ToString() + "	" + FNDCOORDS_Y[i].ToString() + "	" + radeg[i].ToString() + "	" + decdeg[i].ToString();
+					line = IMAGESET[IMAGESETINDEX][FNDCOORDS_X[i], FNDCOORDS_Y[i]].ToString() + "	" + FNDCOORDS_X[i].ToString() + "	" + FNDCOORDS_Y[i].ToString() + "	" + radeg[i].ToString() + "	" + decdeg[i].ToString();
 					sw.WriteLine(line);
 				}
 
@@ -4018,35 +4097,35 @@ namespace CCDLAB
 						case (0):   //value replacement
 						{
 							double val = Convert.ToDouble(ReplaceImagePtsTxt.Text);
-							IMAGESET[FILELISTINDEX].Image = JPMath.Replace(IMAGESET[FILELISTINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, val, true);
+							IMAGESET[IMAGESETINDEX].SetImage(JPMath.Replace(IMAGESET[IMAGESETINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, val, true), true, true);
 							FileListDrop_SelectedIndexChanged(sender, e);
 							break;
 						}
 						case (1):   //image min replacement
 						{
 							double val = Convert.ToDouble(ReplaceImagePtsTxt.Text);
-							IMAGESET[FILELISTINDEX].Image = JPMath.Replace(IMAGESET[FILELISTINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[FILELISTINDEX].Min, true);
+							IMAGESET[IMAGESETINDEX].SetImage(JPMath.Replace(IMAGESET[IMAGESETINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[IMAGESETINDEX].Min, true), true, true);
 							FileListDrop_SelectedIndexChanged(sender, e);
 							break;
 						}
 						case (2):   //image max replacement
 						{
 							double val = Convert.ToDouble(ReplaceImagePtsTxt.Text);
-							IMAGESET[FILELISTINDEX].Image = JPMath.Replace(IMAGESET[FILELISTINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[FILELISTINDEX].Max, true);
+							IMAGESET[IMAGESETINDEX].SetImage(JPMath.Replace(IMAGESET[IMAGESETINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[IMAGESETINDEX].Max, true), true, true);
 							FileListDrop_SelectedIndexChanged(sender, e);
 							break;
 						}
 						case (3):   //image median replacement
 						{
 							double val = Convert.ToDouble(ReplaceImagePtsTxt.Text);
-							IMAGESET[FILELISTINDEX].Image = JPMath.Replace(IMAGESET[FILELISTINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[FILELISTINDEX].Median, true);
+							IMAGESET[IMAGESETINDEX].SetImage(JPMath.Replace(IMAGESET[IMAGESETINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[IMAGESETINDEX].Median, true), true, true);
 							FileListDrop_SelectedIndexChanged(sender, e);
 							break;
 						}
 						case (4):   //image mean replacement
 						{
 							double val = Convert.ToDouble(ReplaceImagePtsTxt.Text);
-							IMAGESET[FILELISTINDEX].Image = JPMath.Replace(IMAGESET[FILELISTINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[FILELISTINDEX].Mean, true);
+							IMAGESET[IMAGESETINDEX].SetImage(JPMath.Replace(IMAGESET[IMAGESETINDEX].Image, FNDCOORDS_X, FNDCOORDS_Y, IMAGESET[IMAGESETINDEX].Mean, true), true, true);
 							FileListDrop_SelectedIndexChanged(sender, e);
 							break;
 						}
@@ -4066,16 +4145,16 @@ namespace CCDLAB
 			if (BatchMeanChck.Checked == true)
 			{
 				FITSImage f;
-				double sigma = (double)ScmTxt.Value;
 				if (SCMChck.Checked == true)
-					f = FITSImageSet.MeanClipped(IMAGESET, true, sigma);
+					f = IMAGESET.MeanClipped(true, (double)SCMUpD.Value, true);
 				else
-					f = FITSImageSet.Mean(IMAGESET, true, true);
+					f = IMAGESET.Mean(true, true);
+
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4087,12 +4166,12 @@ namespace CCDLAB
 		{
 			if (BatchMedianChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Median(IMAGESET, true, true, "Computing Median");
+				FITSImage f = IMAGESET.Median(true, true, "Computing Median");
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4104,12 +4183,12 @@ namespace CCDLAB
 		{
 			if (BatchStdvChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Stdv(IMAGESET, true, true);
+				FITSImage f = IMAGESET.Stdv(true, true);
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4121,12 +4200,12 @@ namespace CCDLAB
 		{
 			if (BatchSumChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Sum(IMAGESET, true, true);
+				FITSImage f = IMAGESET.Sum(true, true);
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4138,12 +4217,12 @@ namespace CCDLAB
 		{
 			if (BatchQuadratureChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Quadrature(IMAGESET, true, true);
+				FITSImage f = IMAGESET.Quadrature(true, true);
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4155,12 +4234,12 @@ namespace CCDLAB
 		{
 			if (BatchMinimumChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Min(IMAGESET, true, true);
+				FITSImage f = IMAGESET.Min(true, true);
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4172,12 +4251,12 @@ namespace CCDLAB
 		{
 			if (BatchMaximumChck.Checked == true)
 			{
-				FITSImage f = FITSImageSet.Max(IMAGESET, true, true);
+				FITSImage f = IMAGESET.Max(true, true);
 				if (f != null)
 				{
-					FITSImageSet.GatherHeaders(IMAGESET, f);
+					IMAGESET.GatherHeaders(f);
 					IMAGESET.Add(f);
-					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FullFileName);
+					FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
 					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
 				}
 				else
@@ -4199,7 +4278,7 @@ namespace CCDLAB
 				if (ofd.ShowDialog() == DialogResult.OK)
 				{
 					DIVMULTADDSUB_FILE = ofd.FileName;
-					Enabled = false;
+					//Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 					ImageOpsWrkr.RunWorkerAsync(1);
@@ -4231,7 +4310,6 @@ namespace CCDLAB
 				if (ofd.ShowDialog() == DialogResult.OK)
 				{
 					DIVMULTADDSUB_FILE = ofd.FileName;
-					Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 					ImageOpsWrkr.RunWorkerAsync(3);
@@ -4258,7 +4336,6 @@ namespace CCDLAB
 				if (ofd.ShowDialog() == DialogResult.OK)
 				{
 					DIVMULTADDSUB_FILE = ofd.FileName;
-					Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 					ImageOpsWrkr.RunWorkerAsync(2);
@@ -4285,7 +4362,6 @@ namespace CCDLAB
 				if (ofd.ShowDialog() == DialogResult.OK)
 				{
 					DIVMULTADDSUB_FILE = ofd.FileName;
-					Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 					ImageOpsWrkr.RunWorkerAsync(4);
@@ -4300,7 +4376,6 @@ namespace CCDLAB
 
 		private void FlipHorzBtn_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Horizontal Flip...";
@@ -4310,7 +4385,6 @@ namespace CCDLAB
 
 		private void FlipVertBtn_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Vertical Flip...";
@@ -4320,16 +4394,11 @@ namespace CCDLAB
 
 		private void FlipInvertBtn_Click(object sender, EventArgs e)
 		{
-			/*Enabled = false;
-			WAITBAR = new WaitBar();
-			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
-			ImageOpsWrkr.RunWorkerAsync(18);
-			WAITBAR.ShowDialog();*/
+			
 		}
 
 		private void RotCCWBtn_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "CCW Rotation...";
@@ -4339,7 +4408,6 @@ namespace CCDLAB
 
 		private void RotCWBtn_Click(object sender, EventArgs e)
 		{
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "CW Rotation...";
@@ -4351,7 +4419,6 @@ namespace CCDLAB
 		{
 			CROPPING = new int[] { XSUBRANGE[0], XSUBRANGE[XSUBRANGE.Length - 1], YSUBRANGE[0], YSUBRANGE[YSUBRANGE.Length - 1] };
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Cropping to sub-image...";
@@ -4398,7 +4465,6 @@ namespace CCDLAB
 
 			CROPPING = new int[] { xstart, xend, ystart, yend };
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Image Cropping...";
@@ -4436,7 +4502,6 @@ namespace CCDLAB
 			}
 			//finally go ahead
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Scalar Operation...";
@@ -4453,7 +4518,6 @@ namespace CCDLAB
 				return;
 			}
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 
@@ -4506,7 +4570,6 @@ namespace CCDLAB
 			if (xbin == 1 && ybin == 1)
 				return;
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Binning...";
@@ -4541,7 +4604,6 @@ namespace CCDLAB
 				}
 			}
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Normalizing to Key: " + NORMKEY;
@@ -4573,10 +4635,11 @@ namespace CCDLAB
 
 			if (ImageOpFilterTypeDrop.SelectedIndex == 2)//Hot pixel filter
 			{
-				ImageOpFilterWidthUpD.DecimalPlaces = 1;
+				ImageOpFilterWidthUpD.DecimalPlaces = 0;
 				ImageOpFilterWidthUpD.Minimum = 1;
-				ImageOpFilterWidthUpD.Increment = 3;
-				ImageOpFilterWidthUpD.Value = 4;
+				ImageOpFilterWidthUpD.Maximum = 100000;
+				ImageOpFilterWidthUpD.Increment = 50;
+				ImageOpFilterWidthUpD.Value = 1000;
 				Tooltip.SetToolTip(ImageOpFilterWidthUpD, "Count");
 				ImageOpFilterLabel.Text = "Threshold:";
 			}
@@ -4587,7 +4650,6 @@ namespace CCDLAB
 			int type = ImageOpFilterTypeDrop.SelectedIndex;
 			if (type >= 0)//if a type is selected
 			{
-				Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 
@@ -4619,7 +4681,7 @@ namespace CCDLAB
 			int[] inds;
 			if (BatchCorrectionChck.Checked == false)
 			{
-				inds = new int[] { FILELISTINDEX };
+				inds = new int[] { IMAGESETINDEX };
 				WAITBAR.ProgressBar.Maximum = 1;
 			}
 			else
@@ -4701,6 +4763,13 @@ namespace CCDLAB
 						ImageOpsWrkr.ReportProgress(i + 1);
 
 						IMAGESET[inds[i]].SetImage(JPMath.Bin(IMAGESET[inds[i]].Image, xbin, ybin, true), true, true);
+
+						if (xbin == ybin)
+							if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, new string[2] { "TAN", "TAN" }))
+							{
+								IMAGESET[inds[i]].WCS = new WorldCoordinateSolution(IMAGESET[inds[i]].Header);
+								IMAGESET[inds[i]].WCS.Bin(xbin, IMAGESET[inds[i]].Header);
+							}
 					}
 					break;
 				}
@@ -4720,14 +4789,10 @@ namespace CCDLAB
 						IMAGESET[inds[i]].Header.AddKey("YCROPSTT", CROPPING[2].ToString(), "Cropped image y-start index (0-based)", -1);
 						IMAGESET[inds[i]].Header.AddKey("YCROPEND", CROPPING[3].ToString(), "Cropped image y-end index (0-based)", -1);
 
-						if (IMAGESET[inds[i]].Header.GetKeyValue("CRPIX1") != "")//then the key exists and has a value...must adjust CRPIX1&2 to the new pixel axes placements
+						if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, new string[2] { "TAN", "TAN" }))
 						{
-							double crpix1 = Convert.ToDouble(IMAGESET[inds[i]].Header.GetKeyValue("CRPIX1")) - CROPPING[0];
-							double crpix2 = Convert.ToDouble(IMAGESET[inds[i]].Header.GetKeyValue("CRPIX2")) - CROPPING[2];
-
-							IMAGESET[inds[i]].Header.SetKey("CRPIX1", crpix1.ToString(), false, 0);
-							IMAGESET[inds[i]].Header.SetKey("CRPIX2", crpix2.ToString(), false, 0);
-							IMAGESET[inds[i]].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[inds[i]].Header);
+							IMAGESET[inds[i]].WCS = new WorldCoordinateSolution(IMAGESET[inds[i]].Header);
+							IMAGESET[inds[i]].WCS.Cut((double)CROPPING[0], (double)CROPPING[2], IMAGESET[inds[i]].Header);
 						}
 					}
 
@@ -4887,19 +4952,8 @@ namespace CCDLAB
 							return;
 						ImageOpsWrkr.ReportProgress(i + 1);
 
-						string filename = IMAGESET[inds[i]].FullFileName;
-						filename = filename.Substring(0, filename.LastIndexOf(".")) + "_MEDFILTER_" + ImageOpFilterWidthUpD.Value.ToString() + filename.Substring(filename.LastIndexOf("."));
-						FITSImage f = new FITSImage(filename, JPMath.MedianFilter(IMAGESET[inds[i]].Image, (size - 1) / 2, true), true, true);
-						f.Header.CopyHeaderFrom(IMAGESET[inds[i]].Header);
-						IMAGESET.Add(f);
-						FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
+						IMAGESET[inds[i]].SetImage(JPMath.MedianFilter(IMAGESET[inds[i]].Image, (size - 1) / 2, true), true, true);
 					}
-					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
-					BatchViewPanel.Enabled = true;
-					TBSaveBatch.Enabled = true;
-					TBSaveBatchOver.Enabled = true;
-					TBSaveSetExtensions.Enabled = true;
-					TBZipAllBtn.Enabled = true;
 					break;
 				}
 				case (13)://convolution filter
@@ -4915,45 +4969,21 @@ namespace CCDLAB
 							return;
 						ImageOpsWrkr.ReportProgress(i + 1);
 
-						string filename = IMAGESET[inds[i]].FullFileName;
-						filename = filename.Substring(0, filename.LastIndexOf(".")) + "_GAUSSFILTER_" + ImageOpFilterWidthUpD.Value.ToString() + filename.Substring(filename.LastIndexOf("."));
-						FITSImage f = new FITSImage(filename, JPMath.MatrixConvolveMatrix(IMAGESET[inds[i]].Image, g, true), true, true);
-						f.Header.CopyHeaderFrom(IMAGESET[inds[i]].Header);
-						IMAGESET.Add(f);
-						FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
+						IMAGESET[inds[i]].SetImage(JPMath.MatrixConvolveMatrix(IMAGESET[inds[i]].Image, g, true), true, true);
 					}
-					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
-					BatchViewPanel.Enabled = true;
-					TBSaveBatch.Enabled = true;
-					TBSaveBatchOver.Enabled = true;
-					TBSaveSetExtensions.Enabled = true;
-					TBZipAllBtn.Enabled = true;
 					break;
 				}
 				case (14)://de hot pixel
 				{
-					double sigma = (double)ImageOpFilterWidthUpD.Value;
+					double thresh = (double)ImageOpFilterWidthUpD.Value;
 					for (int i = 0; i < inds.Length; i++)
 					{
 						if (WAITBAR.DialogResult == DialogResult.Cancel)
 							return;
 						ImageOpsWrkr.ReportProgress(i + 1);
 
-						string filename = IMAGESET[inds[i]].FullFileName;
-						filename = filename.Substring(0, filename.LastIndexOf(".")) + "_deHotPixel_" + ImageOpFilterWidthUpD.Value.ToString() + filename.Substring(filename.LastIndexOf("."));
-						FITSImage f = new FITSImage(filename, FITSImage.DeHotPixel(IMAGESET[inds[i]], sigma, 3, true), true, true);
-						f.Header.CopyHeaderFrom(IMAGESET[inds[i]].Header);
-						IMAGESET.Add(f);
-						FileListDrop.Items.Add(IMAGESET[IMAGESET.Count - 1].FileName);
+						IMAGESET[inds[i]].SetImage(JPMath.DeSpeckle(IMAGESET[inds[i]].Image, thresh, 3, true), true, true);
 					}
-
-					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
-					BatchViewPanel.Enabled = true;
-					TBSaveBatch.Enabled = true;
-					TBSaveBatchOver.Enabled = true;
-					TBSaveSetExtensions.Enabled = true;
-					TBZipAllBtn.Enabled = true;
-
 					break;
 				}
 				case (15)://Wiener Deconv Filter
@@ -4970,15 +5000,8 @@ namespace CCDLAB
 						MWNumericArray z = new MWNumericArray(IMAGESET[inds[i]].Image);
 						MWNumericArray z2 = (MWNumericArray)IF.WienerDeconv(z, FWHM);
 
-						IMAGESET.Add(new FITSImage(String.Concat(IMAGESET[inds[i]].FilePath, inds[i].ToString()), (double[,])z2.ToArray(MWArrayComponent.Real), true, true));
-						FileListDrop.Items.Add(inds[i].ToString());
+						IMAGESET[inds[i]].SetImage((double[,])z2.ToArray(MWArrayComponent.Real), true, true);
 					}
-					FileListDrop.SelectedIndex = FileListDrop.Items.Count - 1;
-					BatchViewPanel.Enabled = true;
-					TBSaveBatch.Enabled = true;
-					TBSaveBatchOver.Enabled = true;
-					TBSaveSetExtensions.Enabled = true;
-					TBZipAllBtn.Enabled = true;
 					break;
 				}
 				case (16)://flip horizontal
@@ -5200,11 +5223,9 @@ namespace CCDLAB
 
 		private void ImageOpsWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			Enabled = true;
 			WAITBAR.Close();
 			FileListDrop_SelectedIndexChanged(sender, e);
-
-			GC.Collect();// 3, .GCCollectionMode.Forced);
+			GC.Collect();
 		}
 
 		private void RotateBtn_Click(object sender, EventArgs e)
@@ -5218,7 +5239,6 @@ namespace CCDLAB
 			RotateBtnCntxtLanczos5.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos5"));
 			RotateBtnCntxtNearest.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtNearest"));
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Rotating...";
@@ -5337,7 +5357,7 @@ namespace CCDLAB
 
 			Label keylabel = (Label)sender;
 			string key = keylabel.Text.Substring(0, keylabel.Text.Length - 1);
-			int keyindex = IMAGESET[FILELISTINDEX].Header.GetKeyIndex(key, false);
+			int keyindex = IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(key, false);
 			if (keyindex == -1)
 			{
 				HeaderTxt.ClearSelected();
@@ -5359,9 +5379,9 @@ namespace CCDLAB
 
 			InfoCntxt.SuspendLayout();
 			InfoCntxt.Items.Clear();
-			for (int i = 0; i < IMAGESET[FILELISTINDEX].Header.Length; i++)
+			for (int i = 0; i < IMAGESET[IMAGESETINDEX].Header.Length; i++)
 			{
-				InfoCntxt.Items.Add(IMAGESET[FILELISTINDEX].Header[i].Name);
+				InfoCntxt.Items.Add(IMAGESET[IMAGESETINDEX].Header[i].Name);
 				InfoCntxt.Items[i].Click += new EventHandler(InfoCntxt_ItemClicked);
 			}
 			InfoCntxt.ResumeLayout();
@@ -5412,7 +5432,7 @@ namespace CCDLAB
 
 			StringBuilder clipboarddata = new StringBuilder();
 
-			int oldfilelistindex = FILELISTINDEX;
+			int oldfilelistindex = IMAGESETINDEX;
 
 			for (int i = 0; i < IMAGESET.Count; i++)
 			{
@@ -5427,12 +5447,12 @@ namespace CCDLAB
 				if (labelname.Equals("ImageSumStatic"))
 					clipboarddata.AppendLine(IMAGESET[i].Sum.ToString());
 				if (labelname.Equals("ImageStdvStatic"))
-					clipboarddata.AppendLine(IMAGESET[i].Std.ToString());
+					clipboarddata.AppendLine(IMAGESET[i].Stdv.ToString());
 
 				if (!labelname.Contains("SubImage"))
 					continue;
 
-				FILELISTINDEX = i;
+				IMAGESETINDEX = i;
 				SubImageStatsUpD();
 				if (labelname.Equals("SubImageMaxStatic"))
 					clipboarddata.AppendLine(SUBIMAGEMAX.ToString());
@@ -5449,7 +5469,7 @@ namespace CCDLAB
 			}
 			Clipboard.SetText(clipboarddata.ToString());
 
-			FILELISTINDEX = oldfilelistindex;
+			IMAGESETINDEX = oldfilelistindex;
 			SubImageStatsUpD();
 		}
 
@@ -5503,7 +5523,7 @@ namespace CCDLAB
 					filename = String.Concat(filename, ".fits");
 
 					JPFITS.FITSImage f = new FITSImage(filename, arr, false, true);
-					f.WriteImage(TypeCode.Double, true);
+					f.WriteImage(DiskPrecision.Double, true);
 				}
 				MessageBox.Show("Conversion Successful", "Done!");
 			}
@@ -5511,21 +5531,21 @@ namespace CCDLAB
 
 		private void ClipToContrastBtn_Click(object sender, EventArgs e)
 		{
-			Parallel.For(0, IMAGESET[FILELISTINDEX].Width, x =>
+			Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
 			{
-				for (int y = 0; y < IMAGESET[FILELISTINDEX].Height; y++)
+				for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
 				{
-					if (IMAGESET[FILELISTINDEX].Image[x, y] < DIMCLIM[0])
-						IMAGESET[FILELISTINDEX].Image[x, y] = DIMCLIM[0];
-					else if (IMAGESET[FILELISTINDEX].Image[x, y] > DIMCLIM[1])
-						IMAGESET[FILELISTINDEX].Image[x, y] = DIMCLIM[1];
+					if (IMAGESET[IMAGESETINDEX][x, y] < DIMCLIM[0])
+						IMAGESET[IMAGESETINDEX][x, y] = DIMCLIM[0];
+					else if (IMAGESET[IMAGESETINDEX][x, y] > DIMCLIM[1])
+						IMAGESET[IMAGESETINDEX][x, y] = DIMCLIM[1];
 
-					IMAGESET[FILELISTINDEX].Image[x, y] -= DIMCLIM[0];
-					IMAGESET[FILELISTINDEX].Image[x, y] /= ((DIMCLIM[1] - DIMCLIM[0]) / 255);
+					IMAGESET[IMAGESETINDEX][x, y] -= DIMCLIM[0];
+					IMAGESET[IMAGESETINDEX][x, y] /= ((DIMCLIM[1] - DIMCLIM[0]) / 255);
 				}
 			});
 
-			IMAGESET[FILELISTINDEX].StatsUpD(true);
+			IMAGESET[IMAGESETINDEX].StatsUpD(true);
 
 			ContrastFullRad.Checked = true;
 			FileListDrop_SelectedIndexChanged(sender, e);
@@ -5586,7 +5606,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Sum.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Sum.ToString());
 				Tooltip.SetToolTip(ImageSumTxt, "Sum copied to clipboard.");
 			}
 		}
@@ -5595,7 +5615,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Min.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Min.ToString());
 				Tooltip.SetToolTip(ImageMinTxt, "Minimum copied to clipboard.");
 			}
 		}
@@ -5604,7 +5624,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Max.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Max.ToString());
 				Tooltip.SetToolTip(ImageMaxTxt, "Maximum copied to clipboard.");
 			}
 		}
@@ -5613,7 +5633,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Median.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Median.ToString());
 				Tooltip.SetToolTip(ImageMedianTxt, "Median copied to clipboard.");
 			}
 		}
@@ -5622,7 +5642,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Mean.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Mean.ToString());
 				Tooltip.SetToolTip(ImageMeanTxt, "Mean copied to clipboard.");
 			}
 		}
@@ -5631,7 +5651,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].Std.ToString());
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].Stdv.ToString());
 				Tooltip.SetToolTip(ImageStdTxt, "Standard Deviation copied to clipboard.");
 			}
 		}
@@ -5640,7 +5660,7 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Right)
 			{
-				Clipboard.SetText(IMAGESET[FILELISTINDEX].FileName);
+				Clipboard.SetText(IMAGESET[IMAGESETINDEX].FileName);
 				Tooltip.SetToolTip(FileNameTxt, "File name copied to clipboard.");
 			}
 		}
@@ -5655,7 +5675,7 @@ namespace CCDLAB
 			if (e.Button == MouseButtons.Right)
 			{
 				double cval1, cval2;
-				IMAGESET[FILELISTINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2);
 
 				string str = cval1 + " " + cval2;
 				Clipboard.SetText(str);
@@ -5723,192 +5743,12 @@ namespace CCDLAB
 			abt.ShowDialog(this);
 		}
 
-		//private void WriteImageSet()
-		//{
-		//	BatchSaveDlg^ bsd = new BatchSaveDlg();
-		//	bsd.DirectoryTxt.Text = IMAGESET.GetCommonDirectory();
-		//	bsd.ShowDialog(this);
-		//
-		//	if (bsdDialogResult == DialogResult.Cancel)//then do nothing
-		//		return;
-		//
-		//	String^ dir = bsd.DirectoryTxt.Text;
-		//	bool UseExistingPaths = bsd.UseOrigDirChck.Checked;
-		//
-		//	if (!Directory.Exists(dir) && !UseExistingPaths)
-		//	{
-		//		DialogResult dr = MessageBox.Show("Directory doesn't exist. Do you want to create it?","Directory...",MessageBoxButtons.OKCancel);
-		//
-		//		if (dr == DialogResult.Cancel)
-		//		{
-		//			WriteImageSet();
-		//			return;
-		//		}
-		//		if (dr == DialogResult.OK)
-		//			Directory.CreateDirectory(dir);
-		//	}
-		//
-		//	if (bsdDialogResult == DialogResult.OK)//   append/remove/remove aft btn
-		//	{
-		//		if (bsd.AppendBtn.Text.Contains("Remove") && bsd.AppendTxt.Text == "*")
-		//		{
-		//			MessageBox.Show("Can't auto-increment when removing subtext.", "Error...");
-		//			WriteImageSet();
-		//			return;
-		//		}
-		//
-		//		if (bsd.AppendTxt.Text == String.Empty)//then do nothing and notify
-		//		{
-		//			MessageBox.Show("Blank Appendage Entered so NO Files Written...", "Error...");
-		//			WriteImageSet();
-		//			return;
-		//		}
-		//	}
-		//
-		//	if (bsdDialogResult == DialogResult.OK)//then append
-		//		if (MessageBox.Show("Are you sure?", "Proceed?", MessageBoxButtons.YesNo) == DialogResult.No)
-		//		{
-		//			WriteImageSet();
-		//			return;
-		//		}
-		//
-		//	if (bsdDialogResult == DialogResult.Ignore)//then overwrite, but first confirm
-		//		if (MessageBox.Show("Are you sure you want to overwrite all of the files?", "Warning...", MessageBoxButtons.YesNo) == DialogResult.No)
-		//		{
-		//			WriteImageSet();
-		//			return;
-		//		}
-		//
-		//	//then go ahead and make the (new?) filenames
-		//	String^ filepath = bsd.DirectoryTxt.Text;
-		//	String^ extension = Convert.ToString(bsd.FileExtension.Items[bsd.FileExtension.SelectedIndex]);
-		//	String^ fullfilename;
-		//	bool appendremovebtn = bsdDialogResult == DialogResult.OK;//else write/overwrite
-		//	String^ apptxt = bsd.AppendTxt.Text;
-		//	bool autoinc = apptxt == "*";
-		//	bool append = bsd.AppendBtn.Text == "Append";//else remove
-		//	for (int i = 0; i < IMAGESET.Count; i++)
-		//	{
-		//		String^ filename = IMAGESET[i].FileName;
-		//		int ind = filename.LastIndexOf(".");
-		//
-		//		if (appendremovebtn)
-		//		{
-		//			if (append)
-		//			{
-		//				if (autoinc)
-		//					filename = String.Concat(filename.Substring(0, ind), " (", i.ToString(), ")", extension);
-		//				else
-		//					filename = String.Concat(filename.Substring(0, ind), apptxt, extension);
-		//			}
-		//			else//remove or remove aft
-		//			{
-		//				if (bsd.AppendBtn.Text == "Remove")
-		//					filename = filename.Replace(apptxt, "");
-		//				else//remove after
-		//					if (filename.Contains(apptxt))
-		//					{
-		//						int ind1 = filename.IndexOf(apptxt);// +apptxt.Length;
-		//						filename = filename.Remove(ind1) + extension;// , ind - ind1);
-		//
-		//					}
-		//			}
-		//		}
-		//		else//write/overwrite
-		//			filename = String.Concat(filename.Substring(0, ind), extension);
-		//
-		//		if (UseExistingPaths)
-		//			filepath = IMAGESET[i].FilePath;
-		//
-		//		fullfilename = filepath + filename;
-		//		IMAGESET[i].FullFileName = fullfilename;
-		//	}
-		//	FileListDrop.Items.Clear();
-		//	FileListDrop.Items.AddRange(IMAGESET.FileNames);
-		//
-		//	if (extension == ".fts" || extension == ".fits" || extension == ".fit")
-		//	{
-		//		IMAGESET.Write(FILESAVEPREC, true, true, "");
-		//		return;
-		//	}
-		//
-		//	Enabled = false;
-		//	WAITBAR = new WaitBar();
-		//	WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
-		//	WAITBAR.Text = "Saving...";
-		//	WriteImageSetBGWrkr.RunWorkerAsync(IMAGESET.FullFileNames);
-		//	WAITBAR.ShowDialog();
-		//}
-
-		private void WriteImageSetBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-		{
-			//string[] fullfilenames = (string[])e.Argument;
-			//String^ extension = Path.GetExtension(fullfilenames[0]);
-
-			//for (int i = 0; i < IMAGESET.Count; i++)
-			//{
-			//	if (WAITBAR.DialogResult == DialogResult.Cancel)
-			//		return;
-			//	WriteImageSetBGWrkr.ReportProgress(i + 1);
-
-			//	if (extension == ".jpg")
-			//	{
-			//		if (IMAGESET[i].Width < 256 || IMAGESET[i].Height < 256)
-			//		{
-			//			Bitmap^ bmp1 = JPBitMap.ArrayToBmp(IMAGESET[i].Image, ContrastScaleDrop.SelectedIndex, ColourMapDrop.SelectedIndex, InvertContrastChck.Checked, DIMCLIM, ImageWindow.Width, ImageWindow.Height, OPTIMGVIEWINVERTY);
-			//			bmp1.Save(fullfilenames[i], .Imaging.ImageFormat.Jpeg);
-			//		}
-			//		else
-			//		{
-			//			Bitmap^ bmp1 = JPBitMap.ArrayToBmp(IMAGESET[i].Image, ContrastScaleDrop.SelectedIndex, ColourMapDrop.SelectedIndex, InvertContrastChck.Checked, DIMCLIM, IMAGESET[i].Width, IMAGESET[i].Height, OPTIMGVIEWINVERTY);
-			//			bmp1.Save(fullfilenames[i], .Imaging.ImageFormat.Jpeg);
-			//		}
-			//	}
-
-			//	if (extension == ".zip")//would need to write each file first as a fits, and then zip it, then delete the fits file
-			//	{
-			//		IMAGESET[i].WriteImage(CCDLABPATH + "tozip.fits", FILESAVEPREC, true);
-			//		IMAGESET[i].FullFileName = fullfilenames[i];
-
-			//		String^ ziplist = CCDLABPATH + "tozip.txt";
-			//		StreamWriter^ sw = new StreamWriter(ziplist);
-			//		sw.WriteLine(CCDLABPATH + "tozip.fits");
-			//		sw.Close();
-
-			//		Process^ p = new Process();
-			//		p.StartInfo.FileName = "c:\\Program Files\\7-Zip\\7z.exe";
-			//		p.StartInfo.Arguments = "\"a\" " + "\"-tzip\" " + "\"" + fullfilenames[i] + "\" " + "\"@" + ziplist;
-			//		p.Start();
-			//		p.WaitForExit();
-			//		if (p.ExitCode != 0)
-			//		{
-			//			File.Delete(fullfilenames[i]);
-			//			return;
-			//		}
-			//	}
-			//}
-		}
-
-		private void WriteImageSetBGWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-		{
-			/*WAITBAR.ProgressBar.Value = e.ProgressPercentage;
-			WAITBAR.TextMsg.Text = String.Concat("Writing file: ",e.ProgressPercentage," of ",WAITBAR.ProgressBar.Maximum);
-			WAITBAR.Refresh();*/
-		}
-
-		private void WriteImageSetBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-		{
-			/*Enabled = true;
-			WAITBAR.Close();
-			FileTxtsUpD();*/
-		}
-
 		private void TBSaveOver_Click(object sender, EventArgs e)
 		{
 			if (MessageBox.Show("Are you sure you want to overwrite the current file?", "Warning...", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 				return;
 
-			IMAGESET[FILELISTINDEX].WriteImage(FILESAVEPREC, true);
+			IMAGESET[IMAGESETINDEX].WriteImage(FILESAVEPREC, true);
 		}
 
 		private void TBSaveBatchOver_Click(object sender, EventArgs e)
@@ -5916,7 +5756,7 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure you want to overwrite all of the files?", "Warning...", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 				return;
 
-			IMAGESET.Write(FILESAVEPREC, true, true, "");
+			IMAGESET.Write(FILESAVEPREC, true, "Overwriting files ");
 		}
 
 		private void RotateAngleUpD_ValueChanged(object sender, EventArgs e)
@@ -5936,7 +5776,6 @@ namespace CCDLAB
 			if ((double)(NShiftHorzUpD.Value) == 0.0)
 				return;
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Horizontal Shift...";
@@ -5949,7 +5788,6 @@ namespace CCDLAB
 			if ((double)(NShiftVertUpD.Value) == 0.0)
 				return;
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Vertical Shift...";
@@ -5980,17 +5818,11 @@ namespace CCDLAB
 			for (int i = 0; i < ofd.FileNames.Length; i++)
 			{
 				dest = new FITSImage(ofd.FileNames[i], null, true, true, false, true);
-				dest.Header.CopyHeaderFrom(source.Header);            // CopyHeader(source);
-				dest.WriteImage(TypeCode.Double, true);
+				dest.Header.CopyHeaderFrom(source.Header);
+				dest.WriteImage(DiskPrecision.Double, true);
 			}
 
 			MessageBox.Show("Completed copying the source header over to the destination file(s).");
-		}
-
-		private void ManRegTrkHWUpD_ValueChanged(object sender, EventArgs e)
-		{
-			EqualHWChck.Checked = true;
-			HalfWidthXUpD.Value = ManRegTrkHWUpD.Value;
 		}
 
 		private void FileListDrop_DropDown(object sender, EventArgs e)
@@ -6034,10 +5866,10 @@ namespace CCDLAB
 		{
 			RadialPlotFitMoffatChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RadialPlotFitGaussChck"));
 			RadialPlotFitMoffatChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RadialPlotFitMoffatChck"));
-			if (IMAGESET[FILELISTINDEX].Header.GetKeyValue("CDELT1") != "" && IMAGESET[FILELISTINDEX].Header.GetKeyValue("CDELT2") != "")
+			if (IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CDELT1") != "" && IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CDELT2") != "")
 			{
-				double cdelt1 = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("CDELT1"));
-				double cdelt2 = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("CDELT2"));
+				double cdelt1 = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CDELT1"));
+				double cdelt2 = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CDELT2"));
 				double cdelt = (cdelt1 + cdelt2) / 2;
 				RadialPlotFitScaleTextBox.Text = cdelt.ToString();
 			}
@@ -6101,14 +5933,15 @@ namespace CCDLAB
 			double[] v_binned;
 			JPMath.Radial_Profile_Normalized(SUBIMAGE_radplot, XSUBRANGE, YSUBRANGE, pixscale, out r_binned, out v_binned);
 
-			if (RAD_PLOT.IsDisposed)
-				RAD_PLOT = new JPPlot();
+			if (RAD_PLOT == null || RAD_PLOT.IsDisposed)
+				RAD_PLOT = new Plotter("RadialPSF", true, true);
 			RAD_PLOT.Text = "Radial Profile Plot";
 			string xlabel = "Radius (pixels)";
 			if (pixscale != 1)
 				xlabel = "Radius (arcsec)";
-			RAD_PLOT.JPChart1.PlotXYData(r_binned, v_binned, "Radial Plot", xlabel, "Normalized Value at Radius", System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point, "Radial");
-			RAD_PLOT.JPChart1.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
+			RAD_PLOT.ChartGraph.PlotXYData(r_binned, v_binned, "Radial Plot", xlabel, "Normalized Value at Radius", JPChart.SeriesType.Point, "Radial PSF", Color.Blue);
+			RAD_PLOT.ChartGraph.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
+			RAD_PLOT.TopMost = true;
 			RAD_PLOT.Show();
 
 			if (RadialPlotFitGaussChck.Checked)
@@ -6126,11 +5959,11 @@ namespace CCDLAB
 				double[] interpY = new double[interpX.Length];
 				JPMath.Gaussian1d(interpX, ref interpY, PFit);
 
-				RAD_PLOT.JPChart1.AddXYData(interpX, interpY, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Gaussian Fit", Color.Red);
+				RAD_PLOT.ChartGraph.AddXYData(interpX, interpY, JPChart.SeriesType.Line, "Gaussian Fit", Color.Red);
 				string eq = "exp[-x^2 / (2*sigma^2)]";
 				string title = eq + " : sigma = " + PFit[2].ToString("G5") + "; FWHM = " + (PFit[2] * 2.355).ToString("G5") + "''";
-				RAD_PLOT.JPChart1.SetChartTitle(title);
-				RAD_PLOT.JPChart1.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
+				RAD_PLOT.ChartGraph.SetTitle(title);
+				RAD_PLOT.ChartGraph.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
 			}
 			else if (RadialPlotFitMoffatChck.Checked)
 			{
@@ -6147,25 +5980,25 @@ namespace CCDLAB
 				double[] interpY = new double[interpX.Length];
 				JPMath.Moffat1d(interpX, ref interpY, PFit);
 
-				RAD_PLOT.JPChart1.AddXYData(interpX, interpY, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "Moffat Fit", Color.Red);
+				RAD_PLOT.ChartGraph.AddXYData(interpX, interpY, JPChart.SeriesType.Line, "Moffat Fit", Color.Red);
 				string eq = "[1 + (x/alpha)^2]^(-beta)";
 				string title = eq + " : alpha = " + PFit[2].ToString("G5") + "; beta = " + PFit[3].ToString("G5") + "; FWHM = " + (2 * PFit[2] * Math.Sqrt(Math.Pow(2, 1 / PFit[3]) - 1)).ToString("G5") + "''";
-				RAD_PLOT.JPChart1.SetChartTitle(title);
-				RAD_PLOT.JPChart1.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
+				RAD_PLOT.ChartGraph.SetTitle(title);
+				RAD_PLOT.ChartGraph.SetAxesLimits(0, r_binned[r_binned.Length - 1], 0, 1);
 			}
 		}
 
 		private void ImageFingerRmvToHere_Click(object sender, EventArgs e)
 		{
-			for (int i = 0; i < FILELISTINDEX; i++)
+			for (int i = 0; i < IMAGESETINDEX; i++)
 			{
 				IMAGESET.RemoveAt(0);
 				FileListDrop.Items.RemoveAt(0);
 			}
 
-			FILELISTINDEX = 0;
+			IMAGESETINDEX = 0;
 
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
 
 			if (FileListDrop.Items.Count == 1)
 			{
@@ -6196,12 +6029,11 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure you want to delete the file(s) to Recylce Bin?", "WARNING!", MessageBoxButtons.YesNo) == DialogResult.No)
 				return;
 
-			Enabled = false;
 			int intprog = 0;
 			ProgressBar.Maximum = 100;
-			for (int i = 0; i < FILELISTINDEX; i++)
+			for (int i = 0; i < IMAGESETINDEX; i++)
 			{
-				if (100 * i / FILELISTINDEX > intprog)
+				if (100 * i / IMAGESETINDEX > intprog)
 				{
 					intprog++;
 					ProgressBar.Value = intprog;
@@ -6213,13 +6045,12 @@ namespace CCDLAB
 				FileListDrop.Items.RemoveAt(0);
 			}
 
-			Enabled = true;
 			ProgressBar.Value = 0;
 			ProgressBar.Refresh();
 
-			FILELISTINDEX = 0;
+			IMAGESETINDEX = 0;
 
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
 
 			if (FileListDrop.Items.Count == 1)
 			{
@@ -6248,16 +6079,16 @@ namespace CCDLAB
 		private void ImageFingerRmvFromHere_Click(object sender, EventArgs e)
 		{
 			int N = FileListDrop.Items.Count;
-			for (int i = FILELISTINDEX + 1; i < N; i++)
+			for (int i = IMAGESETINDEX + 1; i < N; i++)
 			{
-				IMAGESET.RemoveAt(FILELISTINDEX + 1);
-				FileListDrop.Items.RemoveAt(FILELISTINDEX + 1);
+				IMAGESET.RemoveAt(IMAGESETINDEX + 1);
+				FileListDrop.Items.RemoveAt(IMAGESETINDEX + 1);
 			}
 
-			FILELISTINDEX = FileListDrop.Items.Count - 1;
+			IMAGESETINDEX = FileListDrop.Items.Count - 1;
 
 			int C = IMAGESET.Count;
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
 
 			if (FileListDrop.Items.Count == 1)
 			{
@@ -6288,32 +6119,30 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure you want to delete the file(s) to Recylce Bin?", "WARNING!", MessageBoxButtons.YesNo) == DialogResult.No)
 				return;
 
-			Enabled = false;
 			int intprog = 0;
 			ProgressBar.Maximum = 100;
 			int N = FileListDrop.Items.Count;
-			for (int i = FILELISTINDEX + 1; i < N; i++)
+			for (int i = IMAGESETINDEX + 1; i < N; i++)
 			{
-				if (100 * (i - FILELISTINDEX - 1) / (N - FILELISTINDEX - 1) > intprog)
+				if (100 * (i - IMAGESETINDEX - 1) / (N - IMAGESETINDEX - 1) > intprog)
 				{
 					intprog++;
 					ProgressBar.Value = intprog;
 					ProgressBar.Refresh();
 				}
 
-				Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(IMAGESET[FILELISTINDEX + 1].FullFileName, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-				IMAGESET.RemoveAt(FILELISTINDEX + 1);
-				FileListDrop.Items.RemoveAt(FILELISTINDEX + 1);
+				Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(IMAGESET[IMAGESETINDEX + 1].FullFileName, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+				IMAGESET.RemoveAt(IMAGESETINDEX + 1);
+				FileListDrop.Items.RemoveAt(IMAGESETINDEX + 1);
 			}
 
-			Enabled = true;
 			ProgressBar.Value = 0;
 			ProgressBar.Refresh();
 
-			FILELISTINDEX = FileListDrop.Items.Count - 1;
+			IMAGESETINDEX = FileListDrop.Items.Count - 1;
 
 			int C = IMAGESET.Count;
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
 
 			if (FileListDrop.Items.Count == 1)
 			{
@@ -6397,10 +6226,11 @@ namespace CCDLAB
 
 		private void ScanContextGoToTxt_KeyUp(object sender, KeyEventArgs e)
 		{
-			e.SuppressKeyPress = true;
-
 			if (e.KeyCode == Keys.Enter)
+			{
+				//e.SuppressKeyPress = true;
 				ScanContextGoToBtn.PerformClick();
+			}
 		}
 
 		private void SIZECntxtBatchChck_Click(object sender, EventArgs e)
@@ -6411,10 +6241,6 @@ namespace CCDLAB
 
 		private void SIZECntxtEditImgDim_DoubleClick(object sender, EventArgs e)
 		{
-			/*SIZECntxtEditTxtX
-			SIZECntxtEditTxtY
-			SIZECntxtBatchChck*/
-
 			SIZECntxtMenu.Hide();
 
 			if (FIRSTLOAD)
@@ -6425,9 +6251,9 @@ namespace CCDLAB
 				WAITBAR.ProgressBar.Maximum = 1;
 			if (SIZECntxtBatchChck.Checked)
 				WAITBAR.ProgressBar.Maximum = IMAGESET.Count;
-			Enabled = false;
+
 			SIZECntxtBGWrkr.RunWorkerAsync();
-			WAITBAR.Show();
+			WAITBAR.ShowDialog();
 		}
 
 		private void SIZECntxtBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -6440,11 +6266,11 @@ namespace CCDLAB
 				for (int i = 0; i < IMAGESET.Count; i++)
 					inds[i] = i;
 			else
-				inds = new int[] { FILELISTINDEX };
+				inds = new int[1] { IMAGESETINDEX };
 
 			double[,] newimg;
 
-			for (int i = inds[0]; i < inds.Length; i++)
+			for (int i = 0; i < inds.Length; i++)
 			{
 				if (Xedittxt == "")
 				{
@@ -6464,7 +6290,7 @@ namespace CCDLAB
 					Xstart = Convert.ToInt32(Xedittxt.Substring(0, col)) - 1;
 					Xend = Convert.ToInt32(Xedittxt.Substring(col + 1)) - 1;
 
-					if (Xstart < 0 || Xend > IMAGESET[i].Width - 1)
+					if (Xstart < 0 || Xend > IMAGESET[inds[i]].Width - 1)
 					{
 						MessageBox.Show("Problem with the X range: " + Xedittxt + ", for file: " + (i + 1).ToString());
 						WAITBAR.CancelBtn.PerformClick();
@@ -6489,7 +6315,7 @@ namespace CCDLAB
 					Ystart = Convert.ToInt32(Yedittxt.Substring(0, col)) - 1;
 					Yend = Convert.ToInt32(Yedittxt.Substring(col + 1)) - 1;
 
-					if (Ystart < 0 || Yend > IMAGESET[i].Height - 1)
+					if (Ystart < 0 || Yend > IMAGESET[inds[i]].Height - 1)
 					{
 						MessageBox.Show("Problem with the Y range: " + Yedittxt + ", for file: " + (i + 1).ToString());
 						WAITBAR.CancelBtn.PerformClick();
@@ -6505,10 +6331,10 @@ namespace CCDLAB
 				Parallel.For(0, newimg.GetLength(0), x =>
 				{
 					for (int y = 0; y < newimg.GetLength(1); y++)
-						newimg[x, y] = IMAGESET[i].Image[Xstart + x, Ystart + y];
+						newimg[x, y] = IMAGESET[inds[i]][Xstart + x, Ystart + y];
 				});
 
-				IMAGESET[i].SetImage(newimg, true, true);
+				IMAGESET[inds[i]].SetImage(newimg, true, true);
 			}
 		}
 
@@ -6521,7 +6347,6 @@ namespace CCDLAB
 
 		private void SIZECntxtBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			Enabled = true;
 			WAITBAR.Close();
 			FileListDrop_SelectedIndexChanged(sender, e);
 		}
@@ -6530,7 +6355,7 @@ namespace CCDLAB
 		{
 			RangeDlg rdlg = new RangeDlg();
 			rdlg.HelpButton = false;
-			rdlg.Text = "Set the Padding Ranges Around the Image Edges...";
+			rdlg.Text = "Set the Padding Around the Image Edges...";
 			rdlg.XStartUpD.Minimum = 0;
 			rdlg.XEndUpD.Minimum = 0;
 			rdlg.YStartUpD.Minimum = 0;
@@ -6553,7 +6378,11 @@ namespace CCDLAB
 			int yend = (int)rdlg.YEndUpD.Value;
 
 			if (xstart == 0 && ystart == 0 && xend == 0 && yend == 0)
+			{
+				MessageBox.Show("Padding of zeros around the edges doesn't make sense...", "Error...");
+				PadImageBtn.PerformClick();
 				return;
+			}
 
 			REG.SetReg("CCDLAB", "PADXSTART", xstart);
 			REG.SetReg("CCDLAB", "PADYSTART", ystart);
@@ -6562,7 +6391,6 @@ namespace CCDLAB
 
 			PADDING = new int[] { xstart, xend, ystart, yend };
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Image Padding...";
@@ -6601,7 +6429,6 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure that you want to exise the indicated rows or columns from the image(s)?", "Ready?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 				return;
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileListDrop.Items.Count;
 			WAITBAR.Text = "Excising region...";
@@ -6611,8 +6438,8 @@ namespace CCDLAB
 
 		private void SIZECntxtMenu_Opened(object sender, EventArgs e)
 		{
-			SIZECntxtEditTxtX.Text = "1:" + IMAGESET[FILELISTINDEX].Width.ToString();
-			SIZECntxtEditTxtY.Text = "1:" + IMAGESET[FILELISTINDEX].Height.ToString();
+			SIZECntxtEditTxtX.Text = "1:" + IMAGESET[IMAGESETINDEX].Width.ToString();
+			SIZECntxtEditTxtY.Text = "1:" + IMAGESET[IMAGESETINDEX].Height.ToString();
 		}
 
 		private void FileDirectoryTxtContextMenuDelDirRmImg_Click(object sender, EventArgs e)
@@ -6623,16 +6450,16 @@ namespace CCDLAB
 			if (MessageBox.Show("Are you sure you want to delete the directory and remove the image?", "Confirmation...", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 				return;
 
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(IMAGESET[FILELISTINDEX].FilePath, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.DoNothing);
+			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(IMAGESET[IMAGESETINDEX].FilePath, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.DoNothing);
 
-			IMAGESET.RemoveAt(FILELISTINDEX);
-			FileListDrop.Items.RemoveAt(FILELISTINDEX);
+			IMAGESET.RemoveAt(IMAGESETINDEX);
+			FileListDrop.Items.RemoveAt(IMAGESETINDEX);
 
-			if (FILELISTINDEX == IMAGESET.Count)
-				FILELISTINDEX--;
-			FileListDrop.SelectedIndex = FILELISTINDEX;
+			if (IMAGESETINDEX == IMAGESET.Count)
+				IMAGESETINDEX--;
+			FileListDrop.SelectedIndex = IMAGESETINDEX;
 
-			ViewSelectionStatic.Text = String.Concat("Image: ", (FILELISTINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
+			ViewSelectionStatic.Text = String.Concat("Image: ", (IMAGESETINDEX + 1).ToString(), " of ", IMAGESET.Count.ToString());
 
 			if (FileListDrop.Items.Count == 1)
 			{
@@ -6689,7 +6516,7 @@ namespace CCDLAB
 		private void ImageMaxStatic_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
 			int x, y;
-			JPMath.Max(IMAGESET[FILELISTINDEX].Image, out x, out y, true);
+			JPMath.Max(IMAGESET[IMAGESETINDEX].Image, out x, out y, true);
 			SubImageSlideX.Value = x;
 			SubImageSlideY.Value = y;
 
@@ -6717,8 +6544,7 @@ namespace CCDLAB
 			if (iel.IncludePrimaryChck.Checked)
 				IMAGESET.Add(new JPFITS.FITSImage(ofd.FileName, null, true, true, true, true));
 
-			for (int i = 0; i < iel.ExtensionIndexesOneBased.Length; i++)
-				IMAGESET.Add(new JPFITS.FITSImage(ofd.FileName, iel.ExtensionIndexesOneBased[i], null, true, true, true, true));
+			IMAGESET.LoadExtensions(ofd.FileName, iel.ExtensionIndexesOneBased, null, true, "Loading extensions ");
 
 			AUTOLOADIMAGES = true;
 			AUTOLOADIMAGESFILES = new string[] { "SingleOut" };
@@ -6730,6 +6556,31 @@ namespace CCDLAB
 			JPFITS.FITSImageExtensionsSaver fies = new JPFITS.FITSImageExtensionsSaver(IMAGESET);
 			fies.ShowDialog();
 		}
+
+		private void OptionsDisplayDefaultMaxChck_Click(object sender, EventArgs e)
+		{
+			OptionsDisplayDefaultMaxChck.Checked = true;
+			OptionsDisplayDefaultNorChck.Checked = false;
+
+			this.WindowState = FormWindowState.Maximized;
+			REG.SetReg("CCDLAB", "DisplayStateMax", true);
+
+			OptsMenu.ShowDropDown();
+			OptionsDisplayDefaultMenu.ShowDropDown();
+		}
+
+		private void OptionsDisplayDefaultNorChck_Click(object sender, EventArgs e)
+		{
+			OptionsDisplayDefaultMaxChck.Checked = false;
+			OptionsDisplayDefaultNorChck.Checked = true;
+
+			this.WindowState = FormWindowState.Normal;
+			REG.SetReg("CCDLAB", "DisplayStateMax", false);
+
+			OptsMenu.ShowDropDown();
+			OptionsDisplayDefaultMenu.ShowDropDown();
+		}
+
 
 	}
 }

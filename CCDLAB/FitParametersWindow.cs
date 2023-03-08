@@ -23,8 +23,6 @@ namespace CCDLAB
 			double amp = max - min;
 			double x0 = xrange[xind];
 			double y0 = yrange[yind];
-			double xwidth = xrange[xrange.Length - 1] - xrange[0];
-			double ywidth = yrange[yrange.Length - 1] - yrange[0];
 
 			//amplitude
 			PITXTARRAY[0].Text = amp.ToString();
@@ -33,13 +31,13 @@ namespace CCDLAB
 
 			//x0
 			PITXTARRAY[1].Text = x0.ToString();
-			PLBTXTARRAY[1].Text = (x0 - xwidth * 5).ToString();
-			PUBTXTARRAY[1].Text = (x0 + xwidth * 5).ToString();
+			PLBTXTARRAY[1].Text = xrange[0].ToString();
+			PUBTXTARRAY[1].Text = xrange[xrange.Length - 1].ToString();
 
 			//y0
 			PITXTARRAY[2].Text = y0.ToString();
-			PLBTXTARRAY[2].Text = (y0 - ywidth * 5).ToString();
-			PUBTXTARRAY[2].Text = (y0 + ywidth * 5).ToString();
+			PLBTXTARRAY[2].Text = yrange[0].ToString();
+			PUBTXTARRAY[2].Text = yrange[yrange.Length - 1].ToString();
 
 			if (num == 0)
 			{
@@ -48,9 +46,8 @@ namespace CCDLAB
 				NPARAMS = 5;
 
 				PITXTARRAY[3].Text = "2";
-				PLBTXTARRAY[3].Text = "0";
-				PUBTXTARRAY[3].Text = (xwidth * 5).ToString();
-
+				PLBTXTARRAY[3].Text = "0.2";
+				PUBTXTARRAY[3].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 			}
 
 			if (num == 1)
@@ -64,13 +61,12 @@ namespace CCDLAB
 				PUBTXTARRAY[3].Text = Math.PI.ToString();
 
 				PITXTARRAY[4].Text = "2";
-				PLBTXTARRAY[4].Text = "0";
-				PUBTXTARRAY[4].Text = (xwidth * 5).ToString();
+				PLBTXTARRAY[4].Text = "0.2";
+				PUBTXTARRAY[4].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 
 				PITXTARRAY[5].Text = "2";
-				PLBTXTARRAY[5].Text = "0";
-				PUBTXTARRAY[5].Text = (ywidth * 5).ToString();
-
+				PLBTXTARRAY[5].Text = "0.2";
+				PUBTXTARRAY[5].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 			}
 
 			if (num == 2)
@@ -80,12 +76,12 @@ namespace CCDLAB
 				NPARAMS = 6;
 
 				PITXTARRAY[3].Text = "2";
-				PLBTXTARRAY[3].Text = "0";
-				PUBTXTARRAY[3].Text = (xwidth * 5).ToString();
+				PLBTXTARRAY[3].Text = "0.2";
+				PUBTXTARRAY[3].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 
 				PITXTARRAY[4].Text = "2";
 				PLBTXTARRAY[4].Text = "1";
-				PUBTXTARRAY[4].Text = (xwidth * 5).ToString();
+				PUBTXTARRAY[4].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 			}
 
 			if (num == 3)
@@ -99,16 +95,16 @@ namespace CCDLAB
 				PUBTXTARRAY[3].Text = Math.PI.ToString();
 
 				PITXTARRAY[4].Text = "2";
-				PLBTXTARRAY[4].Text = "0";
-				PUBTXTARRAY[4].Text = (xwidth * 5).ToString();
+				PLBTXTARRAY[4].Text = "0.2";
+				PUBTXTARRAY[4].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 
 				PITXTARRAY[5].Text = "2";
-				PLBTXTARRAY[5].Text = "0";
-				PUBTXTARRAY[5].Text = (ywidth * 5).ToString();
+				PLBTXTARRAY[5].Text = "0.2";
+				PUBTXTARRAY[5].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 
 				PITXTARRAY[6].Text = "2";
 				PLBTXTARRAY[6].Text = "1";
-				PUBTXTARRAY[6].Text = (xwidth * 5).ToString();
+				PUBTXTARRAY[6].Text = (xrange[xrange.Length - 1] - xrange[0]).ToString();
 			}
 
 			//background

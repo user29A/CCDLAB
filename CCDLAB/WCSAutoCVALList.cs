@@ -17,7 +17,7 @@ namespace CCDLAB
 			EXTENSIONNAME = ExtensionName;
 
 			JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(CatalogueFileName, ExtensionName);
-			string[] ttypes = bt.TableDataLabelsTTYPE;
+			string[] ttypes = bt.TableDataLabelTTYPEs;
 
 			WCDrop.Items.AddRange(ttypes);
 			ITEMLIST = ttypes;
@@ -44,6 +44,8 @@ namespace CCDLAB
 		private void WCSAutoCVALList1_Shown(object sender, EventArgs e)
 		{
 			WCDrop.DroppedDown = true;
+
+
 		}
 
 		private void SearchTxtBox_MouseClick(object sender, MouseEventArgs e)

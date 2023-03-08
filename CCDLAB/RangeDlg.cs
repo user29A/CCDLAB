@@ -73,14 +73,13 @@ namespace CCDLAB
 		{
 			InitializeComponent();
 
-			RANGE = range;
+			this.Range = RANGE;
 		}
 
 		private void RangeDlg_HelpButtonClicked(object sender, CancelEventArgs e)
 		{
-			MessageBox.Show(@"A value of -1 for XStart will cause the full-frame files to load regardless of the other values.\r\rValues of
-				 -1 for XEnd or YEnd or values greater than the actual image size will revert to the actual image size.\r\rValues of XEnd or YEnd,
-				 greater(less??) than or equal to XStart or YStart will cause a fits image to be loaded with no image data, likely causing an error.");
+			MessageBox.Show(@"A value of -1 for XStart will cause the full-frame files to load regardless of the other values. Values of XEnd or YEnd,
+				 less than or equal to XStart or YStart will likely cause an error.");
 		}
 
 		private void OKBtn_Click(object sender, System.EventArgs e)
@@ -101,6 +100,26 @@ namespace CCDLAB
 			YEndUpD.Value = Convert.ToDecimal(JPFITS.REG.GetReg("CCDLAB", "YEnd"));
 
 			RANGE = new int[] { (int)XStartUpD.Value, (int)XEndUpD.Value, (int)YStartUpD.Value, (int)YEndUpD.Value };
+		}
+
+		private void XStartUpD_ValueChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void YStartUpD_ValueChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void XEndUpD_ValueChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void YEndUpD_ValueChanged(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

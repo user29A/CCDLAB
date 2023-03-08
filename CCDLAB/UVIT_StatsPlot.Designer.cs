@@ -56,10 +56,10 @@
 			this.label26 = new System.Windows.Forms.Label();
 			this.MedMedianTxt = new System.Windows.Forms.Label();
 			this.MeanMeanTxt = new System.Windows.Forms.Label();
-			this.jpChartMin = new JPChart.JPChart();
-			this.jpChartStdv = new JPChart.JPChart();
-			this.jpChartMedian = new JPChart.JPChart();
-			this.jpChartMax = new JPChart.JPChart();
+			this.jpChartMin = new JPChart.JPChartControl();
+			this.jpChartStdv = new JPChart.JPChartControl();
+			this.jpChartMedian = new JPChart.JPChartControl();
+			this.jpChartMax = new JPChart.JPChartControl();
 			this.exitCCDLABToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitThisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -87,7 +87,7 @@
 			this.label8 = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this.label10 = new System.Windows.Forms.Label();
-			this.jpChartMean = new JPChart.JPChart();
+			this.jpChartMean = new JPChart.JPChartControl();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.label20 = new System.Windows.Forms.Label();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -768,10 +768,10 @@
 		private System.Windows.Forms.Label label26;
 		public System.Windows.Forms.Label MedMedianTxt;
 		public System.Windows.Forms.Label MeanMeanTxt;
-		private JPChart.JPChart jpChartMin;
-		private JPChart.JPChart jpChartStdv;
-		private JPChart.JPChart jpChartMedian;
-		private JPChart.JPChart jpChartMax;
+		private JPChart.JPChartControl jpChartMin;
+		private JPChart.JPChartControl jpChartStdv;
+		private JPChart.JPChartControl jpChartMedian;
+		private JPChart.JPChartControl jpChartMax;
 		private System.Windows.Forms.ToolStripMenuItem exitCCDLABToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitThisToolStripMenuItem;
 		private System.Windows.Forms.MenuStrip menuStrip1;
@@ -799,7 +799,7 @@
 		private System.Windows.Forms.Label label8;
 		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Label label10;
-		private JPChart.JPChart jpChartMean;
+		private JPChart.JPChartControl jpChartMean;
 		public System.Windows.Forms.GroupBox groupBox2;
 		private System.Windows.Forms.Label label20;
 		public System.Windows.Forms.GroupBox groupBox3;

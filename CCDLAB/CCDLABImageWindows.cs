@@ -6,6 +6,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Runtime.CompilerServices;
 using JPFITS;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace CCDLAB
 {
@@ -14,9 +16,6 @@ namespace CCDLAB
 		private void SubImageWindow_Paint(object sender, PaintEventArgs e)
 		{
 			if (FIRSTLOAD)
-				return;
-
-			if (PSEEllipticalROI.Checked)
 				return;
 
 			e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -47,37 +46,26 @@ namespace CCDLAB
 					}
 			}
 
-			if (ShowPSEChck.Checked && PSESRECTS != null && PSESRECTS[PSESINDEX] != null)
+			if (!PSESPLOTNONE && PSESET.Count != 0)
 			{
 				IMAGEWINDOWPEN.Width = 2;
 				int rem = 0;
-
-				if (!PSESPLOTALL)
-				{
-					Math.DivRem(PSESINDEX, PSERECTCOLOURS.Length, out rem);
-					IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
-					for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
-						if (PSES[PSESINDEX].Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[PSESINDEX].Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE.Length - 1] && PSES[PSESINDEX].Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[PSESINDEX].Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE.Length - 1])
-							e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(((float)(PSES[PSESINDEX].Centroids_X[i]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - 3.0), (float)(((float)(PSES[PSESINDEX].Centroids_Y[i]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - 3.0), (float)7.0, (float)7.0);
-				}
+				int[] indexes = new int[PSESET.Count];
+				if (PSESPLOTALL)
+					for (int i = 0; i < PSESET.Count; i++)
+						indexes[i] = i;
 				else
+					indexes = new int[] { PSESETINDEX };
+
+				for (int i = indexes[0]; i <= indexes[indexes.Length - 1]; i++)
 				{
-					for (int k = 0; k < PSES.Length; k++)
-					{
-						Math.DivRem(k, PSERECTCOLOURS.Length, out rem);
-						IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
-						for (int i = 0; i < PSES[k].N_Sources; i++)
-							if (PSES[k].Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[k].Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE.Length - 1] && PSES[k].Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[k].Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE.Length - 1])
-								e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(((float)(PSES[k].Centroids_X[i]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - 3.0), (float)(((float)(PSES[k].Centroids_Y[i]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - 3.0), (float)7.0, (float)7.0);
-					}
+					Math.DivRem(i, PSERECTCOLOURS.Length, out rem);
+					IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
+					IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(50, IMAGEWINDOWPEN.Color));
+					PSESET[i].Draw_PSEKernels(e, IMAGEWINDOWPEN, SubImageWindow, SUBIMAGE, XSUBRANGE[0], XSUBRANGE[XSUBRANGE.Length - 1], YSUBRANGE[0], YSUBRANGE[YSUBRANGE.Length - 1], IMAGEWINDOWBRUSH);
 				}
 
 				IMAGEWINDOWPEN.Width = 1;
-
-				/*IMAGEWINDOWPEN.Color = Color.Cyan;
-				for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
-					if (PSES[PSESINDEX].Centroids_X[i] + 1 >= XSUBRANGE[0] && PSES[PSESINDEX].Centroids_X[i] - 1 <= XSUBRANGE[XSUBRANGE.Length - 1] && PSES[PSESINDEX].Centroids_Y[i] + 1 >= YSUBRANGE[0] && PSES[PSESINDEX].Centroids_Y[i] - 1 <= YSUBRANGE[YSUBRANGE.Length - 1])
-						e.Graphics.FillRectangle(IMAGEWINDOWPEN.Brush, (float)(((float)(PSES[PSESINDEX].Centroids_X[i]) - (float)(XSUBRANGE[0]) + 0.5)*subxsc - 3.0), (float)(((float)(PSES[PSESINDEX].Centroids_Y[i]) - (float)(YSUBRANGE[0]) + 0.5)*subysc - 3.0), (float)7.0, (float)7.0);*/
 			}
 
 			if (MARKCOORDS != null && MARKCOORDRECTS != null)
@@ -108,7 +96,7 @@ namespace CCDLAB
 						e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(((float)(MANREGCOORDS[i, 0]) - (float)(XSUBRANGE[0]) + 0.5) * subxsc - 6.0), (float)(((float)(MANREGCOORDS[i, 1]) - (float)(YSUBRANGE[0]) + 0.5) * subysc - 6.0), (float)13.0, (float)13.0);
 			}
 
-			if (PSEDRAWGROUPREGIONS && PSES != null && PSES[PSESINDEX] != null)
+			if (PSEDRAWGROUPREGIONS && PSESET.Count > 0)
 			{
 				System.Drawing.Drawing2D.Matrix tm = new System.Drawing.Drawing2D.Matrix();
 				tm.Scale(subxsc, subysc);
@@ -116,16 +104,16 @@ namespace CCDLAB
 				ArrayList groups = new ArrayList();
 				for (int x = XSUBRANGE[0]; x <= XSUBRANGE[XSUBRANGE.Length - 1]; x++)
 					for (int y = YSUBRANGE[0]; y <= YSUBRANGE[YSUBRANGE.Length - 1]; y++)
-						if (PSES[PSESINDEX].SourceGroupMap[x, y] != -1)
-							if (!groups.Contains(PSES[PSESINDEX].SourceGroupMap[x, y]))
-								groups.Add(PSES[PSESINDEX].SourceGroupMap[x, y]);
+						if (PSESET[PSESETINDEX].SourceGroupMap[x, y] != -1)
+							if (!groups.Contains(PSESET[PSESETINDEX].SourceGroupMap[x, y]))
+								groups.Add(PSESET[PSESETINDEX].SourceGroupMap[x, y]);
 
 				for (int i = 0; i < groups.Count; i++)
 				{
-					IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(50, PSES[PSESINDEX].Groups[(int)groups[i]].GroupColor));
+					IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(50, PSESET[PSESETINDEX].Groups[(int)groups[i]].GroupColor));
 
 					System.Drawing.Region reg = new System.Drawing.Region();
-					reg = PSES[PSESINDEX].Groups[(int)groups[i]].REGION.Clone();
+					reg = PSESET[PSESETINDEX].Groups[(int)groups[i]].REGION.Clone();
 					reg.Translate(-XSUBRANGE[0], -YSUBRANGE[0]);
 					reg.Transform(tm);
 					e.Graphics.FillRegion(IMAGEWINDOWBRUSH, reg);
@@ -180,8 +168,8 @@ namespace CCDLAB
 				e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 				e.Graphics.DrawImage(IMAGEBMP, new Rectangle(0, 0, ImageWindow.Size.Width, ImageWindow.Size.Height));
 
-				float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-				float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+				float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+				float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 
 				if (ShowFoundCoordsChck.Checked)
 				{
@@ -210,59 +198,27 @@ namespace CCDLAB
 						IMAGEWINDOWPEN.Width = 1;
 
 					e.Graphics.DrawRectangles(IMAGEWINDOWPEN, MANREGCOORDRECTS);
-				}
-
-				if (ShowPSEChck.Checked && PSESRECTS != null && PSESRECTS[PSESINDEX] != null)
-				{
-					IMAGEWINDOWPEN.Width = 2;
-					int rem = 0;
-
-					if (!PSESPLOTALL)
-					{
-						Math.DivRem(PSESINDEX, PSERECTCOLOURS.Length, out rem);
-						IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
-						e.Graphics.DrawRectangles(IMAGEWINDOWPEN, PSESRECTS[PSESINDEX]);
-					}
-					else
-					{
-						for (int i = 0; i < PSES.Length; i++)
-						{
-							Math.DivRem(i, PSERECTCOLOURS.Length, out rem);
-							IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
-							e.Graphics.DrawRectangles(IMAGEWINDOWPEN, PSESRECTS[i]);
-						}
-						//PSESPLOTALL = false;
-					}
-
-					IMAGEWINDOWPEN.Width = 1;
-				}
-
-				if (MARKCOORDRECTS != null)
-				{
-					IMAGEWINDOWPEN.Color = Color.Violet;
-					IMAGEWINDOWPEN.Width = 2;
-					for (int i = 0; i < MARKCOORDRECTS.Length; i++)
-						e.Graphics.DrawEllipse(IMAGEWINDOWPEN, MARKCOORDRECTS[i]);
-
-					IMAGEWINDOWPEN.Width = 1;
-				}
+				}				
 
 				if (ShowCursorBox.Checked)
 				{
-					if (!IWLCK)//allow cursor box to move
+					if (!ROIFIXEDCURSOR)//allow cursor box to move
 						IMAGEWINDOWPEN.Color = Color.Yellow;
 					else//else fixed
 					{
 						IMAGEWINDOWPEN.Color = Color.LimeGreen;
 						IMAGEWINDOWPEN.Width = 2;
 					}
-					if (COG_CURSOR || PSEEllipticalROI.Checked)
+					if (COG_CURSOR)
 						e.Graphics.DrawEllipse(IMAGEWINDOWPEN, (float)(XSUBRANGE[0]) * xsc, (float)(YSUBRANGE[0]) * ysc, (float)(SUBIMAGE_HWX * 2 + 1) * xsc, (float)(SUBIMAGE_HWY * 2 + 1) * ysc);
 					else
 						e.Graphics.DrawRectangle(IMAGEWINDOWPEN, (float)(XSUBRANGE[0]) * xsc, (float)(YSUBRANGE[0]) * ysc, (float)(SUBIMAGE_HWX * 2 + 1) * xsc, (float)(SUBIMAGE_HWY * 2 + 1) * ysc);
 
 					IMAGEWINDOWPEN.Width = 1;//reset for other operations...only set = 2 for cursor box draw
 				}
+
+				if (PSEEllipticalROI.Checked)
+					e.Graphics.DrawEllipse(IMAGEWINDOWPEN, (float)(ROIX0 - ROIXRad) * xsc, (float)(ROIY0 - ROIYRad) * ysc, (float)(ROIXRad * 2 + 1) * xsc, (float)(ROIYRad * 2 + 1) * ysc);
 
 				if (ShowCrosshair.Checked)
 				{
@@ -271,7 +227,7 @@ namespace CCDLAB
 					e.Graphics.DrawLine(IMAGEWINDOWPEN, 0, ((float)(SubImageSlideY.Value - 1) + 0.5f) * ysc, (float)(ImageWindow.Size.Width), ((float)(SubImageSlideY.Value - 1) + 0.5f) * ysc);
 				}
 
-				if (ImageWndwPlotRadialVector.Checked && !IWLCK || PLOTRADIALLINE)
+				if (ImageWndwPlotRadialVector.Checked && !ROIFIXEDCURSOR || PLOTRADIALLINE)
 				{
 					IMAGEWINDOWPEN.Color = Color.Yellow;
 					e.Graphics.DrawPolygon(IMAGEWINDOWPEN, RADIALLINEBOXPOINTS);
@@ -281,76 +237,75 @@ namespace CCDLAB
 				{
 					try
 					{
-						if (!IMAGESET[FILELISTINDEX].WCS.Exists())
-							IMAGESET[FILELISTINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[FILELISTINDEX].Header);
-						if (IMAGESET[FILELISTINDEX].WCS.Exists())
+						if (!IMAGESET[IMAGESETINDEX].WCS.Exists())
+							IMAGESET[IMAGESETINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
+						if (IMAGESET[IMAGESETINDEX].WCS.Exists())
 						{
-							IMAGESET[FILELISTINDEX].WCS.Grid_MakeWCSGrid(IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height, ImageWindow.Size.Width, ImageWindow.Size.Height, 7);
-
-							IMAGESET[FILELISTINDEX].WCS.Grid_DrawWCSGrid(ImageWindow, e);
-
-							/*IMAGEWINDOWPEN = new Pen(Color.FromArgb(175, Color.Green));
-							System.Drawing.Drawing2D.LinearGradientBrush lgbr;
-							System.Drawing.Pen pn;
-
-							for (int i = 0; i < IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints.Length; i++)
-							{
-								float xbb = IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][0].X;
-								float xtt = IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i].Length - 1].X;
-								float ybb = IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][0].Y;
-								float ytt = IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i].Length - 1].Y;
-
-								lgbr = new System.Drawing.Drawing2D.LinearGradientBrush(IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][0], IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i][IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i].Length - 1], Color.Red, Color.Blue);
-								pn = new System.Drawing.Pen(lgbr);
-
-								e.Graphics.DrawCurve(pn, IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionPoints[i]);
-							}
-							for (int i = 0; i < IMAGESET[FILELISTINDEX].WCS.Grid_DeclinationPoints.Length; i++)
-								e.Graphics.DrawCurve(IMAGEWINDOWPEN, IMAGESET[FILELISTINDEX].WCS.Grid_DeclinationPoints[i]);
-
-							IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(175, Color.Red));
-							for (int i = 0; i < IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionLabels.Length; i++)
-							{
-								PointF pnt = IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionLabelLocations[i];
-								float angle = -(float)(IMAGESET[FILELISTINDEX].WCS.GetCROTAn(1) - 90);
-								if (IMAGESET[FILELISTINDEX].WCS.GetCROTAn(1) < 0)
-									angle += 180;
-								DrawRotatedTextAt(e.Graphics, angle, IMAGESET[FILELISTINDEX].WCS.Grid_RightAscensionLabels[i], pnt, new Font(this.Font.FontFamily, 18.0f, FontStyle.Regular), IMAGEWINDOWBRUSH);
-							}
-
-							IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(175, Color.Green));
-							for (int i = 0; i < IMAGESET[FILELISTINDEX].WCS.Grid_DeclinationLabels.Length; i++)
-							{
-								PointF pnt = IMAGESET[FILELISTINDEX].WCS.Grid_DeclinationLabelLocations[i];
-								float angle = -(float)(IMAGESET[FILELISTINDEX].WCS.GetCROTAn(1));
-								if (IMAGESET[FILELISTINDEX].WCS.GetCROTAn(1) < -90)
-									angle += 180;
-								DrawRotatedTextAt(e.Graphics, angle, IMAGESET[FILELISTINDEX].WCS.Grid_DeclinationLabels[i], pnt, new Font(this.Font.FontFamily, 18.0f, FontStyle.Regular), IMAGEWINDOWBRUSH);
-							}*/
-
-							//OLD SIMPLE WAY
-							//double xt, yt, xb, yb, xl, yl, xr, yr;
-							//double width = (double)IMAGESET[FILELISTINDEX].Width * IMAGESET[FILELISTINDEX].WCS.GetCDELTn(1) / 7200;
-							//double height = (double)IMAGESET[FILELISTINDEX].Height * IMAGESET[FILELISTINDEX].WCS.GetCDELTn(2) / 7200;
-							//IMAGESET[FILELISTINDEX].WCS.Get_Pixel(IMAGESET[FILELISTINDEX].WCS.GetCRVALn(1) + width, IMAGESET[FILELISTINDEX].WCS.GetCRVALn(2), "TAN", out xl, out yl, true);
-							//IMAGESET[FILELISTINDEX].WCS.Get_Pixel(IMAGESET[FILELISTINDEX].WCS.GetCRVALn(1) - width, IMAGESET[FILELISTINDEX].WCS.GetCRVALn(2), "TAN", out xr, out yr, true);
-							//IMAGESET[FILELISTINDEX].WCS.Get_Pixel(IMAGESET[FILELISTINDEX].WCS.GetCRVALn(1), IMAGESET[FILELISTINDEX].WCS.GetCRVALn(2) + height, "TAN", out xt, out yt, true);
-							//IMAGESET[FILELISTINDEX].WCS.Get_Pixel(IMAGESET[FILELISTINDEX].WCS.GetCRVALn(1), IMAGESET[FILELISTINDEX].WCS.GetCRVALn(2) - height, "TAN", out xb, out yb, true);
-
-							//IMAGEWINDOWPEN.Color = Color.Red;
-							//System.Drawing.Drawing2D.LinearGradientBrush lgb = new System.Drawing.Drawing2D.LinearGradientBrush(new System.Drawing.Point((int)(((float)(xb) + 0.5f) * xsc), (int)(((float)(yb) + 0.5f) * ysc)), new System.Drawing.Point((int)(((float)(xt) + 0.5f) * xsc), (int)(((float)(yt) + 0.5f) * ysc)), Color.Red, Color.Blue);
-							//System.Drawing.Pen pn2 = new System.Drawing.Pen(lgb);
-							//pn2.Width = 2;
-							//e.Graphics.DrawLine(pn2, ((float)(xb) + 0.5f) * xsc, ((float)(yb) + 0.5f) * ysc, ((float)(xt) + 0.5f) * xsc, ((float)(yt) + 0.5f) * ysc);
-							//IMAGEWINDOWPEN.Width = 2;
-							//e.Graphics.DrawLine(IMAGEWINDOWPEN, ((float)(xr) + 0.5f) * xsc, ((float)(yr) + 0.5f) * ysc, ((float)(xl) + 0.5f) * xsc, ((float)(yl) + 0.5f) * ysc);
-							//IMAGEWINDOWPEN.Width = 1;
+							IMAGESET[IMAGESETINDEX].WCS.Grid_MakeWCSGrid(IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height, ImageWindow.Size.Width, ImageWindow.Size.Height, 7);
+							IMAGESET[IMAGESETINDEX].WCS.Grid_DrawWCSGrid(ImageWindow, e);
 						}
 					}
-					catch (Exception ee)
+					catch /*(Exception ee)*/
 					{
-						MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
+						//MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
 					}
+				}
+
+				if (SHOW_WCSSOLUTIONPOINTS)
+				{
+					//if (!IMAGESET[FILELISTINDEX].WCS.Exists())
+					//	IMAGESET[FILELISTINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[FILELISTINDEX].Header);
+					//if (!IMAGESET[FILELISTINDEX].WCS.Exists())
+					//	return;
+
+					//double[] cp1 = IMAGESET[FILELISTINDEX].WCS.GetCPIXPixels(1, true);
+					//double[] cp2 = IMAGESET[FILELISTINDEX].WCS.GetCPIXPixels(2, true);
+					//double[] cv1 = IMAGESET[FILELISTINDEX].WCS.GetCVALValues(1, true, true);
+					//double[] cv2 = IMAGESET[FILELISTINDEX].WCS.GetCVALValues(2, true, true);
+
+					//double[] cd1 = IMAGESET[FILELISTINDEX].WCS.GetWCSResiduals(1);
+					//double[] cd2 = IMAGESET[FILELISTINDEX].WCS.GetWCSResiduals(2);
+					//AdjustableArrowCap bigArrow = new AdjustableArrowCap(3, 5);
+					//Pen p = new Pen(Color.LimeGreen);
+					//p.CustomEndCap = bigArrow;
+					//double res_scale = Convert.ToDouble(WCSPlotResidualScaleTxt.Text);
+					//for (int i = 0; i < cd1.Length; i++)
+					//{
+					//	double xend = cp1[i] + cd1[i] * res_scale;
+					//	double yend = cp2[i] + cd2[i] * res_scale;
+					//	e.Graphics.DrawLine(p, ((float)(cp1[i] - 1) + 0.5f) * xsc, ((float)(cp2[i] - 1) + 0.5f) * ysc, ((float)(xend - 1) + 0.5f) * xsc, ((float)(yend - 1) + 0.5f) * ysc);
+					//}
+
+					//if (WCSPlotSolutionResidsOnlyBtn.Checked)
+					//	return;
+
+					//MARKCOORDS = new double[2, cp1.Length];
+					//for (int i = 0; i < cp1.Length; i++)
+					//{
+					//	MARKCOORDS[0, i] = cv1[i];
+					//	MARKCOORDS[1, i] = cv2[i];
+					//}
+					//MAKEMARKCOORDRECTS();
+
+					//if (PSES == null)
+					//{
+					//	PSES = new PointSourceExtractor[1];
+					//	PSESINDEX = 0;
+					//	PSEDrop.Items.Add("WCS");
+					//}
+					//else if (PSEDrop.Items[PSEDrop.Items.Count - 1].ToString() != "WCS")
+					//{
+					//	PointSourceExtractor[] temppses = new PointSourceExtractor[PSES.Length + 1];
+					//	for (int i = 0; i < PSES.Length; i++)
+					//		temppses[i] = PSES[i];
+					//	PSES = temppses;
+					//	PSESINDEX = PSES.Length - 1;
+					//	PSEDrop.Items.Add("WCS");
+					//}
+					//PSES[PSESINDEX] = new JPFITS.PointSourceExtractor(cp1, cp2);
+
+
+					//this whole thing needs work because of the last line - can't just screw with the PSES I dont think
 				}
 
 				if (POLYPOINTS != null)
@@ -418,77 +373,58 @@ namespace CCDLAB
 					e.Graphics.FillPolygon(IMAGEWINDOWBRUSH, ROI_PATH_POINTS);
 				}
 
-				if (PSEDRAWGROUPREGIONS && PSES != null && PSES[PSESINDEX] != null)
+				if (PSEDRAWGROUPREGIONS && PSESET.Count > 0)
 				{
 					System.Drawing.Drawing2D.Matrix tm = new System.Drawing.Drawing2D.Matrix();
 					tm.Scale(xsc, ysc);
 
-					for (int i = 0; i < PSES[PSESINDEX].NGroups; i++)
+					for (int i = 0; i < PSESET[PSESETINDEX].NGroups; i++)
 					{
-						IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(50, PSES[PSESINDEX].Groups[i].GroupColor));
+						IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(50, PSESET[PSESETINDEX].Groups[i].GroupColor));
 
 						Region reg = new Region();
-						reg = PSES[PSESINDEX].Groups[i].REGION.Clone();
+						reg = PSESET[PSESETINDEX].Groups[i].REGION.Clone();
 						reg.Transform(tm);
 						e.Graphics.FillRegion(IMAGEWINDOWBRUSH, reg);
 					}
 				}
+
+				if (!PSESPLOTNONE && PSESET.Count != 0)
+				{
+					IMAGEWINDOWPEN.Width = 2;
+					int rem = 0;
+					int[] indexes = new int[PSESET.Count];
+					if (PSESPLOTALL)
+						for (int i = 0; i < PSESET.Count; i++)
+							indexes[i] = i;
+					else
+						indexes = new int[1] { PSESETINDEX };
+
+					for (int i = indexes[0]; i <= indexes[indexes.Length - 1]; i++)
+					{
+						Math.DivRem(i, PSERECTCOLOURS.Length, out rem);
+						IMAGEWINDOWPEN.Color = PSERECTCOLOURS[rem];
+						//IMAGEWINDOWBRUSH = new SolidBrush(Color.FromArgb(200, IMAGEWINDOWPEN.Color));
+						PSESET[i].Draw_PSEKernels(e, IMAGEWINDOWPEN, ImageWindow, IMAGESET[IMAGESETINDEX].Image);//, 0, IMAGESET[IMAGESETINDEX].Width - 1, 0, IMAGESET[IMAGESETINDEX].Height - 1, IMAGEWINDOWBRUSH);
+					}
+
+					IMAGEWINDOWPEN.Width = 1;
+				}
+
+				if (MARKCOORDRECTS != null)
+				{
+					IMAGEWINDOWPEN.Color = Color.Violet;
+					IMAGEWINDOWPEN.Width = 2;
+					for (int i = 0; i < MARKCOORDRECTS.Length; i++)
+						e.Graphics.DrawEllipse(IMAGEWINDOWPEN, MARKCOORDRECTS[i]);
+
+					IMAGEWINDOWPEN.Width = 1;
+				}
 			}
-			catch (Exception ee)
+			catch /*(Exception ee)*/
 			{
-				MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
+				//MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite);
 			}
-		}
-
-		private void MAKEPSERECTS()
-		{
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
-			PSESRECTS[PSESINDEX] = new Rectangle[PSES[PSESINDEX].N_Sources];
-			for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
-				PSESRECTS[PSESINDEX][i] = new Rectangle((int)(((float)(PSES[PSESINDEX].Centroids_X[i]) + 0.5) * xsc - 3), (int)(((float)(PSES[PSESINDEX].Centroids_Y[i]) + 0.5) * ysc - 3), 7, 7);
-		}
-
-		private void MAKEMARKCOORDRECTS()
-		{
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
-			MARKCOORDRECTS = new Rectangle[MARKCOORDS.GetLength(1)];
-			for (int i = 0; i < MARKCOORDRECTS.Length; i++)
-				MARKCOORDRECTS[i] = new Rectangle((int)(((float)(MARKCOORDS[0, i]) + 1) * xsc - 6), (int)(((float)(MARKCOORDS[1, i]) + 1) * ysc - 6), 13, 13);
-		}
-
-		private void MAKEROIPATHPOINTS()
-		{
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
-			ROI_PATH_POINTS = new Point[ROI_PATH_COORDS.GetLength(1)];
-			for (int i = 0; i < ROI_PATH_POINTS.Length; i++)
-				ROI_PATH_POINTS[i] = new Point((int)(((float)(ROI_PATH_COORDS[0, i]) + 0.5) * xsc), (int)(((float)(ROI_PATH_COORDS[1, i]) + 0.5) * ysc));
-		}
-
-		private void SpAxesUpD()
-		{
-			if (FIRSTLOAD || !Chart1.Visible)
-				return;
-
-			Chart1.Series.Clear();
-			//Chart1.Series.SuspendUpdates();
-			Chart1.ChartAreas[0].AxisX.Minimum = 1;
-			Chart1.ChartAreas[0].AxisX.Maximum = IMAGESET[FILELISTINDEX].Width;
-			Chart1.ChartAreas[0].AxisY.Minimum = IMAGESET[FILELISTINDEX].Min;
-			Chart1.ChartAreas[0].AxisY.Maximum = IMAGESET[FILELISTINDEX].Max;
-
-			for (int i = 0; i < IMAGESET[FILELISTINDEX].Height; i++)
-			{
-				Chart1.Series.Add(i.ToString());
-				Chart1.Series[i].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-
-				for (int j = 0; j < IMAGESET[FILELISTINDEX].Width; j++)
-					Chart1.Series[i].Points.AddXY(j + 1, IMAGESET[FILELISTINDEX].Image[j, i]);
-
-			}
-			//Chart1.Series.ResumeUpdates();
 		}
 
 		[MethodImpl(256)]
@@ -497,8 +433,8 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);//image window size per data image pixel
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 
 			if (e.Button == MouseButtons.Middle)
 			{
@@ -509,7 +445,7 @@ namespace CCDLAB
 				{
 					XPOS_CURSOR = (int)((float)(e.X) / xsc);
 					YPOS_CURSOR = (int)((float)(e.Y) / ysc);
-					double val = (double)IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR];
+					double val = (double)IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR];
 					XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
 					YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
 					XYImageValueTxt.Text = val.ToString();
@@ -521,8 +457,17 @@ namespace CCDLAB
 						MidBtnMouseMoveXPrev = MidBtnMouseMoveXCurrent;
 						MidBtnMouseMoveYPrev = MidBtnMouseMoveYCurrent;
 
-						HalfWidthXUpD.Value = Math.Abs(MidBtnMouseMoveXCurrent - MidBtnMouseMoveXInit);
-						HalfWidthYUpD.Value = Math.Abs(MidBtnMouseMoveYCurrent - MidBtnMouseMoveYInit);
+						if (PSEEllipticalROI.Checked)
+						{
+							ROIXRad = (int)(Math.Abs(MidBtnMouseMoveXCurrent - MidBtnMouseMoveXInit));
+							ROIYRad = (int)(Math.Abs(MidBtnMouseMoveYCurrent - MidBtnMouseMoveYInit));
+							ImageWindow.Refresh();
+						}
+						else
+						{
+							HalfWidthXUpD.Value = Math.Abs(MidBtnMouseMoveXCurrent - MidBtnMouseMoveXInit);
+							HalfWidthYUpD.Value = Math.Abs(MidBtnMouseMoveYCurrent - MidBtnMouseMoveYInit);
+						}
 					}
 				}
 				catch
@@ -538,10 +483,10 @@ namespace CCDLAB
 				{
 					XPOS_CURSOR = xpos;
 					YPOS_CURSOR = ypos;
-					if (XPOS_CURSOR < 0 || YPOS_CURSOR < 0 || XPOS_CURSOR > IMAGESET[FILELISTINDEX].Width - 1 || YPOS_CURSOR > IMAGESET[FILELISTINDEX].Height - 1)
+					if (XPOS_CURSOR < 0 || YPOS_CURSOR < 0 || XPOS_CURSOR > IMAGESET[IMAGESETINDEX].Width - 1 || YPOS_CURSOR > IMAGESET[IMAGESETINDEX].Height - 1)
 						return;
 
-					XYImageValueTxt.Text = IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR].ToString("n5");
+					XYImageValueTxt.Text = IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR].ToString("n5");
 					if (!SHOW_WCSCOORDS)
 					{
 						XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
@@ -554,14 +499,14 @@ namespace CCDLAB
 							double a, d;
 							String asx;
 							String dsx;
-							IMAGESET[FILELISTINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
+							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
 							XPOS_CURSOR_RADEG = a;
 							YPOS_CURSOR_DECDEG = d;
 							XPOS_CURSOR_RAHMS = asx;
 							YPOS_CURSOR_DECDMS = dsx;
 
-							XPositionTxt.Text = XPOS_CURSOR_RAHMS;
-							YPositionTxt.Text = YPOS_CURSOR_DECDMS;
+							XPositionTxt.Text = XPOS_CURSOR_RAHMS + " (" + (XPOS_CURSOR + 1) + ")";
+							YPositionTxt.Text = YPOS_CURSOR_DECDMS + " (" + (YPOS_CURSOR + 1) + ")";
 						}
 						catch
 						{
@@ -569,15 +514,48 @@ namespace CCDLAB
 							YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
 						}
 					}
+
+					string pseaddendum = "";
+					try
+					{
+						if (!PSESPLOTNONE && PSESET.Count > 0)
+							if (PSESET[PSESETINDEX].SourceBooleanMap != null && PSESET[PSESETINDEX].SourceBooleanMap[XPOS_CURSOR, YPOS_CURSOR])
+							{
+								if (!PSESET[PSESETINDEX].WCS_Coordinates_Generated)
+									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[] { "TAN", "TAN" }))
+									{
+										IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
+										PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
+									}
+
+								int index = PSESET[PSESETINDEX].SourceIndexMap[XPOS_CURSOR, YPOS_CURSOR];
+								if (PSESET[PSESETINDEX].WCS_Coordinates_Generated)
+								{
+									WorldCoordinateSolution.DegreeElementstoSexagesimalElements(PSESET[PSESETINDEX].Centroids_RA_Deg[index], PSESET[PSESETINDEX].Centroids_Dec_Deg[index], out string rasex, out string decsex, "", 2);
+									pseaddendum += Environment.NewLine + "PSE RA:     " + rasex + " (" + Math.Round(PSESET[PSESETINDEX].Centroids_X[index] + 1, 2) + ")";
+									pseaddendum += Environment.NewLine + "PSE DEC: " + decsex + " (" + Math.Round(PSESET[PSESETINDEX].Centroids_Y[index] + 1, 2) + ")";
+								}
+								else
+								{
+									pseaddendum += Environment.NewLine + "PSE X: (" + Math.Round(PSESET[PSESETINDEX].Centroids_X[index] + 1, 2) + ")";
+									pseaddendum += Environment.NewLine + "PSE Y: (" + Math.Round(PSESET[PSESETINDEX].Centroids_Y[index] + 1, 2) + ")";
+								}
+								pseaddendum += Environment.NewLine + "PSE SNR: " + Math.Round(PSESET[PSESETINDEX].Signal_to_Noise_SNR[index]).ToString("");
+							}
+					}
+					catch (Exception ex)
+					{
+						MessageBox.Show(ex.Data + "	" + ex.InnerException + "	" + ex.Message + "	" + ex.Source + "	" + ex.StackTrace + "	" + ex.TargetSite);
+					}
+
 					XYImageValueTxt.Refresh();
 					XPositionTxt.Refresh();
 					YPositionTxt.Refresh();
+					if (SHOWIMGTOOLTIP)
+						Tooltip.SetToolTip(ImageWindow, XYImageValueTxt.Text + "\r\nX:  " + XPositionTxt.Text + "\r\nY:  " + YPositionTxt.Text + pseaddendum);
 				}
 
-				if (SHOWIMGTOOLTIP)
-					Tooltip.SetToolTip(ImageWindow, XYImageValueTxt.Text + "\r\nX:  " + XPositionTxt.Text + "\r\nY:  " + YPositionTxt.Text);
-
-				if (!IWLCK)//allow cursor box to move, then move sub image sliders around, and SubImage too, update PRVX/YPOS values
+				if (!ROIFIXEDCURSOR)//allow cursor box to move, then move sub image sliders around, and SubImage too, update PRVX/YPOS values
 				{
 					if (PRVXPOS_CURSOR != XPOS_CURSOR || PRVYPOS_CURSOR != YPOS_CURSOR)
 					{
@@ -585,6 +563,12 @@ namespace CCDLAB
 						SubImageSlideY.Value = YPOS_CURSOR + 1;
 						PRVXPOS_CURSOR = XPOS_CURSOR;
 						PRVYPOS_CURSOR = YPOS_CURSOR;
+
+						if (PSEEllipticalROI.Checked)
+						{
+							ROIX0 = (int)SubImageSlideX.Value - 1;
+							ROIY0 = (int)SubImageSlideY.Value - 1;
+						}
 
 						if (ImageWndwCntxtPlotRow.Checked)
 							ROWplotUpD(false);
@@ -639,7 +623,7 @@ namespace CCDLAB
 						YPOS_CURSOR = ypos;
 						XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
 						YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
-						XYImageValueTxt.Text = ((double)IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR]).ToString();
+						XYImageValueTxt.Text = ((double)IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR]).ToString();
 						SubImageSlideX.Value = XPOS_CURSOR + 1;
 						SubImageSlideY.Value = YPOS_CURSOR + 1;
 
@@ -750,8 +734,8 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 			XPOS_CURSOR = (int)((float)(e.X) / xsc);
 			YPOS_CURSOR = (int)((float)(e.Y) / ysc);
 
@@ -760,13 +744,18 @@ namespace CCDLAB
 				if (DOMANREG || DOUVITMANREG || UVREGISTRATION || WCSMANUALRAD)
 					return;
 
-				IWLCK = true;//fix cursor box
+				ROIFIXEDCURSOR = true;//fix cursor box
 				EqualHWChck.Checked = false;
 				MidBtnMouseMoveXInit = (int)((float)(e.X) / xsc);
 				MidBtnMouseMoveYInit = (int)((float)(e.Y) / ysc);
 				MidBtnMouseMoveXPrev = MidBtnMouseMoveXInit;
 				MidBtnMouseMoveYPrev = MidBtnMouseMoveYInit;
-				double val = (double)IMAGESET[FILELISTINDEX].Image[XPOS_CURSOR, YPOS_CURSOR];
+				if (PSEEllipticalROI.Checked)
+				{
+					ROIX0 = (int)SubImageSlideX.Value - 1;
+					ROIY0 = (int)SubImageSlideY.Value - 1;
+				}
+				double val = (double)IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR];
 				XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
 				YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
 				XYImageValueTxt.Text = val.ToString();
@@ -783,9 +772,9 @@ namespace CCDLAB
 			{
 				if (!DOMANREG && !DOUVITMANREG && !UVREGISTRATION && !WCSMANUALRAD)
 				{
-					IWLCK = !IWLCK;  //Image Window Left Click: this (true or false) sets whether to update subimage window
+					ROIFIXEDCURSOR = !ROIFIXEDCURSOR;  //Image Window Left Click: this (true or false) sets whether to update subimage window
 
-					if (IWLCK)
+					if (ROIFIXEDCURSOR)
 						ImageWndwPlotRadialVector.Enabled = true;
 				}
 
@@ -876,8 +865,8 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 
 			if (e.Button == MouseButtons.Right)
 			{
@@ -904,7 +893,7 @@ namespace CCDLAB
 					}
 
 					ShowFoundCoordsChck.Checked = false;
-					IWLCK = true;//fix cursor box
+					ROIFIXEDCURSOR = true;//fix cursor box
 					Cursor.Show();
 					ImageWindow.Refresh();
 					if (MANREG_CONTINUE || UVITMANREG_CONTINUE)
@@ -939,22 +928,23 @@ namespace CCDLAB
 							}
 
 							double[,] subim = new double[SUBIMAGE_HWX * 2 + 1, SUBIMAGE_HWX * 2 + 1];
-							PSES = new JPFITS.PointSourceExtractor[1] { new JPFITS.PointSourceExtractor() };
-							PSESINDEX = 0;
-							PSESRECTS = new Rectangle[1][];
+							PSESET.Clear();
+							PSESET.Add(new PointSourceExtractor());
+							PSESETINDEX = 0;
 
-							double pad = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("PADOFSET")) * Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("IMAGPREC"));
+							double pad = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("PADOFSET")) * Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("IMAGPREC"));
 
 							for (int i = 0; i < MANREGCOORDRECTS.Length; i++)
 							{
-								int xind, yind;
 								subim = IMAGESET[0].GetSubImage(MANREGCOORDS[i, 0], MANREGCOORDS[i, 1], SUBIMAGE_HWX, SUBIMAGE_HWX);
-								PSES[PSESINDEX].Extract_Sources(subim, 0, JPMath.Max(subim, out xind, out yind, false) - 1, JPMath.Max(subim, out xind, out yind, false) + 1, 0, Double.MaxValue, false, 2, 2, false, "", null, false);
-								UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] = PSES[PSESINDEX].Centroids_X[0] + (double)(MANREGCOORDS[i, 0] - SUBIMAGE_HWX) - pad;
-								UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] = PSES[PSESINDEX].Centroids_Y[0] + (double)(MANREGCOORDS[i, 1] - SUBIMAGE_HWY) - pad;
+								PSESET[PSESETINDEX].Extract_Sources(subim, 0, JPMath.Max(subim, out _, out _, false) - 1, JPMath.Max(subim, out _, out _, false) + 1, 0, Double.MaxValue, false, 2, 2, false, "", null, false);
+								UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] = PSESET[PSESETINDEX].Centroids_X[0] + (double)(MANREGCOORDS[i, 0] - SUBIMAGE_HWX) - pad;
+								UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] = PSESET[PSESETINDEX].Centroids_Y[0] + (double)(MANREGCOORDS[i, 1] - SUBIMAGE_HWY) - pad;
 								UVREGISTRATION_ROTATION_CENTROIDS[i, 0] = UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 0] + pad;//copy these for rotating
 								UVREGISTRATION_ROTATION_CENTROIDS[i, 1] = UVREGISTRATION_CENTROIDS[UVREGISTRATIONFILESINDEX, i, 1] + pad;
 							}
+
+							PSESET.Clear();
 
 							if (UVREGISTRATIONFILESINDEX > 0)//record the shift, center, and rotation for using as first guesses in rotation tranformation fit
 							{
@@ -974,14 +964,13 @@ namespace CCDLAB
 					}
 					catch (Exception ee)
 					{
-						//MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
 						MessageBox.Show("You must be a little bit misaligned. Please give these points an adjustment.\r\n\r\n " + ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite, "Warning");
 						return;
 					}
 
 					//use set coordinates for auto run through the rest of the images, if on first image and if imageset is already registered at least once
-					if (UVREGISTRATIONFILESINDEX == 0 && IMAGESET[FILELISTINDEX].FileName.Contains("RGSTRD"))
-						if (MessageBox.Show("Run through with the registration coordinates for all images?", "Auto Run Through Registration?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+					if (UVREGISTRATIONFILESINDEX == 0 && IMAGESET[IMAGESETINDEX].FileName.Contains("RGSTRD"))
+						if (MessageBox.Show("Run through with the registration coordinates for all images?", "Auto Run Through Registration?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
 						{
 							UVITAUTOREGISTER = true;
 							ProgressBar.Value = 0;
@@ -989,8 +978,7 @@ namespace CCDLAB
 							ProgressBar.Refresh();
 						}
 
-					//MessageBox.Show("here2");
-					GeneralUVRegistrationMenuItem_Click(sender, e);
+					UVITGeneralRegistrationMenuItem_Click(sender, e);
 				}
 			}
 
@@ -1077,7 +1065,7 @@ namespace CCDLAB
 
 			if (e.Button == MouseButtons.Middle)
 			{
-
+				
 			}
 		}
 
@@ -1093,8 +1081,29 @@ namespace CCDLAB
 		{
 			if (e.Button == MouseButtons.Left)
 			{
+				if (PSEEllipticalROI.Checked)
+				{
+					if (ROIXRad < ROIYRad)
+						ROIYRad = ROIXRad;
+					else
+						ROIXRad = ROIYRad;
+					ImageWindow.Refresh();
+				}
+
 				EqualHWChck.Checked = false;
 				EqualHWChck.Checked = true;
+
+				//if (Math.Round(1e3* (double)IMAGESET[FILELISTINDEX].Width / (double)ImageWindow.Width) != Math.Round(1e3 * (double)IMAGESET[FILELISTINDEX].Height / (double)ImageWindow.Height))
+				//{
+				//	//MessageBox.Show(Math.Round(1e4 * (double)IMAGESET[FILELISTINDEX].Width / (double)ImageWindow.Width) + " " + Math.Round(1e4 * (double)IMAGESET[FILELISTINDEX].Height / (double)ImageWindow.Height));
+
+				//	//MessageBox.Show(ImageWindow.Width + " " + ImageWindow.Height);
+
+				//	int max = Math.Max(IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height);
+
+				//	ImageWindow.Width = (int)((double)IMAGESET[FILELISTINDEX].Width / (double)max * (double)ImageWindow.Width);
+				//	ImageWindow.Height = (int)((double)IMAGESET[FILELISTINDEX].Height / (double)max * (double)ImageWindow.Height);
+				//}
 			}
 		}
 
@@ -1121,6 +1130,144 @@ namespace CCDLAB
 			XYImageValueTxt.Visible = false;
 
 			this.ActiveControl = null;
+		}
+
+		private void MAKEMARKCOORDRECTS()
+		{
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
+			MARKCOORDRECTS = new Rectangle[MARKCOORDS.GetLength(1)];
+			MARKCOORDRECTDPTS = new JPMath.PointD[MARKCOORDS.GetLength(1)];
+
+			for (int i = 0; i < MARKCOORDRECTS.Length; i++)
+			{
+				MARKCOORDRECTS[i] = new Rectangle((int)(((float)(MARKCOORDS[0, i]) + 1) * xsc - 6), (int)(((float)(MARKCOORDS[1, i]) + 1) * ysc - 6), 13, 13);
+				//MARKCOORDRECTDPTS[i] = new JPMath.PointD(((MARKCOORDS[0, i]) + 1) * xsc - 6, ((MARKCOORDS[1, i]) + 1) * ysc - 6, IMAGESET[IMAGESETINDEX][(int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i]]);
+			}
+		}
+
+		private void MAKEROIPATHPOINTS()
+		{
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
+			ROI_PATH_POINTS = new Point[ROI_PATH_COORDS.GetLength(1)];
+			for (int i = 0; i < ROI_PATH_POINTS.Length; i++)
+				ROI_PATH_POINTS[i] = new Point((int)(((float)(ROI_PATH_COORDS[0, i]) + 0.5) * xsc), (int)(((float)(ROI_PATH_COORDS[1, i]) + 0.5) * ysc));
+		}
+
+		private void ROI_PATH_FILLREGION()
+		{
+			int xmin = int.MaxValue, xmax = int.MinValue, ymin = int.MaxValue, ymax = int.MinValue;
+			JPMath.PointD[] pts = new JPMath.PointD[(ROI_PATH_COORDS.GetLength(1))];
+			for (int i = 0; i < pts.Length; i++)
+			{
+				pts[i] = new JPMath.PointD(ROI_PATH_COORDS[0, i], ROI_PATH_COORDS[1, i], 0);
+
+				if ((int)ROI_PATH_COORDS[0, i] < xmin)
+					xmin = (int)ROI_PATH_COORDS[0, i];
+				if ((int)ROI_PATH_COORDS[1, i] < ymin)
+					ymin = (int)ROI_PATH_COORDS[1, i];
+				if ((int)ROI_PATH_COORDS[0, i] > xmax)
+					xmax = (int)ROI_PATH_COORDS[0, i];
+				if ((int)ROI_PATH_COORDS[1, i] > ymax)
+					ymax = (int)ROI_PATH_COORDS[1, i];
+			}
+
+			if (xmin < 0)
+				xmin = 0;
+			if (xmax >= IMAGESET[IMAGESETINDEX].Width)
+				xmax = IMAGESET[IMAGESETINDEX].Width - 1;
+			if (ymin < 0)
+				ymin = 0;
+			if (ymax >= IMAGESET[IMAGESETINDEX].Height)
+				ymax = IMAGESET[IMAGESETINDEX].Height - 1;
+
+			pts[pts.Length - 1] = pts[0];
+
+			ROI_REGION = JPMath.PointD.PolygonInteriorPointsRegion(IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height, pts, xmin, ymin, xmax, ymax);
+
+			ImageUpD(IMAGESET[IMAGESETINDEX].Image);
+			ImageWindow.Refresh();
+		}
+
+		private void MakeEllipticalROI_REGION()
+		{
+			JPFITS.REG.SetReg("CCDLAB", "ROIX0", ROIX0);
+			JPFITS.REG.SetReg("CCDLAB", "ROIY0", ROIY0);
+			JPFITS.REG.SetReg("CCDLAB", "ROIXRad", ROIXRad);
+			JPFITS.REG.SetReg("CCDLAB", "ROIYRad", ROIYRad);
+
+			ROI_REGION = new bool[IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height];
+
+			Parallel.For(0, IMAGESET[IMAGESETINDEX].Width, x =>
+			{
+				double dx2 = (double)(x - ROIX0);
+				dx2 *= dx2;
+				dx2 /= (double)(ROIXRad * ROIXRad);
+				for (int y = 0; y < IMAGESET[IMAGESETINDEX].Height; y++)
+				{
+					double dy2 = (double)(y - ROIY0);
+					dy2 *= dy2;
+					dy2 /= (double)(ROIYRad * ROIYRad);
+
+					if (dx2 + dy2 <= 1)
+						ROI_REGION[x, y] = true;
+				}
+			});
+		}
+
+		private void SpAxesUpD()
+		{
+			if (FIRSTLOAD || !Chart1.Visible)
+				return;
+
+			Chart1.RemoveAllSeries();
+
+			double[] x = new double[IMAGESET[IMAGESETINDEX].Width];
+			for (int i = 0; i < x.Length; i++)
+				x[i] = (double)(i + 1);
+
+			for (int i = 0; i < IMAGESET[IMAGESETINDEX].Height; i++)
+			{
+				double[] y = new double[IMAGESET[IMAGESETINDEX].Width];
+
+				for (int j = 0; j < y.Length; j++)
+					y[j] = IMAGESET[IMAGESETINDEX][j, i];
+
+				Chart1.PlotXYData(x, y, "", "", "", JPChart.SeriesType.FastLine, (i + 1).ToString(), null);
+			}
+
+
+
+
+
+			//Chart1.Series.Clear();
+			//Chart1.Series.SuspendUpdates();
+			//Chart1.ChartAreas[0].AxisX.Minimum = 1;
+			//Chart1.ChartAreas[0].AxisX.Maximum = IMAGESET[FILELISTINDEX].Width;
+			//Chart1.ChartAreas[0].AxisY.Minimum = IMAGESET[FILELISTINDEX].Min;
+			//Chart1.ChartAreas[0].AxisY.Maximum = IMAGESET[FILELISTINDEX].Max;
+
+			//for (int i = 0; i < IMAGESET[FILELISTINDEX].Height; i++)
+			//{
+			//	Chart1.Series.Add(i.ToString());
+			//	Chart1.Series[i].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+
+			//	for (int j = 0; j < IMAGESET[FILELISTINDEX].Width; j++)
+			//		Chart1.Series[i].Points.AddXY(j + 1, IMAGESET[FILELISTINDEX][j, i]);
+
+			//}
+			//Chart1.Series.ResumeUpdates();
+		}
+
+		private void Chart1_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
+
+		private void Chart1_MouseMove(object sender, MouseEventArgs e)
+		{
+
 		}
 
 		private void ImageWndwShowCoordTooltipChck_Click(object sender, EventArgs e)
@@ -1191,7 +1338,6 @@ namespace CCDLAB
 
 		private void FileInfoPanel_MouseHover(object sender, System.EventArgs e)
 		{
-			//SubImageWindow.Focus();
 			FileInfoPanel.BringToFront();
 		}
 
@@ -1202,7 +1348,6 @@ namespace CCDLAB
 
 		private void SubImagePanel_MouseHover(object sender, System.EventArgs e)
 		{
-			//SubImageWindow.Focus();
 			SubImagePanel.BringToFront();
 		}
 
@@ -1226,17 +1371,12 @@ namespace CCDLAB
 			XPositionTxt.Visible = false;
 			YPositionTxt.Visible = false;
 			XYImageValueTxt.Visible = false;
-			//SubImageWindow.SendToBack();
 
 			this.ActiveControl = null;
 		}
 
 		private void ShowCursorBox_CheckedChanged(object sender, System.EventArgs e)
 		{
-			/*int offset = (ImageWindow.Width - ImageWindow.Height) / 2;
-			ImageWindow.Width = ImageWindow.Height;
-			ImageWindow.Location.X = 200;*/
-
 			ImageWindow.Refresh();
 		}
 
@@ -1247,7 +1387,7 @@ namespace CCDLAB
 
 		private void Tooltip_Popup(object sender, System.Windows.Forms.PopupEventArgs e)
 		{
-			//Tooltip.SetToolTip(this.SubImageWindow,"Hello");
+			
 		}
 
 		private void ImageWindow_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -1258,17 +1398,40 @@ namespace CCDLAB
 			try
 			{
 				if (e.Delta < 0)
-					HalfWidthXUpD.Value--;
-				else
-					HalfWidthXUpD.Value++;
-				if (!EqualHWChck.Checked)
-					if (e.Delta < 0)
-						HalfWidthYUpD.Value--;
+				{
+					if (PSEEllipticalROI.Checked && !ROIFIXEDCURSOR)
+					{
+						if (ROIXRad > 1)
+							ROIXRad--;
+						if (ROIYRad > 1)
+							ROIYRad--;
+						ImageWindow.Refresh();
+					}
 					else
-						HalfWidthYUpD.Value++;
+					{
+						HalfWidthXUpD.Value--;
+						if (!EqualHWChck.Checked)
+							HalfWidthYUpD.Value--;
+					}
+				}
+				else
+				{
+					if (PSEEllipticalROI.Checked && !ROIFIXEDCURSOR)
+					{
+						ROIXRad++;
+						ROIYRad++;
+						ImageWindow.Refresh();
+					}
+					else
+					{
+						HalfWidthXUpD.Value++;
+						if (!EqualHWChck.Checked)
+							HalfWidthYUpD.Value++;
+					}
+				}
 
 				if (PLOTRADIALLINE)
-					RADIALLINE_PLOTUpD();
+					RADIALLINE_PLOTUpD();				
 			}
 			catch//will just be UpD control value errors, so just ignore
 			{ };
@@ -1335,42 +1498,92 @@ namespace CCDLAB
 
 		private void SubImageWindow_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			if (IMAGESET.Count > 0 && e.Button == MouseButtons.None)
-			{
-				double xpos = (double)(e.X);
-				double ypos = (double)(e.Y);
-				double imwidth = (double)SubImageWindow.Width;
-				double imheight = (double)SubImageWindow.Height;
-				int w = (int)(HalfWidthXUpD.Value) * 2 + 1;
-				int h = (int)(HalfWidthYUpD.Value) * 2 + 1;
-				XPOS_CURSOR = XSUBRANGE[0] + (int)(Math.Floor((xpos / (imwidth)) * (double)(w))) - 0;
-				YPOS_CURSOR = YSUBRANGE[0] + (int)(Math.Floor((ypos / (imheight)) * (double)(h))) - 0;
-				double val = IMAGESET[FILELISTINDEX].Image[(int)(XPOS_CURSOR), (int)(YPOS_CURSOR)];
-				XYImageValueTxt.Text = val.ToString("n5");
-				if (!SHOW_WCSCOORDS || !IMAGESET[FILELISTINDEX].WCS.Exists())
-				{
-					XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
-					YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
-				}
-				else//convert image coords to WCS coords
-				{
-					double a, d;
-					String asx;
-					String dsx;
-					IMAGESET[FILELISTINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
-					XPOS_CURSOR_RADEG = a;
-					YPOS_CURSOR_DECDEG = d;
-					XPOS_CURSOR_RAHMS = asx;
-					YPOS_CURSOR_DECDMS = dsx;
+			if (IMAGESET.Count == 0)
+				return;
 
-					XPositionTxt.Text = XPOS_CURSOR_RAHMS;
-					YPositionTxt.Text = YPOS_CURSOR_DECDMS;
+			float xsc = ((float)(SubImageWindow.Size.Width) / (float)XSUBRANGE.Length);
+			float ysc = ((float)(SubImageWindow.Size.Height) / (float)YSUBRANGE.Length);
+
+			if (e.Button == MouseButtons.None)
+			{
+				int xpos = (int)((float)e.X / xsc) + XSUBRANGE[0];
+				int ypos = (int)((float)e.Y / ysc) + YSUBRANGE[0];
+
+				if (xpos != XPOS_CURSOR || ypos != YPOS_CURSOR)
+				{
+					XPOS_CURSOR = xpos;
+					YPOS_CURSOR = ypos;
+
+					XYImageValueTxt.Text = IMAGESET[IMAGESETINDEX][XPOS_CURSOR, YPOS_CURSOR].ToString("n5");
+					if (!SHOW_WCSCOORDS)
+					{
+						XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
+						YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
+					}
+					else//convert image coords to WCS coords
+					{
+						try
+						{
+							double a, d;
+							String asx;
+							String dsx;
+							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
+							XPOS_CURSOR_RADEG = a;
+							YPOS_CURSOR_DECDEG = d;
+							XPOS_CURSOR_RAHMS = asx;
+							YPOS_CURSOR_DECDMS = dsx;
+
+							XPositionTxt.Text = XPOS_CURSOR_RAHMS + " (" + (XPOS_CURSOR + 1) + ")";
+							YPositionTxt.Text = YPOS_CURSOR_DECDMS + " (" + (YPOS_CURSOR + 1) + ")";
+						}
+						catch
+						{
+							XPositionTxt.Text = (XPOS_CURSOR + 1).ToString();
+							YPositionTxt.Text = (YPOS_CURSOR + 1).ToString();
+						}
+					}
+
+					string pseaddendum = "";
+					try
+					{
+						if (!PSESPLOTNONE && PSESET.Count > 0)
+							if (PSESET[PSESETINDEX].SourceBooleanMap != null && PSESET[PSESETINDEX].SourceBooleanMap[XPOS_CURSOR, YPOS_CURSOR])
+							{
+								if (!PSESET[PSESETINDEX].WCS_Coordinates_Generated)
+									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[] { "TAN", "TAN" }))
+									{
+										IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
+										PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
+									}
+
+								int index = PSESET[PSESETINDEX].SourceIndexMap[XPOS_CURSOR, YPOS_CURSOR];
+								if (PSESET[PSESETINDEX].WCS_Coordinates_Generated)
+								{
+									WorldCoordinateSolution.DegreeElementstoSexagesimalElements(PSESET[PSESETINDEX].Centroids_RA_Deg[index], PSESET[PSESETINDEX].Centroids_Dec_Deg[index], out string rasex, out string decsex, "", 2);
+									pseaddendum += Environment.NewLine + "PSE RA:     " + rasex + " (" + Math.Round(PSESET[PSESETINDEX].Centroids_X[index] + 1, 2) + ")";
+									pseaddendum += Environment.NewLine + "PSE DEC: " + decsex + " (" + Math.Round(PSESET[PSESETINDEX].Centroids_Y[index] + 1, 2) + ")";
+								}
+								else
+								{
+									pseaddendum += Environment.NewLine + "PSE X: (" + Math.Round(PSESET[PSESETINDEX].Centroids_X[index] + 1, 2) + ")";
+									pseaddendum += Environment.NewLine + "PSE Y: (" + Math.Round(PSESET[PSESETINDEX].Centroids_Y[index] + 1, 2) + ")";
+								}
+								pseaddendum += Environment.NewLine + "PSE SNR: " + Math.Round(PSESET[PSESETINDEX].Signal_to_Noise_SNR[index]).ToString("");
+							}
+					}
+					catch (Exception ex)
+					{
+						MessageBox.Show(ex.Data + "	" + ex.InnerException + "	" + ex.Message + "	" + ex.Source + "	" + ex.StackTrace + "	" + ex.TargetSite);
+					}
+
+					XYImageValueTxt.Refresh();
+					XPositionTxt.Refresh();
+					YPositionTxt.Refresh();
+					if (SHOWIMGTOOLTIP)
+						Tooltip.SetToolTip(SubImageWindow, XYImageValueTxt.Text + "\r\nX:  " + XPositionTxt.Text + "\r\nY:  " + YPositionTxt.Text + pseaddendum);
 				}
-				if (SHOWIMGTOOLTIP)
-					Tooltip.SetToolTip(SubImageWindow, XYImageValueTxt.Text + "\r\nX:  " + XPositionTxt.Text + "\r\nY:  " + YPositionTxt.Text);
-				//Tooltip.ToolTipTitle = "test";
 			}
-			else if (IMAGESET.Count > 0 && e.Button == MouseButtons.Left)
+			else if (e.Button == MouseButtons.Left)
 			{
 				try
 				{
@@ -1421,8 +1634,6 @@ namespace CCDLAB
 
 		private void SubImageWindow_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			//Tooltip.RemoveAll();//this removes the tootip for all of Form1...not right solution
-
 			SubImageWindow.Cursor = Cursors.Cross;
 
 			if (e.Button == MouseButtons.XButton1)
@@ -1461,8 +1672,8 @@ namespace CCDLAB
 				return;
 			}
 
-			double xsc = ((float)(ImageWindow.Size.Width) / (double)IMAGESET[FILELISTINDEX].Width);
-			double ysc = ((float)(ImageWindow.Size.Height) / (double)IMAGESET[FILELISTINDEX].Height);
+			double xsc = ((float)(ImageWindow.Size.Width) / (double)IMAGESET[IMAGESETINDEX].Width);
+			double ysc = ((float)(ImageWindow.Size.Height) / (double)IMAGESET[IMAGESETINDEX].Height);
 
 			double phi;
 			int length;
@@ -1480,7 +1691,7 @@ namespace CCDLAB
 				if (Math.Abs(RADIALPTX1 - RADIALPTX2) < 1 && Math.Abs(RADIALPTY1 - RADIALPTY2) < 1)
 					return;
 
-				if (RADIALPTX2 < 0 || RADIALPTX2 > IMAGESET[FILELISTINDEX].Width || RADIALPTY2 < 0 || RADIALPTY2 > IMAGESET[FILELISTINDEX].Height)
+				if (RADIALPTX2 < 0 || RADIALPTX2 > IMAGESET[IMAGESETINDEX].Width || RADIALPTY2 < 0 || RADIALPTY2 > IMAGESET[IMAGESETINDEX].Height)
 				{
 					MessageBox.Show("The end of the radial vector would be outside of the image array bounds at this angle.", "Error...");
 					ImageWndwCntxtPlot.ShowDropDown();
@@ -1524,19 +1735,19 @@ namespace CCDLAB
 				double[,] ycoords = new double[7, 7];// y coords
 
 				double fcmin = Double.MaxValue;
-				if (IMAGESET[FILELISTINDEX].Image[x - 3, y - 3] < fcmin)
-					fcmin = IMAGESET[FILELISTINDEX].Image[x - 3, y - 3];
-				if (IMAGESET[FILELISTINDEX].Image[x - 3, y + 3] < fcmin)
-					fcmin = IMAGESET[FILELISTINDEX].Image[x - 3, y + 3];
-				if (IMAGESET[FILELISTINDEX].Image[x + 3, y - 3] < fcmin)
-					fcmin = IMAGESET[FILELISTINDEX].Image[x + 3, y - 3];
-				if (IMAGESET[FILELISTINDEX].Image[x + 3, y + 3] < fcmin)
-					fcmin = IMAGESET[FILELISTINDEX].Image[x + 3, y + 3];
+				if (IMAGESET[IMAGESETINDEX][x - 3, y - 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x - 3, y - 3];
+				if (IMAGESET[IMAGESETINDEX][x - 3, y + 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x - 3, y + 3];
+				if (IMAGESET[IMAGESETINDEX][x + 3, y - 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x + 3, y - 3];
+				if (IMAGESET[IMAGESETINDEX][x + 3, y + 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x + 3, y + 3];
 
 				for (int i = -3; i < 4; i++)
 					for (int j = -3; j < 4; j++)
 					{
-						cent[i + 3, j + 3] = IMAGESET[FILELISTINDEX].Image[x + i, y + j] - fcmin;
+						cent[i + 3, j + 3] = IMAGESET[IMAGESETINDEX][x + i, y + j] - fcmin;
 						xcoords[i + 3, j + 3] = (double)(i);
 						ycoords[i + 3, j + 3] = (double)(j);
 					}
@@ -1568,7 +1779,7 @@ namespace CCDLAB
 				ImageWindow.Refresh();
 			}
 
-			bool[,] touched_array = new bool[IMAGESET[FILELISTINDEX].Width, IMAGESET[FILELISTINDEX].Height];//check for repeated values
+			bool[,] touched_array = new bool[IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height];//check for repeated values
 			ArrayList rpixlist_unique = new ArrayList();
 			ArrayList vpixlist_unique = new ArrayList();
 
@@ -1588,12 +1799,10 @@ namespace CCDLAB
 						touched_array[x, y] = true;
 
 						double r = Math.Sqrt(((double)(x) - ptx1) * ((double)(x) - ptx1) + ((double)(y) - pty1) * ((double)(y) - pty1));
-						double v = IMAGESET[FILELISTINDEX].Image[x, y];
+						double v = IMAGESET[IMAGESETINDEX][x, y];
 
 						rpixlist_unique.Add(r);
 						vpixlist_unique.Add(v);
-
-						//IMAGESET[FILELISTINDEX][x, y] = 1;
 					}
 			}
 			else//else a line
@@ -1611,17 +1820,12 @@ namespace CCDLAB
 					touched_array[x, y] = true;
 
 					double r = Math.Sqrt((double)((x - RADIALPTX1) * (x - RADIALPTX1) + (y - RADIALPTY1) * (y - RADIALPTY1)));
-					double v = IMAGESET[FILELISTINDEX].Image[x, y];
+					double v = IMAGESET[IMAGESETINDEX][x, y];
 
 					rpixlist_unique.Add(r);
 					vpixlist_unique.Add(v);
-
-					//IMAGESET[FILELISTINDEX][x, y] = 1;
 				}
 			}
-			//ImageUpD(IMAGESET[FILELISTINDEX].Image);
-
-			//ImageWndwPlotRadialVector.Checked = false;
 
 			double[] r_unique = new double[rpixlist_unique.Count];
 			double[] v_unique = new double[rpixlist_unique.Count];
@@ -1704,7 +1908,7 @@ namespace CCDLAB
 			catch { }
 
 			String title = "Line: Length = " + double_line_length.ToString("N2") + "; Theta = " + (phi * 180 / Math.PI).ToString("N2") + ";  Min = " + min.ToString("G5") + "; Max = " + max.ToString("G5") + "; Mean = " + mean.ToString("G5") + "; Median = " + med.ToString("G5") + "; Stdv = " + std.ToString("G5");
-			RADIALLINE_PLOT.PlotLine(r_binned, v_binned, "Average Radial Bin Distance", "Average Radial Bin Value", title, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine, "Radial");
+			RADIALLINE_PLOT.ChartGraph.PlotXYData(r_binned, v_binned, title, "Average Radial Bin Distance", "Average Radial Bin Value", JPChart.SeriesType.FastLine, "Radial");
 		}
 
 		private void ImageWndwPlotRadialVector_CheckedChanged(object sender, System.EventArgs e)
@@ -1712,7 +1916,7 @@ namespace CCDLAB
 			if (ImageWndwPlotRadialVector.Checked)
 			{
 				PLOTRADIALLINE = true;
-				IWLCK = !IWLCK;
+				ROIFIXEDCURSOR = !ROIFIXEDCURSOR;
 
 				RADIALPTX1 = XSUBRANGE[SUBIMAGE_HWX];
 				RADIALPTY1 = YSUBRANGE[SUBIMAGE_HWY];
@@ -1720,46 +1924,42 @@ namespace CCDLAB
 				RADIALPTX1_CENT = (double)(RADIALPTX1);
 				RADIALPTY1_CENT = (double)(RADIALPTY1);
 
-				//do this in case line length by source centroids is needed later
-				{
-					int xind, yind;
-					double max = JPMath.Max(SUBIMAGE, out xind, out yind, false);
-					int[] xcrds;
-					int[] ycrds;
-					JPMath.Find(SUBIMAGE, max, "==", false, out xcrds, out ycrds);
-					int x = xcrds[0] + XSUBRANGE[0];
-					int y = ycrds[0] + YSUBRANGE[0];
+				int xind, yind;
+				double max = JPMath.Max(SUBIMAGE, out xind, out yind, false);
+				int[] xcrds;
+				int[] ycrds;
+				JPMath.Find(SUBIMAGE, max, "==", false, out xcrds, out ycrds);
+				int x = xcrds[0] + XSUBRANGE[0];
+				int y = ycrds[0] + YSUBRANGE[0];
 
-					double[,] cent = new double[7, 7];
-					double[,] xcoords = new double[7, 7];// x coords
-					double[,] ycoords = new double[7, 7];// y coords
+				double[,] cent = new double[7, 7];
+				double[,] xcoords = new double[7, 7];// x coords
+				double[,] ycoords = new double[7, 7];// y coords
 
-					double fcmin = Double.MaxValue;
-					if (IMAGESET[FILELISTINDEX].Image[x - 3, y - 3] < fcmin)
-						fcmin = IMAGESET[FILELISTINDEX].Image[x - 3, y - 3];
-					if (IMAGESET[FILELISTINDEX].Image[x - 3, y + 3] < fcmin)
-						fcmin = IMAGESET[FILELISTINDEX].Image[x - 3, y + 3];
-					if (IMAGESET[FILELISTINDEX].Image[x + 3, y - 3] < fcmin)
-						fcmin = IMAGESET[FILELISTINDEX].Image[x + 3, y - 3];
-					if (IMAGESET[FILELISTINDEX].Image[x + 3, y + 3] < fcmin)
-						fcmin = IMAGESET[FILELISTINDEX].Image[x + 3, y + 3];
+				double fcmin = Double.MaxValue;
+				if (IMAGESET[IMAGESETINDEX][x - 3, y - 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x - 3, y - 3];
+				if (IMAGESET[IMAGESETINDEX][x - 3, y + 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x - 3, y + 3];
+				if (IMAGESET[IMAGESETINDEX][x + 3, y - 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x + 3, y - 3];
+				if (IMAGESET[IMAGESETINDEX][x + 3, y + 3] < fcmin)
+					fcmin = IMAGESET[IMAGESETINDEX][x + 3, y + 3];
 
-					for (int i = -3; i < 4; i++)
-						for (int j = -3; j < 4; j++)
-						{
-							cent[i + 3, j + 3] = IMAGESET[FILELISTINDEX].Image[x + i, y + j] - fcmin;
-							xcoords[i + 3, j + 3] = (double)(i);
-							ycoords[i + 3, j + 3] = (double)(j);
-						}
+				for (int i = -3; i < 4; i++)
+					for (int j = -3; j < 4; j++)
+					{
+						cent[i + 3, j + 3] = IMAGESET[IMAGESETINDEX][x + i, y + j] - fcmin;
+						xcoords[i + 3, j + 3] = (double)(i);
+						ycoords[i + 3, j + 3] = (double)(j);
+					}
 
-					double energy = JPMath.Sum(cent, false);
-					RADIALPTX1_CENT = JPMath.Sum(JPMath.MatrixMultMatrix(cent, xcoords, false), false) / energy + (double)(x);
-					RADIALPTY1_CENT = JPMath.Sum(JPMath.MatrixMultMatrix(cent, ycoords, false), false) / energy + (double)(y);
-				}
+				double energy = JPMath.Sum(cent, false);
+				RADIALPTX1_CENT = JPMath.Sum(JPMath.MatrixMultMatrix(cent, xcoords, false), false) / energy + (double)(x);
+				RADIALPTY1_CENT = JPMath.Sum(JPMath.MatrixMultMatrix(cent, ycoords, false), false) / energy + (double)(y);
 
-				RADIALLINE_PLOT = new JPPlot();
+				RADIALLINE_PLOT = new Plotter("RadialLine", true, true);
 				RADIALLINE_PLOT.Text = "Radial Line Plot";
-				RADIALLINE_PLOT.JPPlotMainMenu.Visible = true;
 				RADIALLINE_PLOT.Show();
 				RADIALLINE_PLOTUpD();
 
@@ -1786,9 +1986,9 @@ namespace CCDLAB
 			SaveFileDialog sfd = new SaveFileDialog();
 			sfd.Filter = "Tab Delimited Text file (*.txt)|*.txt";
 			if (RADIALPLOT_PHI == -720)//from radial profile
-				sfd.FileName = IMAGESET[FILELISTINDEX].FileName.Substring(0, IMAGESET[FILELISTINDEX].FileName.LastIndexOf(".")) + "_RadialProfile";
+				sfd.FileName = IMAGESET[IMAGESETINDEX].FileName.Substring(0, IMAGESET[IMAGESETINDEX].FileName.LastIndexOf(".")) + "_RadialProfile";
 			else
-				sfd.FileName = IMAGESET[FILELISTINDEX].FileName.Substring(0, IMAGESET[FILELISTINDEX].FileName.LastIndexOf(".")) + "_RadialLine_" + (180 / Math.PI * RADIALPLOT_PHI).ToString("N0");
+				sfd.FileName = IMAGESET[IMAGESETINDEX].FileName.Substring(0, IMAGESET[IMAGESETINDEX].FileName.LastIndexOf(".")) + "_RadialLine_" + (180 / Math.PI * RADIALPLOT_PHI).ToString("N0");
 
 			if (sfd.ShowDialog() == DialogResult.Cancel)
 				return;
@@ -1846,15 +2046,16 @@ namespace CCDLAB
 			{
 				if (!ImageWndwCntxtPlotCol.Checked)
 					ShowCrosshair.Checked = false;
-				ROWplot.Close();
+				ROWPLOT.Close();
 				return;
 			}
 
-			if (ROWplot.IsDisposed)
+			if (ROWPLOT == null || ROWPLOT.IsDisposed)
 			{
-				ROWplot = new JPPlot();
-				ROWplot.Text = "Row Plot";
-				ROWplot.JPPlotMainMenu.Visible = true;
+				ROWPLOT = new Plotter("RowPlot", true, true);
+				ROWPLOT.Text = "Row Plot";
+				ROWPLOT.TopMost = true;
+				ROWPLOT.Show();
 			}
 
 			ShowCrosshair.Checked = true;
@@ -1863,7 +2064,7 @@ namespace CCDLAB
 
 		private void ROWplotUpD(bool show_contxt)
 		{
-			if (ROWplot.IsDisposed)
+			if (ROWPLOT == null || ROWPLOT.IsDisposed)
 			{
 				ImageWndwCntxtPlotRow.PerformClick();
 				return;
@@ -1876,17 +2077,17 @@ namespace CCDLAB
 				for (int i = 0; i < XSliceX.Length; i++)
 				{
 					XSliceX[i] = (double)(XSUBRANGE[i] + 1);
-					XSliceY[i] = IMAGESET[FILELISTINDEX].Image[XSUBRANGE[i], PRVYPOS_CURSOR];
+					XSliceY[i] = IMAGESET[IMAGESETINDEX][XSUBRANGE[i], PRVYPOS_CURSOR];
 				}
 			}
 			else
 			{
-				XSliceX = new double[IMAGESET[FILELISTINDEX].Width];
-				XSliceY = new double[IMAGESET[FILELISTINDEX].Width];
+				XSliceX = new double[IMAGESET[IMAGESETINDEX].Width];
+				XSliceY = new double[IMAGESET[IMAGESETINDEX].Width];
 				for (int i = 0; i < XSliceX.Length; i++)
 				{
 					XSliceX[i] = (double)(i + 1);
-					XSliceY[i] = IMAGESET[FILELISTINDEX].Image[i, PRVYPOS_CURSOR];
+					XSliceY[i] = IMAGESET[IMAGESETINDEX][i, PRVYPOS_CURSOR];
 				}
 			}
 
@@ -1897,10 +2098,10 @@ namespace CCDLAB
 			double std = JPMath.Stdv(XSliceY, false);
 
 			String title = "Row: " + (PRVYPOS_CURSOR + 1).ToString() + "; Min = " + min.ToString("G5") + "; Max = " + max.ToString("G5") + "; Mean = " + mean.ToString("G5") + "; Median = " + med.ToString("G5") + "; Stdv = " + std.ToString("G5");
-			System.Windows.Forms.DataVisualization.Charting.SeriesChartType ct = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.StepLine;
+			JPChart.SeriesType ct = JPChart.SeriesType.StepLine;
 			if (XSliceX.Length > 32768)
-				ct = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-			ROWplot.PlotLine(XSliceX, XSliceY, "Column Number", "Row Values", title, ct, "Row");
+				ct = JPChart.SeriesType.FastLine;
+			ROWPLOT.ChartGraph.PlotXYData(XSliceX, XSliceY, title, "Column Number", "Row Values", ct, "Row", Color.Black);
 
 			if (show_contxt)
 			{
@@ -1916,15 +2117,16 @@ namespace CCDLAB
 			{
 				if (!ImageWndwCntxtPlotRow.Checked)
 					ShowCrosshair.Checked = false;
-				COLplot.Close();
+				COLPLOT.Close();
 				return;
 			}
 
-			if (COLplot.IsDisposed)
+			if (COLPLOT == null || COLPLOT.IsDisposed)
 			{
-				COLplot = new JPPlot();
-				COLplot.Text = "Column Plot";
-				COLplot.JPPlotMainMenu.Visible = true;
+				COLPLOT = new Plotter("ColPlot", true, true);
+				COLPLOT.Text = "Column Plot";
+				COLPLOT.TopMost = true;
+				COLPLOT.Show();
 			}
 
 			ShowCrosshair.Checked = true;
@@ -1933,7 +2135,7 @@ namespace CCDLAB
 
 		private void COLplotUpD(bool show_contxt)
 		{
-			if (COLplot.IsDisposed)
+			if (COLPLOT == null || COLPLOT.IsDisposed)
 			{
 				ImageWndwCntxtPlotCol.PerformClick();
 				return;
@@ -1946,17 +2148,17 @@ namespace CCDLAB
 				for (int i = 0; i < YSliceX.Length; i++)
 				{
 					YSliceX[i] = (double)(YSUBRANGE[i] + 1);
-					YSliceY[i] = IMAGESET[FILELISTINDEX].Image[PRVXPOS_CURSOR, YSUBRANGE[i]];
+					YSliceY[i] = IMAGESET[IMAGESETINDEX][PRVXPOS_CURSOR, YSUBRANGE[i]];
 				}
 			}
 			else
 			{
-				YSliceX = new double[IMAGESET[FILELISTINDEX].Height];
-				YSliceY = new double[IMAGESET[FILELISTINDEX].Height];
+				YSliceX = new double[IMAGESET[IMAGESETINDEX].Height];
+				YSliceY = new double[IMAGESET[IMAGESETINDEX].Height];
 				for (int i = 0; i < YSliceX.Length; i++)
 				{
 					YSliceX[i] = (double)(i + 1);
-					YSliceY[i] = IMAGESET[FILELISTINDEX].Image[PRVXPOS_CURSOR, i];
+					YSliceY[i] = IMAGESET[IMAGESETINDEX][PRVXPOS_CURSOR, i];
 				}
 			}
 
@@ -1967,10 +2169,10 @@ namespace CCDLAB
 			double std = JPMath.Stdv(YSliceY, false);
 
 			String title = "Column: " + (PRVXPOS_CURSOR + 1).ToString() + "; Min = " + min.ToString("G5") + "; Max = " + max.ToString("G5") + "; Mean = " + mean.ToString("G5") + "; Median = " + med.ToString("G5") + "; Stdv = " + std.ToString("G5");
-			System.Windows.Forms.DataVisualization.Charting.SeriesChartType ct = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.StepLine;
+			JPChart.SeriesType ct = JPChart.SeriesType.StepLine;
 			if (YSliceX.Length > 32768)
-				ct = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-			COLplot.PlotLine(YSliceX, YSliceY, "Row Number", "Column Values", title, ct, "Column");
+				ct = JPChart.SeriesType.FastLine;
+			COLPLOT.ChartGraph.PlotXYData(YSliceX, YSliceY, title, "Row Number", "Column Values", ct, "Column", Color.Black);
 
 			if (show_contxt)
 			{
@@ -1991,8 +2193,8 @@ namespace CCDLAB
 			if (fsd.ShowDialog() == DialogResult.Cancel)
 				return;
 
-			double xsc = ((double)(ImageWindow.Size.Width) / (double)IMAGESET[FILELISTINDEX].Width);
-			double ysc = ((double)(ImageWindow.Size.Height) / (double)IMAGESET[FILELISTINDEX].Height);
+			double xsc = ((double)(ImageWindow.Size.Width) / (double)IMAGESET[IMAGESETINDEX].Width);
+			double ysc = ((double)(ImageWindow.Size.Height) / (double)IMAGESET[IMAGESETINDEX].Height);
 			double[,] rects = new double[2, MARKCOORDRECTS.Length];
 			for (int i = 0; i < MARKCOORDRECTS.Length; i++)
 			{
@@ -2002,14 +2204,12 @@ namespace CCDLAB
 			JPFITS.FITSImage ff = new FITSImage(fsd.FileName, rects, false, false);
 			ff.Header.AddKey("RECWIDTH", MARKCOORDRECTS[0].Width.ToString(), "", -1);
 			ff.Header.AddKey("RECHEIGT", MARKCOORDRECTS[0].Height.ToString(), "", -1);
-			ff.WriteImage(TypeCode.Double, false);
+			ff.WriteImage(DiskPrecision.Double, false);
 		}
 
 		private void MarkCoordLoad_Click(object sender, System.EventArgs e)
 		{
 			OpenFileDialog ofd = new OpenFileDialog();
-			//ofd.InitialDirectory = 
-			//ofd.Filter = 
 			ofd.Multiselect = false;//possibly true for getting/doing multi-regions
 
 			if (ofd.ShowDialog() == DialogResult.Cancel)
@@ -2020,12 +2220,12 @@ namespace CCDLAB
 			MARKCOORDRECTS = new Rectangle[recs.Height];
 			MARKCOORDS = new double[2, recs.Height];
 
-			double xsc = ((double)(ImageWindow.Size.Width) / (double)IMAGESET[FILELISTINDEX].Width);
-			double ysc = ((double)(ImageWindow.Size.Height) / (double)IMAGESET[FILELISTINDEX].Height);
+			double xsc = ((double)(ImageWindow.Size.Width) / (double)IMAGESET[IMAGESETINDEX].Width);
+			double ysc = ((double)(ImageWindow.Size.Height) / (double)IMAGESET[IMAGESETINDEX].Height);
 
 			for (int i = 0; i < MARKCOORDRECTS.Length; i++)
 			{
-				MARKCOORDRECTDPTS[i] = new JPMath.PointD(recs[0, i], recs[1, i], IMAGESET[FILELISTINDEX].Image[(int)recs[0, i], (int)recs[1, i]]);
+				MARKCOORDRECTDPTS[i] = new JPMath.PointD(recs[0, i], recs[1, i], IMAGESET[IMAGESETINDEX][(int)recs[0, i], (int)recs[1, i]]);
 				MARKCOORDS[0, i] = (recs[0, i] + 6) / xsc - 1.0;
 				MARKCOORDS[1, i] = (recs[1, i] + 6) / ysc - 1.0;
 			}
@@ -2039,8 +2239,8 @@ namespace CCDLAB
 		{
 			ImageWindowCntxt.Close();
 
-			double xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			double ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			double xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			double ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 
 			if (MARKCOORDRECTS == null)
 			{
@@ -2066,10 +2266,10 @@ namespace CCDLAB
 			double x_cent, y_cent;
 			int[] xdata = new int[7];
 			int[] ydata = new int[7];
-			double[,] subim = IMAGESET[FILELISTINDEX].GetSubImage(x + XSUBRANGE[0], y + YSUBRANGE[0], 3, 3, ref xdata, ref ydata);
+			double[,] subim = IMAGESET[IMAGESETINDEX].GetSubImage(x + XSUBRANGE[0], y + YSUBRANGE[0], 3, 3, ref xdata, ref ydata);
 			PointSourceExtractor.Centroid(xdata, ydata, subim, out x_cent, out y_cent);
 
-			temprectdpts[temprects.Length - 1] = new JPMath.PointD((x_cent + 1) * xsc - 6, (y_cent + 1) * ysc - 6, IMAGESET[FILELISTINDEX].Image[(int)x_cent, (int)y_cent]);
+			temprectdpts[temprects.Length - 1] = new JPMath.PointD((x_cent + 1) * xsc - 6, (y_cent + 1) * ysc - 6, IMAGESET[IMAGESETINDEX][(int)x_cent, (int)y_cent]);
 			temprects[temprects.Length - 1] = new Rectangle((int)((x_cent + 1) * xsc - 6), (int)((y_cent + 1) * ysc - 6), 13, 13);
 			tempcoords[0, temprects.Length - 1] = x_cent;
 			tempcoords[1, temprects.Length - 1] = y_cent;
@@ -2096,8 +2296,6 @@ namespace CCDLAB
 
 		private void MarkCoordClear_Click(object sender, System.EventArgs e)
 		{
-			PSESRECTS = null;
-			PSES = null;
 			MARKCOORDRECTS = null;
 			MARKCOORDS = null;
 			MARKCOORDRECTDPTS = null;
@@ -2135,8 +2333,8 @@ namespace CCDLAB
 				}
 			MARKCOORDS = new double[2, n];
 			MARKCOORDRECTS = new Rectangle[n];
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 			for (int i = 0; i < n; i++)
 			{
 				MARKCOORDS[0, i] = temp[0, i];
@@ -2150,26 +2348,26 @@ namespace CCDLAB
 
 		private void SubImMarkCoordContainedPSE_Click(object sender, System.EventArgs e)
 		{
-			if (PSES == null)
+			if (PSESET.Count == 0)
 				return;
 
-			if (PSES[PSESINDEX].N_Sources == 0)
+			if (PSESET[PSESETINDEX].N_Sources == 0)
 				return;
 
 			ArrayList contained = new ArrayList();
 
-			for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
-				if (PSES[PSESINDEX].Centroids_X[i] > XSUBRANGE[0] && PSES[PSESINDEX].Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSES[PSESINDEX].Centroids_Y[i] > YSUBRANGE[0] && PSES[PSESINDEX].Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
+			for (int i = 0; i < PSESET[PSESETINDEX].N_Sources; i++)
+				if (PSESET[PSESETINDEX].Centroids_X[i] > XSUBRANGE[0] && PSESET[PSESETINDEX].Centroids_X[i] < XSUBRANGE[SUBIMAGE_HWX * 2] && PSESET[PSESETINDEX].Centroids_Y[i] > YSUBRANGE[0] && PSESET[PSESETINDEX].Centroids_Y[i] < YSUBRANGE[SUBIMAGE_HWY * 2])
 				{
-					contained.Add(PSES[PSESINDEX].Centroids_X[i]);
-					contained.Add(PSES[PSESINDEX].Centroids_Y[i]);
+					contained.Add(PSESET[PSESETINDEX].Centroids_X[i]);
+					contained.Add(PSESET[PSESETINDEX].Centroids_Y[i]);
 				}
 
 			if (contained.Count == 0)
 				return;
 
-			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);
-			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+			float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
+			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 			MARKCOORDRECTS = new Rectangle[contained.Count / 2];
 			MARKCOORDS = new double[2, contained.Count / 2];
 			double x_cent, y_cent;
@@ -2207,7 +2405,7 @@ namespace CCDLAB
 				double a, d;
 				String asx;
 				String dsx;
-				IMAGESET[FILELISTINDEX].WCS.Get_Coordinate(xcent, ycent, true, "TAN", out a, out d, out asx, out dsx);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(xcent, ycent, true, "TAN", out a, out d, out asx, out dsx);
 				XPOS_CURSOR_RADEG = a;
 				YPOS_CURSOR_DECDEG = d;
 				XPOS_CURSOR_RAHMS = asx;
@@ -2339,14 +2537,14 @@ namespace CCDLAB
 					}
 				}
 
-				if (IMAGESET[FILELISTINDEX].Header.GetKeyValue("CD1_1") == "")
+				if (IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CD1_1") == "")
 				{
 					MessageBox.Show("CD matrix for WCS not found in current image header.  Can not transform RA-Dec to x-y...", "Error...");
 					return;
 				}
 
 				double xpix, ypix;
-				IMAGESET[FILELISTINDEX].WCS.Get_Pixel(RA, Dec, "TAN", out xpix, out ypix, true);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Pixel(RA, Dec, "TAN", out xpix, out ypix, true);
 
 				SubImageSlideX.Value = (int)xpix + 1;
 				SubImageSlideY.Value = (int)ypix + 1;
@@ -2363,15 +2561,12 @@ namespace CCDLAB
 
 		private void ImageWindow_SizeChanged(object sender, System.EventArgs e)
 		{
-			/*if (ImageWindow.Size.Width > ImageWindow.Size.Height)
-				ImageWindow.Size.Width = ImageWindow.Size.Height;*/
+			
 		}
 
 		private void ImageWindowCntxtSquare_Click(object sender, System.EventArgs e)
 		{
-			/*ImageWindow.Location.X += ImageWindow.Size.Width - ImageWindow.Size.Height;
-			ImageWindow.Refresh();
-			Refresh();*/
+			
 		}		
 	}
 }

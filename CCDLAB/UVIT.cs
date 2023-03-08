@@ -578,10 +578,9 @@ namespace CCDLAB
 			bool cancel = false;
 
 			//omp'ing the full frame disk reads is the best performance booster...actually it helps for any size frame read
-			//#pragma omp parallel for
 			for (int n = 0; n < NUM_FILES; n++)
 			{
-				int nthreads = 1;// omp_get_num_threads();
+				int nthreads = 1;
 				if (wb.DialogResult == DialogResult.Cancel)
 				{
 					cancel = true;
@@ -595,7 +594,6 @@ namespace CCDLAB
 						prog++;
 						worker.ReportProgress(intprog);
 					}
-					//.MessageBox.Show(String.Concat("n = " + n.ToString() , ", nthreads = ",  nthreads.ToString() , ", intprog = " , intprog.ToString()));
 				}
 
 				double[,] raw;
@@ -942,7 +940,7 @@ namespace CCDLAB
 			if (N > 0)
 			{
 				TBTC_CENTROIDS = new double[7, N];
-				//#pragma omp parallel for
+				
 				for (int i = 0; i < N; i++)
 				{
 					TBTC_CENTROIDS[0, i] = Convert.ToDouble(tbtc[i * 7]);
@@ -953,7 +951,7 @@ namespace CCDLAB
 					TBTC_CENTROIDS[5, i] = Convert.ToDouble(tbtc[i * 7 + 5]);
 					TBTC_CENTROIDS[6, i] = Convert.ToDouble(tbtc[i * 7 + 6]);
 				}
-				tbtc.Clear();//tbtc.TrimToSize();
+				tbtc.Clear();
 			}
 			else
 			{
@@ -964,7 +962,7 @@ namespace CCDLAB
 			if (N > 0)
 			{
 				TBTS_CENTROIDS = new double[7, N];
-				//#pragma omp parallel for
+				
 				for (int i = 0; i < N; i++)
 				{
 					TBTS_CENTROIDS[0, i] = Convert.ToDouble(tbts[i * 7]);
@@ -975,7 +973,7 @@ namespace CCDLAB
 					TBTS_CENTROIDS[5, i] = Convert.ToDouble(tbts[i * 7 + 5]);
 					TBTS_CENTROIDS[6, i] = Convert.ToDouble(tbts[i * 7 + 6]);
 				}
-				tbts.Clear();//tbts.TrimToSize();
+				tbts.Clear();
 			}
 			else
 			{
@@ -986,7 +984,7 @@ namespace CCDLAB
 			if (N > 0)
 			{
 				TBTQ_CENTROIDS = new double[7, N];
-				//#pragma omp parallel for
+				
 				for (int i = 0; i < N; i++)
 				{
 					TBTQ_CENTROIDS[0, i] = Convert.ToDouble(tbtq[i * 7]);
@@ -997,7 +995,7 @@ namespace CCDLAB
 					TBTQ_CENTROIDS[5, i] = Convert.ToDouble(tbtq[i * 7 + 5]);
 					TBTQ_CENTROIDS[6, i] = Convert.ToDouble(tbtq[i * 7 + 6]);
 				}
-				tbtq.Clear(); tbtq.TrimToSize();
+				tbtq.Clear();
 			}
 			else
 			{
@@ -1008,7 +1006,7 @@ namespace CCDLAB
 			if (N > 0)
 			{
 				FBFC_CENTROIDS = new double[7, N];
-				//#pragma omp parallel for
+				
 				for (int i = 0; i < N; i++)
 				{
 					FBFC_CENTROIDS[0, i] = Convert.ToDouble(fbfc[i * 7]);
@@ -1030,7 +1028,7 @@ namespace CCDLAB
 			if (N > 0)
 			{
 				FBFS_CENTROIDS = new double[7, N];
-				//#pragma omp parallel for
+				
 				for (int i = 0; i < N; i++)
 				{
 					FBFS_CENTROIDS[0, i] = Convert.ToDouble(fbfs[i * 7]);
@@ -1041,14 +1039,13 @@ namespace CCDLAB
 					FBFS_CENTROIDS[5, i] = Convert.ToDouble(fbfs[i * 7 + 5]);
 					FBFS_CENTROIDS[6, i] = Convert.ToDouble(fbfs[i * 7 + 6]);
 				}
-				fbfs.Clear();//fbfs.TrimToSize();
+				fbfs.Clear();
 			}
 			else
 			{
 				FBFS_CENTROIDS = null;
 			}
 			return !cancel;//return true if finished (!cancel will = true, since cancel will be false here)
-						   //System.GC.Collect();
 		}
 
 		public double[,] Read_Raw_File(int filenum, int BackGround)

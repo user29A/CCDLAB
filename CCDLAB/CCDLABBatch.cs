@@ -318,13 +318,9 @@ namespace CCDLAB
 					return;
 				}
 
-			Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = 100;
-			if (UVITBATCHMESG != "")
-				WAITBAR.Text = UVITBATCHMESG;
-			else
-				WAITBAR.Text = "Performing batch operation...";
+			WAITBAR.Text = "Performing batch operation...";
 			BatchBGWrkr.RunWorkerAsync(BatchOperationTab.SelectedTab.Name);
 			WAITBAR.ShowDialog();
 		}
@@ -361,14 +357,7 @@ namespace CCDLAB
 					for (int i = range.Item1; i < range.Item2; i++)
 					{
 						if (WAITBAR.DialogResult == DialogResult.Cancel)
-						{
-							if (UVITBATCHOP)
-							{
-								UVITBATCHOP = false;
-								UVITBATCHOP_CANCELLED = true;
-							}
 							break;
-						}
 
 						Interlocked.Increment(ref count);
 						lock (BATCHLIST)
@@ -396,7 +385,7 @@ namespace CCDLAB
 						{
 							JPMath.Find(temp.Image, findval, searchstyle, !do_parallel, out FNDCOORDS_X, out FNDCOORDS_Y);
 
-							temp.Image = JPMath.Replace(temp.Image, FNDCOORDS_X, FNDCOORDS_Y, replaceval, !do_parallel);
+							temp.SetImage(JPMath.Replace(temp.Image, FNDCOORDS_X, FNDCOORDS_Y, replaceval, !do_parallel), !do_parallel, !do_parallel);
 						}
 
 						if (overwritefile)
@@ -412,9 +401,6 @@ namespace CCDLAB
 						}
 					}
 				});
-
-				/*TimeSpan^ ts = .DateTime.Now - now;
-				MessageBox.Show(ts.TotalMinutes + "");*/
 
 				return;
 			}
@@ -562,27 +548,27 @@ namespace CCDLAB
 					bool product = false;
 					if (RUN_STYLE == "Median")
 					{
-						temp.SetImage(FITSImageSet.Median(RUNSET, false, false, "").Image, false, true);
+						temp.SetImage(RUNSET.Median(false, false, "").Image, false, true);
 						product = true;
 					}
 					if (RUN_STYLE == "Minimum")
 					{
-						temp.SetImage(FITSImageSet.Min(RUNSET, false, false).Image, false, true);
+						temp.SetImage(RUNSET.Min(false, false).Image, false, true);
 						product = true;
 					}
 					if (RUN_STYLE == "Maximum")
 					{
-						temp.SetImage(FITSImageSet.Max(RUNSET, false, false).Image, false, true);
+						temp.SetImage(RUNSET.Max(false, false).Image, false, true);
 						product = true;
 					}
 					if (RUN_STYLE == "Mean")
 					{
-						temp.SetImage(FITSImageSet.Mean(RUNSET, false, false).Image, false, true);
+						temp.SetImage(RUNSET.Mean(false, false).Image, false, true);
 						product = true;
 					}
 					if (RUN_STYLE == "Sum")
 					{
-						temp.SetImage(FITSImageSet.Sum(RUNSET, false, false).Image, false, true);
+						temp.SetImage(RUNSET.Sum(false, false).Image, false, true);
 						product = true;
 					}
 
@@ -610,19 +596,14 @@ namespace CCDLAB
 		private void BatchBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			DialogResult res = WAITBAR.DialogResult;
-			WAITBAR.Hide();
 			WAITBAR.Close();
-			this.Enabled = true;
-			BringToFront();
 			string selectedOP = BatchOperationTab.SelectedTab.Name;
 
 			if (UVITBATCHOP)
 			{
 				UVITBATCHOP = false;
-				if (res == DialogResult.Cancel)
-					UVITBATCHOP_CANCELLED = true;
 				return;
-			}
+			}				
 
 			if (res == DialogResult.Cancel)
 			{
@@ -717,14 +698,12 @@ namespace CCDLAB
 			{
 				TabBatchElementalFindStyleDD.Enabled = true;
 				TabBatchElementalFindValTxt.Enabled = true;
-				//TabBatchElementalReplaceStyleDD.Enabled = true;
 				TabBatchElementalReplaceValTxt.Enabled = true;
 			}
 			else
 			{
 				TabBatchElementalFindStyleDD.Enabled = false;
 				TabBatchElementalFindValTxt.Enabled = false;
-				//TabBatchElementalReplaceStyleDD.Enabled = false;
 				TabBatchElementalReplaceValTxt.Enabled = false;
 			}
 		}

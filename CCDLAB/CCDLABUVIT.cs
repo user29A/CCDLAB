@@ -9,9 +9,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-
 namespace CCDLAB
 {
+	//[DesignerCategory("Code")]
+
 	public partial class Form1
 	{
 		private void UVActiveBGChck_CheckedChanged(object sender, EventArgs e)
@@ -111,11 +112,11 @@ namespace CCDLAB
 			int Ndivs = (int)UVPrecisionUpD.Value;
 			double[,] cent_list = null;
 			double[] values = null;
-			JPPlot jpplot = new JPPlot();
+			Plotter jpplot = new Plotter("", false, false);
 			string algorithm = "";
-			string chan = IMAGESET[FILELISTINDEX].Header.GetKeyValue("CHANNEL");
+			string chan = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CHANNEL");
 			if (chan.Length == 0)
-				chan = IMAGESET[FILELISTINDEX].Header.GetKeyValue("DETECTOR");
+				chan = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("DETECTOR");
 
 			switch (ind)//ind is Algorithm type index
 			{
@@ -195,7 +196,7 @@ namespace CCDLAB
 					y = JPMath.Histogram_IntegerDivisions(values, Ndivs, out x);
 
 					jpplot.Text = String.Concat(chan, " ", algorithm, " X Centroids");
-					jpplot.PlotLine(x, y, "X Decimal Centroids", "Number of Elements", String.Concat(chan, " ", algorithm, " X Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "XCentroids");
+					jpplot.ChartGraph.PlotXYData(x, y, String.Concat(chan, " ", algorithm, " X Centroids"), "X Decimal Centroids", "Number of Elements", JPChart.SeriesType.Column, "XCentroids");
 					break;
 				}
 				case (2)://y decimal histogram
@@ -210,7 +211,7 @@ namespace CCDLAB
 
 					y = JPMath.Histogram_IntegerDivisions(values, Ndivs, out x);
 					jpplot.Text = String.Concat(chan, " ", algorithm, " Y Centroids");
-					jpplot.PlotLine(x, y, "Y Decimal Centroids", "Number of Elements", String.Concat(chan, " ", algorithm, " Y Centroids"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "YCentroids");
+					jpplot.ChartGraph.PlotXYData(x, y, String.Concat(chan, " ", algorithm, " Y Centroids"), "Y Decimal Centroids", "Number of Elements", JPChart.SeriesType.Column, "YCentroids");
 					break;
 				}
 				case (3)://pixel energy histogram
@@ -232,7 +233,7 @@ namespace CCDLAB
 					y = JPMath.Histogram_IntegerStep(values, Ndivs, out x);
 
 					jpplot.Text = chan + " " + algorithm + " Pixel Energy";
-					jpplot.PlotLine(x, y, "Pixel Energy", "Number of Pixels", chan + " " + algorithm + " Pixel Energy; Mean: " + ((int)(mean)).ToString() + ", Stdv: " + ((int)(std)).ToString(), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "EnergyHist");
+					jpplot.ChartGraph.PlotXYData(x, y, chan + " " + algorithm + " Pixel Energy; Mean: " + ((int)(mean)).ToString() + ", Stdv: " + ((int)(std)).ToString(), "Pixel Energy", "Number of Pixels", JPChart.SeriesType.Column, "EnergyHist");
 					break;
 				}
 				case (4)://shape energy histogram
@@ -254,7 +255,7 @@ namespace CCDLAB
 					y = JPMath.Histogram_IntegerStep(values, Ndivs, out x);
 
 					jpplot.Text = chan + " " + algorithm + " Shape Energy";
-					jpplot.PlotLine(x, y, "Shape Energy", "Number of Pixels", chan + " " + algorithm + " Shape Energy; Mean: " + ((int)(mean)).ToString() + ", Stdv: " + ((int)(std)).ToString(), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "ShapeHist");
+					jpplot.ChartGraph.PlotXYData(x, y, chan + " " + algorithm + " Shape Energy; Mean: " + ((int)(mean)).ToString() + ", Stdv: " + ((int)(std)).ToString(), "Shape Energy", "Number of Pixels", JPChart.SeriesType.Column, "ShapeHist");
 					break;
 				}
 				case (5)://5x5 Corner Minimum (i.e. background) histogram
@@ -268,7 +269,7 @@ namespace CCDLAB
 					double[] y;
 					y = JPMath.Histogram_IntegerStep(values, Ndivs, out x);
 
-					jpplot.PlotLine(x, y, "5x5 Corner Minimum", "Number of Pixels", String.Concat(chan, " ", algorithm, " 5x5 Corner Minimum"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "MinCornerHist");
+					jpplot.ChartGraph.PlotXYData(x, y, String.Concat(chan, " ", algorithm, " 5x5 Corner Minimum"), "5x5 Corner Minimum", "Number of Pixels", JPChart.SeriesType.Column, "MinCornerHist");
 					break;
 				}
 				case (6)://5x5 Corner Max-Min (i.e. double event?) histogram
@@ -282,7 +283,7 @@ namespace CCDLAB
 					double[] y;
 					y = JPMath.Histogram_IntegerStep(values, Ndivs, out x);
 
-					jpplot.PlotLine(x, y, "5x5 Corner Max-Min", "Number of Pixels", String.Concat(chan, " ", algorithm, " 5x5 Corner Max-Min"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Column, "Max-Min Corner Hist");
+					jpplot.ChartGraph.PlotXYData(x, y, String.Concat(chan, " ", algorithm, " 5x5 Corner Max-Min"), "5x5 Corner Max-Min", "Number of Pixels", JPChart.SeriesType.Column, "Max-Min Corner Hist");
 					break;
 				}
 				case (7)://events per frame histogram
@@ -296,7 +297,7 @@ namespace CCDLAB
 					double[] y;
 					y = JPMath.Histogram_IntegerStep(values, Ndivs, out x);
 
-					jpplot.PlotLine(x, y, "Frame Number", "Number of Events", String.Concat(chan, " ", algorithm, " Number of Events per Frame"), System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point, "EventsperFrame");
+					jpplot.ChartGraph.PlotXYData(x, y, String.Concat(chan, " ", algorithm, " Number of Events per Frame"), "Frame Number", "Number of Events", JPChart.SeriesType.Point, "EventsperFrame");
 
 					int nevents = values.Length;
 					double nframes = JPMath.Max(values, true) - JPMath.Min(values, true) + 1;
@@ -418,7 +419,7 @@ namespace CCDLAB
 
 		private void UVHistWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			this.Enabled = true;
+			
 		}
 
 		private void UVOpenRawBtn_Click(object sender, EventArgs e)
@@ -502,11 +503,10 @@ namespace CCDLAB
 				REG.SetReg("CCDLAB", "UVShapeMaxThresh", UVShapeMaxThresh.Value);
 
 				ProgressBar.Maximum = UVIT_Data.Number_of_Files;
-				this.Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = 100;
 				UVCentroidWrkr.RunWorkerAsync();
-				WAITBAR.Show();
+				WAITBAR.ShowDialog();
 			}
 		}
 
@@ -520,8 +520,6 @@ namespace CCDLAB
 		private void UVCentroidWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			WAITBAR.Close();
-			this.Enabled = true;
-			this.Activate();
 		}
 
 		private void UVSaveCentroidDrop_SelectedIndexChanged(object sender, EventArgs e)
@@ -551,7 +549,7 @@ namespace CCDLAB
 			int CornerThresh = (int)UVCornerThreshUpD.Value;
 			double BGOffset = (double)UVBGOffset.Value;
 			int[] range = new int[4];
-			range[0] = 0; range[1] = IMAGESET[FILELISTINDEX].Width - 1; range[2] = 0; range[3] = IMAGESET[FILELISTINDEX].Height - 1;//default, but change next by checked default
+			range[0] = 0; range[1] = IMAGESET[IMAGESETINDEX].Width - 1; range[2] = 0; range[3] = IMAGESET[IMAGESETINDEX].Height - 1;//default, but change next by checked default
 			if (UVSubRangeChck.Checked == true) //then set range to sub window
 			{
 				range[0] = XSUBRANGE[0]; range[1] = XSUBRANGE[XSUBRANGE.Length - 1];
@@ -763,7 +761,7 @@ namespace CCDLAB
 			}
 		}
 
-		private void EMGSE_UnpackImg_Click(object sender, EventArgs e)
+		private void UVIT_EMGSE_UnpackImg_Click(object sender, EventArgs e)
 		{
 			GSEExtractImg ext = new GSEExtractImg();
 			ext.Show(this);
@@ -880,8 +878,8 @@ namespace CCDLAB
 			IntsFileList = IntsFileList.Insert(ind, "_deDist");
 			ind = FracFileList.LastIndexOf(".");
 			FracFileList = FracFileList.Insert(ind, "_deDist");
-			IntsFits.WriteImage(IntsFileList, TypeCode.Int16, true);
-			FracFits.WriteImage(FracFileList, TypeCode.Int16, true);
+			IntsFits.WriteImage(IntsFileList, DiskPrecision.Int16, true);
+			FracFits.WriteImage(FracFileList, DiskPrecision.Int16, true);
 
 			MessageBox.Show("CPU Distortion Correction Completed...", "Finished...");
 		}
@@ -1047,8 +1045,8 @@ namespace CCDLAB
 			IntsFileList = IntsFileList.Insert(ind, "_deFPN");
 			ind = FracFileList.LastIndexOf(".");
 			FracFileList = FracFileList.Insert(ind, "_deFPN");
-			IntsFits.WriteImage(IntsFileList, TypeCode.Int16, true);
-			FracFits.WriteImage(FracFileList, TypeCode.Int16, true);
+			IntsFits.WriteImage(IntsFileList, DiskPrecision.Int16, true);
+			FracFits.WriteImage(FracFileList, DiskPrecision.Int16, true);
 
 			MessageBox.Show("FPN Correction Completed...", "Finished...");
 		}
@@ -1076,7 +1074,6 @@ namespace CCDLAB
 			else
 				SmoothINTDriftTimeDrop.Enabled = false;
 			SmoothINTDriftTimeDrop.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "SmoothINTDriftTimeDrop"));
-			TryAutoDeBiasINTDrift.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "deBiasINTDrift"));
 			UserXShiftTxt.Text = (string)REG.GetReg("CCDLAB", "UserXShiftTxt");
 			UserYShiftTxt.Text = (string)REG.GetReg("CCDLAB", "UserYShiftTxt");
 			UserRotationTxt.Text = (string)REG.GetReg("CCDLAB", "UserRotationTxt");
@@ -1115,17 +1112,17 @@ namespace CCDLAB
 				L1DigestApplyDISTInterpBiLinChck.Enabled = true;
 				L1DigestApplyDISTInterpNearChck.Enabled = true;
 			}
-			L1DigestApplyFPNChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1DigestApplyFPN"));
+			UVITL1DigestApplyFPNChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1DigestApplyFPN"));
 			ApplyDriftCreateExpArrayChc.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "ApplyDriftCreateExpArrayChc"));
 			ExposureArrayResolutionDrop.SelectedIndex = (int)REG.GetReg("CCDLAB", "ExposureArrayRes");
 			L1TransformNUVtoFUVChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1NUVtoFUVChck"));
 			L1DigestApplyDISTInterpNearChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1DigestApplyDISTInterpNearChck"));
 			L1DigestApplyDISTInterpBiLinChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1DigestApplyDISTInterpBiLinChck"));
-			UVFinalizeDeleteIntrmdtChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeDeleteIntrmdtChck"));
-			UVFinalizeMoveOrCopyZipChck.Text = (string)(REG.GetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck"));
-			UVFinalizeMoveOrCopyZipChck.Checked = true;
-			UVFinalizeIncludeTablesChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeIncludeTablesChck"));
-			UVFinalizeIncludeExpMapChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeIncludeExpMapChck"));
+			UVITFinalizeDeleteIntrmdtChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeDeleteIntrmdtChck"));
+			UVITFinalizeMoveOrCopyZipChck.Text = (string)(REG.GetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck"));
+			UVITFinalizeMoveOrCopyZipChck.Checked = true;
+			UVITFinalizeIncludeTablesChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeIncludeTablesChck"));
+			UVITFinalizeIncludeExpMapChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVFinalizeIncludeExpMapChck"));
 
 			L1CentroidPaddingChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1CentroidPaddingChck"));
 			PCCentroidPaddingDrop.SelectedIndex = Convert.ToInt32(REG.GetReg("CCDLAB", "PCCentroidPaddingDrop"));
@@ -1279,6 +1276,7 @@ namespace CCDLAB
 			ConsolidateDriftFolderChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "ConsolidateDriftFolderChck"));
 			ConsolidateTimeListFolderChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "ConsolidateTimeListFolderChck"));
 			RegistrationXYIntsListFolderScanChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RegistrationXYIntsListFolderScanChck"));
+			manuallySortFilesToolStripMenuItem.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", " manuallySortFilesToolStripMenuItem"));
 			MergeXYIntsListFolderScanChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "MergeXYIntsListFolderScanChck"));
 			PointSrcINTDriftNoPSEConfChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "PointSrcINTDriftNoPSEConfChck"));
 			PointSrcINTDriftNoPlotConfChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "PointSrcINTDriftNoPlotConfChck"));
@@ -1289,17 +1287,9 @@ namespace CCDLAB
 				PointSrcROIFindNSrcDrop.Enabled = false;
 			PointSrcROIAutoRunChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "PointSrcROIAutoRunChck"));
 			if (PointSrcROIAutoRunChck.Checked)
-			{
-				//PointSrcROIFindSrcChck.Enabled = false;
-				//PointSrcROIFindNSrcDrop.Enabled = false;
 				PointSrcROIStackDriftDrop.Enabled = false;
-			}
 			else
-			{
-				//PointSrcROIFindNSrcDrop.Enabled = true;
-				//PointSrcROIFindSrcChck.Enabled = true;
 				PointSrcROIStackDriftDrop.Enabled = true;
-			}
 
 			UVLISTTOIMAGEPREC = (int)REG.GetReg("CCDLAB", "UVLISTTOIMGPREC");
 			if (UVLISTTOIMAGEPREC == 1)
@@ -1360,35 +1350,74 @@ namespace CCDLAB
 				CosmicRayFilterMenuTxt.Enabled = false;
 			}
 
-			L1AutoRunChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoRunChck"));
-			if (L1AutoRunChck.Checked)
-				L1AutoProceedVISBackGround.Enabled = true;
+			UVITL1AutoRunChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoRunChck"));
+			if (UVITL1AutoRunChck.Checked)
+				UVITL1AutoProceedVISBackGroundChck.Enabled = true;
 			else
 			{
-				L1AutoProceedVISBackGround.Enabled = false;
-				L1AutoProceedVISTracking.Enabled = false;
-				L1AutoApplyVISDrift.Enabled = false;
-				L1AutoProceedVISBackGround.Checked = false;
-				L1AutoProceedVISTracking.Checked = false;
-				L1AutoApplyVISDrift.Checked = false;
+				UVITL1AutoProceedVISBackGroundChck.Enabled = false;
+				UVITL1AutoProceedVISTrackingChck.Enabled = false;
+				UVITL1AutoApplyVISDriftChck.Enabled = false;
+				UVITL1AutoProceedVISBackGroundChck.Checked = false;
+				UVITL1AutoProceedVISTrackingChck.Checked = false;
+				UVITL1AutoApplyVISDriftChck.Checked = false;
 			}
-			if (L1AutoProceedVISBackGround.Enabled)
-				L1AutoProceedVISBackGround.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoProceedVISBackGround"));
-			if (L1AutoProceedVISBackGround.Checked)
-				L1AutoProceedVISTracking.Enabled = true;
-			L1AutoProceedVISTracking.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoProceedVISTracking"));
-			if (L1AutoProceedVISTracking.Checked)
-				L1AutoApplyVISDrift.Enabled = true;
-			L1AutoApplyVISDrift.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoApplyVISDrift"));
+			if (UVITL1AutoProceedVISBackGroundChck.Enabled)
+				UVITL1AutoProceedVISBackGroundChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoProceedVISBackGround"));
+			if (UVITL1AutoProceedVISBackGroundChck.Checked)
+				UVITL1AutoProceedVISTrackingChck.Enabled = true;
+			UVITL1AutoProceedVISTrackingChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoProceedVISTracking"));
+			if (UVITL1AutoProceedVISTrackingChck.Checked)
+				UVITL1AutoApplyVISDriftChck.Enabled = true;
+			UVITL1AutoApplyVISDriftChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1AutoApplyVISDrift"));
 
 			L1MachineStandardChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1MachineStandardChck"));
 			L1MachineExtremeChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1MachineExtremeChck"));
 			UVITMergeMultiKeepObsIdsChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "UVITMergeMultiKeepObsIdsChck"));
+			AutoDeRotateOnWCSChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "AutoDeRotateOnWCSChck"));
+			if (AutoDeRotateOnWCSChck.Checked == false)
+				AutoDeRotateSilentChck.Enabled = false;
+			else
+				AutoDeRotateSilentChck.Enabled = true;
+			AutoDeRotateSilentChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "AutoDeRotateSilentChck"));
+			WCSOptionsVerboseChck.Checked = true;
+		}
+
+		private void AutoDeRotateOnWCSChck_Click(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", "AutoDeRotateOnWCSChck", AutoDeRotateOnWCSChck.Checked);
+			
+			if (AutoDeRotateOnWCSChck.Checked == false)
+				AutoDeRotateSilentChck.Enabled = false;
+			else
+				AutoDeRotateSilentChck.Enabled = true;
+
+			UVITMenu.ShowDropDown();
+			ShiftAndRotateMenuItem.ShowDropDown();
+			UVITDeRotateViaWCSBtn.ShowDropDown();
+		}
+
+		private void AutoDeRotateSilentChck_Click(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", "AutoDeRotateSilentChck", AutoDeRotateSilentChck.Checked);
+
+			UVITMenu.ShowDropDown();
+			ShiftAndRotateMenuItem.ShowDropDown();
+			UVITDeRotateViaWCSBtn.ShowDropDown();
+		}
+
+		private void L1IgnoreFUVHotPixelChck_Click(object sender, EventArgs e)
+		{
+			if (L1IgnoreFUVHotPixelChck.Checked)
+				L1IgnoreFUVHotPixelTxt.Enabled = true;
+			else
+				L1IgnoreFUVHotPixelTxt.Enabled = false;
 		}
 
 		private void UVITMergeMultiKeepObsIdsChck_Click(object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "UVITMergeMultiKeepObsIdsChck", UVITMergeMultiKeepObsIdsChck.Checked);
+
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
 			UVITMergeMultiL1.ShowDropDown();
@@ -1403,7 +1432,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1MachineExtremeChck", L1MachineExtremeChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 			machinePerformanceToolStripMenuItem.ShowDropDown();
 		}
 
@@ -1416,45 +1445,45 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1MachineExtremeChck", L1MachineExtremeChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 			machinePerformanceToolStripMenuItem.ShowDropDown();
 		}
 
-		private void UVFinalizeDeleteIntrmdtChck_Click(object sender, EventArgs e)
+		private void UVITFinalizeDeleteIntrmdtChck_Click(object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "UVFinalizeDeleteIntrmdtChck", UVFinalizeDeleteIntrmdtChck.Checked);
+			REG.SetReg("CCDLAB", "UVFinalizeDeleteIntrmdtChck", UVITFinalizeDeleteIntrmdtChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			UVFinalizeScienceBtn.ShowDropDown();
+			UVITFinalizeScienceBtn.ShowDropDown();
 		}
 
-		private void UVFinalizeMoveOrCopyZipChck_Click(object sender, EventArgs e)
+		private void UVITFinalizeMoveOrCopyZipChck_Click(object sender, EventArgs e)
 		{
-			if (UVFinalizeMoveOrCopyZipChck.Text.Contains("Move"))
-				UVFinalizeMoveOrCopyZipChck.Text = UVFinalizeMoveOrCopyZipChck.Text.Replace("Move", "Copy");
+			if (UVITFinalizeMoveOrCopyZipChck.Text.Contains("Move"))
+				UVITFinalizeMoveOrCopyZipChck.Text = UVITFinalizeMoveOrCopyZipChck.Text.Replace("Move", "Copy");
 			else
-				UVFinalizeMoveOrCopyZipChck.Text = UVFinalizeMoveOrCopyZipChck.Text.Replace("Copy", "Move");
+				UVITFinalizeMoveOrCopyZipChck.Text = UVITFinalizeMoveOrCopyZipChck.Text.Replace("Copy", "Move");
 
-			REG.SetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck", UVFinalizeMoveOrCopyZipChck.Text);
+			REG.SetReg("CCDLAB", "UVFinalizeMoveOrCopyZipChck", UVITFinalizeMoveOrCopyZipChck.Text);
 
 			UVITMenu.ShowDropDown();
-			UVFinalizeScienceBtn.ShowDropDown();
+			UVITFinalizeScienceBtn.ShowDropDown();
 		}
 
-		private void UVFinalizeIncludeExpMapChck_Click(object sender, EventArgs e)
+		private void UVITFinalizeIncludeExpMapChck_Click(object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "UVFinalizeIncludeExpMapChck", UVFinalizeIncludeExpMapChck.Checked);
+			REG.SetReg("CCDLAB", "UVFinalizeIncludeExpMapChck", UVITFinalizeIncludeExpMapChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			UVFinalizeScienceBtn.ShowDropDown();
+			UVITFinalizeScienceBtn.ShowDropDown();
 		}
 
-		private void UVFinalizeIncludeTablesChck_Click(object sender, EventArgs e)
+		private void UVITFinalizeIncludeTablesChck_Click(object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "UVFinalizeIncludeTablesChck", UVFinalizeIncludeTablesChck.Checked);
+			REG.SetReg("CCDLAB", "UVFinalizeIncludeTablesChck", UVITFinalizeIncludeTablesChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			UVFinalizeScienceBtn.ShowDropDown();
+			UVITFinalizeScienceBtn.ShowDropDown();
 		}
 
 		private void MergeXYIntsListFolderScanChck_Click(System.Object sender, EventArgs e)
@@ -1463,7 +1492,7 @@ namespace CCDLAB
 
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
-			UVCombineCentroidListsMenuItem.ShowDropDown();
+			UVITMergeCentroidListsMenuItem.ShowDropDown();
 		}
 
 		private void RegistrationXYIntsListFolderScanChck_Click(System.Object sender, EventArgs e)
@@ -1472,7 +1501,16 @@ namespace CCDLAB
 
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
-			GeneralUVRegistrationMenuItem.ShowDropDown();
+			UVITGeneralRegistrationMenuItem.ShowDropDown();
+		}
+
+		private void manuallySortFilesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", " manuallySortFilesToolStripMenuItem", manuallySortFilesToolStripMenuItem.Checked);
+
+			UVITMenu.ShowDropDown();
+			ShiftAndRotateMenuItem.ShowDropDown();
+			UVITGeneralRegistrationMenuItem.ShowDropDown();
 		}
 
 		private void ConsolidateTimeListFolderChck_Click(System.Object sender, EventArgs e)
@@ -1498,7 +1536,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1DigestDeleteFileChck", L1DigestDeleteFileChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void PointSrcROIFindSrcChck_Click(object sender, EventArgs e)
@@ -1511,9 +1549,9 @@ namespace CCDLAB
 				PointSrcROIFindNSrcDrop.Enabled = false;
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
 			CreateDriftFromPCMenuItem.ShowDropDown();
-			DriftFromPCPSTrackBtn.ShowDropDown();
+			UVITDriftOptimizationBtn.ShowDropDown();
 		}
 
 		private void PointSrcROIAutoRunChck_Click(object sender, EventArgs e)
@@ -1521,22 +1559,14 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "PointSrcROIAutoRunChck", PointSrcROIAutoRunChck.Checked);
 
 			if (PointSrcROIAutoRunChck.Checked)
-			{
-				//PointSrcROIFindNSrcDrop.Enabled = false;
-				//PointSrcROIFindSrcChck.Enabled = false;
 				PointSrcROIStackDriftDrop.Enabled = false;
-			}
 			else
-			{
-				//PointSrcROIFindNSrcDrop.Enabled = true;
-				//PointSrcROIFindSrcChck.Enabled = true;
 				PointSrcROIStackDriftDrop.Enabled = true;
-			}
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
 			CreateDriftFromPCMenuItem.ShowDropDown();
-			DriftFromPCPSTrackBtn.ShowDropDown();
+			UVITDriftOptimizationBtn.ShowDropDown();
 		}
 
 		private void masterizeSinglesToolStripMenuItem_Click(System.Object sender, EventArgs e)
@@ -1545,7 +1575,7 @@ namespace CCDLAB
 
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
-			GeneralUVRegistrationMenuItem.ShowDropDown();
+			UVITGeneralRegistrationMenuItem.ShowDropDown();
 		}
 
 		private void UVDeleteMergeDirsChck_Click(System.Object sender, EventArgs e)
@@ -1554,7 +1584,7 @@ namespace CCDLAB
 
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
-			UVCombineCentroidListsMenuItem.ShowDropDown();
+			UVITMergeCentroidListsMenuItem.ShowDropDown();
 		}
 
 		private void UVAutoPSFPostMergeChck_Click(object sender, EventArgs e)
@@ -1563,7 +1593,7 @@ namespace CCDLAB
 
 			UVITMenu.ShowDropDown();
 			ShiftAndRotateMenuItem.ShowDropDown();
-			UVCombineCentroidListsMenuItem.ShowDropDown();
+			UVITMergeCentroidListsMenuItem.ShowDropDown();
 		}
 
 		private void PointSrcINTDriftDisplayChck_Click(System.Object sender, EventArgs e)
@@ -1577,8 +1607,8 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "PointSrcINTDriftDisplayCadenceEnabled", PointSrcINTDriftDisplayCadenceDrop.Enabled);
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 			PointSrcINTDriftChck.ShowDropDown();
 		}
 
@@ -1586,8 +1616,8 @@ namespace CCDLAB
 		{
 			REG.SetReg("CCDLAB", "PointSrcINTDriftNoPSEConfChck", PointSrcINTDriftNoPSEConfChck.Checked);
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 			PointSrcINTDriftChck.ShowDropDown();
 		}
 
@@ -1595,8 +1625,8 @@ namespace CCDLAB
 		{
 			REG.SetReg("CCDLAB", "PointSrcINTDriftNoPlotConfChck", PointSrcINTDriftNoPlotConfChck.Checked);
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 			PointSrcINTDriftChck.ShowDropDown();
 		}
 
@@ -1620,7 +1650,7 @@ namespace CCDLAB
 		private void DriftPCROIOnly_Click(object sender, EventArgs e)
 		{
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
 			CreateDriftFromPCMenuItem.ShowDropDown();
 		}
 
@@ -1644,7 +1674,7 @@ namespace CCDLAB
 		{
 			REG.SetReg("CCDLAB", "UVAutoDriftImageViewChck", UVAutoDriftImageViewChck.Checked);
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
 			CreateDriftFromPCMenuItem.ShowDropDown();
 			UVAutoApplyDriftandImageChck.ShowDropDown();
 		}
@@ -1653,28 +1683,28 @@ namespace CCDLAB
 		{
 			REG.SetReg("CCDLAB", "L1DiscardDuplicateChck", L1DiscardDuplicateChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1TransformNUVtoFUVChck_Click(object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "L1NUVtoFUVChck", L1TransformNUVtoFUVChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1FilterCorrectionChck_Click(object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "L1FilterCorrectionChck", L1FilterCorrectionChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1TBCChck_Click(object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "L1TBCChck", L1TBCChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1DegradientINTMode_Click(object sender, EventArgs e)
@@ -1687,20 +1717,18 @@ namespace CCDLAB
 				L1CleanINTMode.Enabled = false;
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1SpecifySourceNameChck_Click(System.Object sender, EventArgs e)
 		{
-			//REG.SetReg("CCDLAB", "L1SpecifySourceNameChck", L1SpecifySourceNameChck.Checked);
-
 			if (L1SpecifySourceNameChck.Checked)
 				L1SourceNameTxt.Enabled = true;
 			else
 				L1SourceNameTxt.Enabled = false;
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1CleanINTMode_Click(object sender, EventArgs e)
@@ -1718,7 +1746,7 @@ namespace CCDLAB
 				L1CleanINTNPix.Enabled = false;
 			}
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1SkipINTMode_Click(object sender, EventArgs e)
@@ -1737,7 +1765,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1SkipINTMode", L1SkipINTMode.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1DiscardDataTimeDrop_SelectedIndexChanged(object sender, EventArgs e)
@@ -1781,21 +1809,21 @@ namespace CCDLAB
 			else
 				L1DiscardDataTimeDrop.Enabled = false;
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
-		private void L1DigestApplyFPNChck_Click(object sender, EventArgs e)
+		private void UVITL1DigestApplyFPNChck_Click(object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "L1DigestApplyFPN", L1DigestApplyFPNChck.Checked);
+			REG.SetReg("CCDLAB", "L1DigestApplyFPN", UVITL1DigestApplyFPNChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1DigestPCParityChck_Click(System.Object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "L1DigestPCParityChck", L1DigestPCParityChck.Checked);
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1DigestApplyDISTChck_Click(object sender, EventArgs e)
@@ -1812,7 +1840,7 @@ namespace CCDLAB
 				L1DigestApplyDISTInterpNearChck.Enabled = true;
 			}
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
 
 		private void L1DigestApplyDISTInterpNearChck_Click(object sender, EventArgs e)
@@ -1823,7 +1851,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1DigestApplyDISTInterpBiLinChck", L1DigestApplyDISTInterpBiLinChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 			L1DigestApplyDISTChck.ShowDropDown();
 		}
 
@@ -1835,7 +1863,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "L1DigestApplyDISTInterpBiLinChck", L1DigestApplyDISTInterpBiLinChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			DigestL1FITSImageMenuItem.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 			L1DigestApplyDISTChck.ShowDropDown();
 		}
 
@@ -1858,7 +1886,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "FilterCRs", FilterCosmicRaysChckMenuItem.Checked);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void CosmicRayFilterMenuChck_Click(object sender, EventArgs e)
@@ -1869,7 +1897,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVCRNumberThresholdChck", CosmicRayFilterCountMenuChck.Checked);
 			REG.SetReg("CCDLAB", "UVCRSigmaThresholdChck", CosmicRayFilterSigmaMenuChck.Checked);
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 			FilterCosmicRaysChckMenuItem.ShowDropDown();
 		}
 
@@ -1881,7 +1909,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVCRNumberThresholdChck", CosmicRayFilterCountMenuChck.Checked);
 			REG.SetReg("CCDLAB", "UVCRSigmaThresholdChck", CosmicRayFilterSigmaMenuChck.Checked);
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 			FilterCosmicRaysChckMenuItem.ShowDropDown();
 		}
 
@@ -1921,7 +1949,7 @@ namespace CCDLAB
 		{
 			REG.SetReg("CCDLAB", "UVApplyFlatList", ApplyFlatListToImageChck.Checked);
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ApplyExpArrayToImageChck_Click(object sender, EventArgs e)
@@ -1934,7 +1962,7 @@ namespace CCDLAB
 				ListToImageExpMapCutOffDrop.Enabled = false;
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ListToImageExpMapCutOffDrop_SelectedIndexChanged(object sender, EventArgs e)
@@ -1944,10 +1972,10 @@ namespace CCDLAB
 
 		private void TryAutoDeBiasINTDrift_Click(object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "deBiasINTDrift", TryAutoDeBiasINTDrift.Checked);
+			REG.SetReg("CCDLAB", "AutoDeBiasINTDriftChck", TryAutoDeBiasINTDrift.Checked);
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 		}
 
 		private void SmoothINTDriftChck_Click(object sender, EventArgs e)
@@ -1958,8 +1986,8 @@ namespace CCDLAB
 			else
 				SmoothINTDriftTimeDrop.Enabled = false;
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 		}
 
 		private void SmoothINTDriftTimeDrop_SelectedIndexChanged(object sender, EventArgs e)
@@ -1978,7 +2006,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVLISTTOIMGPREC", UVLISTTOIMAGEPREC);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ListToImage2PixMenuItem_Click(object sender, EventArgs e)
@@ -1992,7 +2020,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVLISTTOIMGPREC", UVLISTTOIMAGEPREC);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ListToImage4PixMenuItem_Click(object sender, EventArgs e)
@@ -2006,7 +2034,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVLISTTOIMGPREC", UVLISTTOIMAGEPREC);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ListToImage8PixMenuItem_Click(object sender, EventArgs e)
@@ -2020,7 +2048,7 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVLISTTOIMGPREC", UVLISTTOIMAGEPREC);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void ListToImage16PixMenuItem_Click(object sender, EventArgs e)
@@ -2034,19 +2062,14 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVLISTTOIMGPREC", UVLISTTOIMAGEPREC);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
-		}
-
-		private void ConvertListToImgMenu_DropDownOpened(object sender, EventArgs e)
-		{
-
+			UVITConvertListToImgMenu.ShowDropDown();
 		}
 
 		private void UVAutoThreshChck_CheckedChanged(object sender, EventArgs e)
 		{
-			string chan = IMAGESET[FILELISTINDEX].Header.GetKeyValue("CHANNEL");
+			string chan = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CHANNEL");
 			if (chan.Length == 0)
-				chan = IMAGESET[FILELISTINDEX].Header.GetKeyValue("DETECTOR");
+				chan = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("DETECTOR");
 
 			if (chan == "VIS")
 			{
@@ -2116,11 +2139,11 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "MaxMinCountTwiceChck", MaxMinCountTwiceChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			ConvertListToImgMenu.ShowDropDown();
+			UVITConvertListToImgMenu.ShowDropDown();
 			MaxMinThreshChck.ShowDropDown();
 		}
 
-		private void ConvertListToImgMenu_Click(object sender, EventArgs e)
+		private void UVITConvertListToImgMenu_Click(object sender, EventArgs e)
 		{
 			string[] IntsFileList;
 			if (UVCREATEIMAGENOW)
@@ -2128,12 +2151,12 @@ namespace CCDLAB
 				UVCREATEIMAGENOW = false;
 				UVCONVERTLISTTOIMAGEBATCH = false;
 				IntsFileList = new string[] { UVCREATEIMAGEFILENAME };
-				ConvertUVCentroidListToImgWrkr.RunWorkerAsync(IntsFileList);
+				UVITConvertCentroidListToImgWrkr.RunWorkerAsync(IntsFileList);
 			}
 			else
 			{
 				UVITMenu.HideDropDown();
-				ConvertListToImgMenu.HideDropDown();
+				UVITConvertListToImgMenu.HideDropDown();
 				string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
 				OpenFileDialog dlg = new OpenFileDialog();
 				dlg.InitialDirectory = dir;
@@ -2154,13 +2177,12 @@ namespace CCDLAB
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = IntsFileList.Length;
 				WAITBAR.Text = "Creating image(s)...";
-				this.Enabled = false;
-				ConvertUVCentroidListToImgWrkr.RunWorkerAsync(IntsFileList);
+				UVITConvertCentroidListToImgWrkr.RunWorkerAsync(IntsFileList);
 				WAITBAR.ShowDialog();
 			}
 		}
 
-		private void ConvertUVCentroidListToImgWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITConvertCentroidListToImgWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string[] IntsFileList = (string[])e.Argument;
 			double exp_cutoff = Convert.ToDouble(ListToImageExpMapCutOffDrop.SelectedItem.ToString()) / 100;
@@ -2180,12 +2202,12 @@ namespace CCDLAB
 				if (UVCONVERTLISTTOIMAGEBATCH)
 				{
 					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						loopstate.Stop(); //continue;
+						loopstate.Stop();
 
 					lock (opts)
 					{
 						count++;
-						ConvertUVCentroidListToImgWrkr.ReportProgress(count);
+						UVITConvertCentroidListToImgWrkr.ReportProgress(count);
 					}
 				}
 
@@ -2264,7 +2286,7 @@ namespace CCDLAB
 				{
 					MessageBox.Show("Problem finding the time list file...", "Stopping...");
 					WAITBAR.CancelBtn.PerformClick();
-					loopstate.Stop(); //continue;
+					loopstate.Stop();
 				}
 
 				string BJDFileList = TimeFileList.Replace("TimeList", "BJDList");
@@ -2275,7 +2297,7 @@ namespace CCDLAB
 				{
 					MessageBox.Show("Problem finding the frame list file...", "Stopping...");
 					WAITBAR.CancelBtn.PerformClick();
-					loopstate.Stop(); //continue;
+					loopstate.Stop();
 				}
 
 				string ExpArrayFileList = TimeFileList.Replace("TimeList", "ExpArrayList");
@@ -2287,7 +2309,7 @@ namespace CCDLAB
 				{
 					MessageBox.Show("Problem finding the Exposure Array file...", "Stopping...");
 					WAITBAR.CancelBtn.PerformClick();
-					loopstate.Stop(); //continue;
+					loopstate.Stop();
 				}
 				if (applyexposureweight)
 					expweightlist = JPFITS.FITSImage.ReadImageVectorOnly(ExpArrayFileList, null, !do_parallel);
@@ -2302,7 +2324,7 @@ namespace CCDLAB
 					{
 						MessageBox.Show("Problem finding the flat list file...", "Stopping...");
 						WAITBAR.CancelBtn.PerformClick();
-						loopstate.Stop(); //continue;
+						loopstate.Stop();
 					}
 
 					flats = FITSImage.ReadImageVectorOnly(FlatFileList, null, !do_parallel);
@@ -2320,7 +2342,7 @@ namespace CCDLAB
 					{
 						MessageBox.Show("Problem finding the corner stats list file...", "Stopping...");
 						WAITBAR.CancelBtn.PerformClick();
-						loopstate.Stop(); //continue;
+						loopstate.Stop();
 					}
 
 					mdMm = FITSImage.ReadImageArrayOnly(MaxMinFileList, null, !do_parallel);
@@ -2334,9 +2356,7 @@ namespace CCDLAB
 				if (multstr != "")
 					mult = Convert.ToDouble(multstr);
 				double physicaltime = (times[times.Length - 1] - times[0] + time_per_frame * mult) / 1000;
-				//double datatime = time_per_frame*(mult-1);
 				int CRthresh = 0;
-				//double CRSigmaThresh = 0;
 				bool filterCR = FilterCosmicRaysChckMenuItem.Checked;//used in the actual loop accumulating centroids
 				bool FilterCRSigma = CosmicRayFilterSigmaMenuChck.Checked;
 				bool FilterCRCount = CosmicRayFilterCountMenuChck.Checked;
@@ -2380,7 +2400,7 @@ namespace CCDLAB
 						framecount[ind + 1] = (double)(c);
 
 						double sigma = Convert.ToDouble(CosmicRayFilterSigmaMenuTxt.Text);
-						double rmean = JPMath.Median(framecount);//JPMath.Mean_RobustClipped(framecount,sigma);
+						double rmean = JPMath.Median(framecount);
 						double std = Math.Sqrt(rmean);
 
 						CRthresh = (int)(rmean + sigma * std + 1); //+1 in order to ciel it
@@ -2394,10 +2414,6 @@ namespace CCDLAB
 				double[,] img = new double[(int)szx, (int)szy];
 				int xpos, ypos, el;
 				double centroidweight;
-				//bool exparrasctspersec = ExpArrayAsCtsperSecMenuChck.Checked;
-
-				/*try
-				{*/
 
 				double rx132ox32 = -rx1 * 32 - ox * 32;
 				double ry132oy32 = -ry1 * 32 - oy * 32;
@@ -2408,7 +2424,6 @@ namespace CCDLAB
 				{
 					if (oldtime != times[j])
 					{
-						//datatime += time_per_frame;
 						if (!filterCR)
 							oldtime = times[j];
 					}
@@ -2427,7 +2442,6 @@ namespace CCDLAB
 						if (c > CRthresh)//CR frame rejected
 						{
 							j = j + c;
-							//datatime -= time_per_frame;
 							nCRframes++;
 							continue;
 						}
@@ -2457,7 +2471,10 @@ namespace CCDLAB
 							centroidweight = 1 / expweightlist[j];//cts per second OR absolute...depending if switch was set during exparray creation time during applydriftseries
 
 					if (applyFlat)
-						centroidweight /= flats[j];
+						if (flats[j] == 0)
+							continue;
+						else
+							centroidweight /= flats[j];
 
 					if (maxminReject && maxminCountTwice)
 					{
@@ -2469,13 +2486,6 @@ namespace CCDLAB
 					else
 						img[xpos, ypos] += centroidweight;
 				}
-				/*}
-				catch (.Exception e)
-				{
-					MessageBox.Show(e.Message + "   " + xpos.ToString() + "   " + ypos.ToString() + "    "   + el.ToString());// + "   " + FracFits[0,j].ToString() + "   " + FracFits[1,j].ToString() );
-					MessageBox.Show(IntsFits[0,el].ToString() + "	" + IntsFits[1,el].ToString() + "	" + FracFits[0,el].ToString() + "	" + FracFits[1,el].ToString());
-					MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-				}*/
 
 				string imgname = IntsFile.Replace("_XYInts_List", "");
 				imgname = imgname.Replace(".fits", "_IMAGE_x" + prec.ToString() + ".fits");
@@ -2489,7 +2499,7 @@ namespace CCDLAB
 					imgname = imgname.Replace(".fits", "_deExp" + ListToImageExpMapCutOffDrop.SelectedItem.ToString() + ".fits");
 
 				JPFITS.FITSImage fitsimg = new FITSImage(imgname, img, false, !do_parallel);
-				fitsimg.Header.CopyHeaderFrom(FracFits.Header);//  CopyHeader(FracFits);
+				fitsimg.Header.CopyHeaderFrom(FracFits.Header);
 
 				double missingframephotredc = 0, parityphotredc = 0;
 				try
@@ -2572,31 +2582,33 @@ namespace CCDLAB
 							radeg[goodcount] = Convert.ToDouble(fitsimg.Header.GetKeyValue("WCV1_" + j.ToString("000")));
 							dedeg[goodcount] = Convert.ToDouble(fitsimg.Header.GetKeyValue("WCV2_" + j.ToString("000")));
 
-							if (xpix[goodcount] > 0 && ypix[goodcount] > 0 && xpix[goodcount] < szx && ypix[goodcount] < szy)
+							if (xpix[goodcount] > 5 && ypix[goodcount] > 5 && xpix[goodcount] < szx - 5 && ypix[goodcount] < szy - 5)
 								goodcount++;
 						}
-						Array.Resize(ref xpix, goodcount - 1);
-						Array.Resize(ref ypix, goodcount - 1);
-						Array.Resize(ref radeg, goodcount - 1);
-						Array.Resize(ref dedeg, goodcount - 1);
+						Array.Resize(ref xpix, goodcount);
+						Array.Resize(ref ypix, goodcount);
+						Array.Resize(ref radeg, goodcount);
+						Array.Resize(ref dedeg, goodcount);
 						//now have CP's and CV's...now need to re-do centroids at CV locations
-						PSES = new PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
-						PSESINDEX = 0;
-						PSES[PSESINDEX].Extract_Sources(fitsimg.Image, xpix, ypix, 2, false, "");
-						xpix = PSES[PSESINDEX].Centroids_X;
-						ypix = PSES[PSESINDEX].Centroids_Y;
+						PSESET.Clear();
+						PSESETINDEX = 0;
+						PSESET.Add(new JPFITS.PointSourceExtractor());						
+						PSESET[PSESETINDEX].Extract_Sources(fitsimg.Image, xpix, ypix, 0, 2, 5, false, "");
+						xpix = PSESET[PSESETINDEX].Centroids_X;
+						ypix = PSESET[PSESETINDEX].Centroids_Y;
+						PSESET.Clear();
 						WCS_DEROT = new JPFITS.WorldCoordinateSolution();
-						WCS_DEROT.Solve_WCS("TAN", xpix, ypix, true, radeg, dedeg, fitsimg.Header);
+						WCS_DEROT.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, xpix, ypix, true, radeg, dedeg, fitsimg.Header, true);
 					}
 					else
-						WCS_DEROT.CopyTo(fitsimg.Header);
+						WCS_DEROT.CopyTo(fitsimg.Header, true);
 					//fitsimg is now updated with new WCS for new derotated image
 				}
 
 				if (applyFlat || applyexposureweight)
-					fitsimg.WriteImage(TypeCode.Double, !do_parallel);
+					fitsimg.WriteImage(DiskPrecision.Double, !do_parallel);
 				else
-					fitsimg.WriteImage(TypeCode.Int32, !do_parallel);
+					fitsimg.WriteImage(DiskPrecision.Int32, !do_parallel);
 
 				if (!do_parallel)
 					e.Result = imgname;//used in wrkr complete, for single image modes
@@ -2609,14 +2621,14 @@ namespace CCDLAB
 			});
 		}
 
-		private void ConvertUVCentroidListToImgWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITConvertCentroidListToImgWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Converting file " + (e.ProgressPercentage).ToString() + " of " + WAITBAR.ProgressBar.Maximum.ToString() + " to image.";
 			WAITBAR.Refresh();
 		}
 
-		private void ConvertUVCentroidListToImgWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITConvertCentroidListToImgWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (UVIT_DEROTATE_WCS)
 				UVIT_DEROTATE_WCS = false;
@@ -2628,28 +2640,22 @@ namespace CCDLAB
 				{
 					if (!UVREGISTRATION)
 						if (MessageBox.Show("Image Creation Completed.  Would you like to view it?", "Finished...", MessageBoxButtons.YesNo) == DialogResult.No)
-						{
-							this.Enabled = true;
-							this.BringToFront();
 							return;
-						}
 
 					FileListDrop.Items.Clear();
 					IMAGESET.Clear();
 					string[] filelist = new string[] { imgname };
 					AddToImageSet(filelist, true);
-					this.Enabled = true;
-					this.BringToFront();
 
 					if (UVREGISTRATION)
 					{
 						//update registration points by shifting anchor (and all the rest) to closest local maximum of anchor
 						if (UVREGISTRATIONFILESINDEX > 0)
 						{
-							float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[FILELISTINDEX].Width);//image window size per data image pixel
-							float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[FILELISTINDEX].Height);
+							float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);//image window size per data image pixel
+							float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
 
-							double[,] subim = IMAGESET[FILELISTINDEX].GetSubImage(MANREGCOORDS[0, 0], MANREGCOORDS[0, 1], SUBIMAGE_HWX, SUBIMAGE_HWY);
+							double[,] subim = IMAGESET[IMAGESETINDEX].GetSubImage(MANREGCOORDS[0, 0], MANREGCOORDS[0, 1], SUBIMAGE_HWX, SUBIMAGE_HWY);
 							int x, y;
 							JPMath.Max(subim, out x, out y, false);
 							x -= SUBIMAGE_HWX;
@@ -2660,7 +2666,7 @@ namespace CCDLAB
 								MANREGCOORDS[i, 1] += y;
 								MANREGCOORDRECTS[i] = new Rectangle((int)(((float)(MANREGCOORDS[i, 0] + 1)) * xsc - 3), (int)(((float)(MANREGCOORDS[i, 1] + 1)) * ysc - 3), 7, 7);
 							}
-							ImageUpD(IMAGESET[FILELISTINDEX].Image);
+							ImageUpD(IMAGESET[IMAGESETINDEX].Image);
 							SubImageUpD();
 						}
 						try
@@ -2699,11 +2705,7 @@ namespace CCDLAB
 					}
 					WAITBAR.CancelBtn.Enabled = true;
 					if (!UVDRIFTBATCH)
-					{
-						WAITBAR.Hide();
 						WAITBAR.Close();
-						this.Enabled = true;
-					}
 					else
 					{
 						UVDRIFTBATCHFILESINDEX++;
@@ -2712,25 +2714,18 @@ namespace CCDLAB
 							if (!DRIFTFROMPCPSTRACK)
 								CreateDriftFromPCMenuItem_DoubleClick(sender, e);
 							else
-								DriftFromPCPSTrackBtn_Click(sender, e);
+								UVITDriftOptimizationBtn_Click(sender, e);
 						}
 						else
 						{
 							DRIFTFROMPCPSTRACK = false;
 							UVDRIFTBATCH = false;
 							UVDRIFTAUTORUN = false;
-							WAITBAR.Hide();
 							WAITBAR.Close();
-							this.Enabled = true;
-							this.BringToFront();
 							TimeSpan ts = DateTime.Now - DATE;
-							/*DialogResult res = MessageBox.Show("Finished the batch of drift corrections in " + ts.Minutes.ToString() + "m" + ts.Seconds.ToString() + "s.  Would you like to view the images?", "Complete. View Images?", MessageBoxButtons.YesNo);
-							if (res == DialogResult.No)
-								return;*/
 							AUTOLOADIMAGES = true;
 							IMAGESET = new FITSImageSet();
 							FMLoad_Click(sender, e);
-							//FMLoad.PerformClick();
 						}
 					}
 				}
@@ -2740,20 +2735,11 @@ namespace CCDLAB
 				UVCONVERTLISTTOIMAGEBATCH = false;
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 				{
-					this.Enabled = true;
-					this.BringToFront();
 					UVITPOSTMERGE = false;
 					return;
 				}
 
-				WAITBAR.Hide();
 				WAITBAR.Close();
-				this.Enabled = true;
-				this.BringToFront();
-
-				/*if (MessageBox.Show("Finished converting the list(s) to image(s).  Would you like to load them?","View?",MessageBoxButtons.YesNo) == DialogResult.No)
-					return;*/
-
 				AUTOLOADIMAGES = true;
 
 				if (AUTOVISDRIFTAPPLY && FUVDIREXISTS && NUVDIREXISTS)
@@ -2778,7 +2764,6 @@ namespace CCDLAB
 
 				if (MASTERAUTOLOADADDIN != null)
 				{
-					//int c = 0;
 					Array.Resize(ref AUTOLOADIMAGESFILES, AUTOLOADIMAGESFILES.Length + MASTERAUTOLOADADDIN.Count);
 					for (int i = AUTOLOADIMAGESFILES.Length - MASTERAUTOLOADADDIN.Count; i < AUTOLOADIMAGESFILES.Length; i++)
 						AUTOLOADIMAGESFILES[i] = (string)MASTERAUTOLOADADDIN[i - AUTOLOADIMAGESFILES.Length + MASTERAUTOLOADADDIN.Count];
@@ -2796,17 +2781,17 @@ namespace CCDLAB
 						PointSrcROIAutoRunChck.Checked = true;
 						PointSrcROIFindSrcChck.Checked = true;
 						PointSrcROIFindNSrcDrop.SelectedIndex = 2;
-						DriftFromPCPSTrackBtn_Click(sender, e);
+						UVITDriftOptimizationBtn_Click(sender, e);
 						return;
 					}
 				}
 			}
 		}
 
-		private void ExtractL1gzsMenuItem_Click(object sender, EventArgs e)
+		private void UVITExtractL1gzsMenuItem_Click(object sender, EventArgs e)
 		{
-			L1AutoRunChck.HideDropDown();
-			ExtractL1gzsMenuItem.HideDropDown();
+			UVITL1AutoRunChck.HideDropDown();
+			UVITExtractL1gzsMenuItem.HideDropDown();
 			UVITMenu.HideDropDown();
 
 			if (!Directory.Exists("C:\\UVIT_CalDB"))
@@ -2824,7 +2809,7 @@ namespace CCDLAB
 			OpenFileDialog ofd = new OpenFileDialog();
 			ofd.InitialDirectory = (string)REG.GetReg("CCDLAB", "L2EventListPath");
 			ofd.Filter = "GZip or ZIP Archive|*.gz;*.zip";
-			ofd.Multiselect = false;// true;//no need to do this//removed from code
+			ofd.Multiselect = false;
 			DialogResult res = ofd.ShowDialog();
 			if (res == DialogResult.Cancel)
 				return;
@@ -2832,11 +2817,29 @@ namespace CCDLAB
 			string dir = new DirectoryInfo(ofd.FileName).Parent.FullName;
 			REG.SetReg("CCDLAB", "L2EventListPath", dir);
 
-			//this.Enabled = false;
-			ExtractL1ArchiveBGWrkr.RunWorkerAsync(ofd.FileName);
+			if (Directory.Exists(dir + "\\VIS") || Directory.Exists(dir + "\\FUV") || Directory.Exists(dir + "\\NUV"))
+				if (MessageBox.Show("Extracted data found beside archive file; Delete previous extraction and start over?", "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+					return;
+				else
+				{
+					if (Directory.Exists(dir + "\\VIS"))
+						Directory.Delete(dir + "\\VIS", true);
+					if (Directory.Exists(dir + "\\FUV"))
+						Directory.Delete(dir + "\\FUV", true);
+					if (Directory.Exists(dir + "\\NUV"))
+						Directory.Delete(dir + "\\NUV", true);
+					if (Directory.Exists(dir + "\\Digested L1"))
+						Directory.Delete(dir + "\\Digested L1", true);
+
+					string[] files = Directory.GetFiles(dir, "*_level1.*");
+					for (int i = 0; i < files.Length; i++)
+						File.Delete(files[i]);
+				}
+
+			UVITExtractL1ArchiveBGWrkr.RunWorkerAsync(ofd.FileName);
 		}
 
-		private void ExtractL1ArchiveBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITExtractL1ArchiveBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string file = (string)e.Argument;
 			string extdir = new DirectoryInfo(file).Parent.FullName;
@@ -2856,124 +2859,131 @@ namespace CCDLAB
 			File.Move(file, archdir + "\\" + file.Substring(file.LastIndexOf("\\") + 1));
 		}
 
-		private void ExtractL1ArchiveBGWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e) {; }
+		private void UVITExtractL1ArchiveBGWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e) { }
 
-		private void ExtractL1ArchiveBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITExtractL1ArchiveBGWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			//this.Enabled = true;
-			this.BringToFront();
 			if ((DialogResult)e.Result == DialogResult.Cancel)
 				return;
 
 			string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
 			string[] L1FITSImages = Directory.GetFiles(dir, "*level1.fits", SearchOption.AllDirectories);
-			//remember where the L1 files folder was to delete it after
-			string[] alldirs = Directory.GetDirectories(dir);
-			string deldir = "";
-			for (int i = 0; i < alldirs.Length; i++)
-				if (Directory.GetFiles(alldirs[i], "*level1.fits", SearchOption.AllDirectories).Length > 0)
-				{
-					deldir = alldirs[i];
-					break;
-				}
-
-			for (int j = 0; j < L1FITSImages.Length; j++)
-			{
-				string newL1file = dir + "\\" + L1FITSImages[j].Substring(L1FITSImages[j].LastIndexOf("\\") + 1);
-				while (File.Exists(newL1file))//then need to add some appendage
-				{
-					int ind = newL1file.LastIndexOf(".");
-					if (newL1file.Substring(ind - 1, 1) == ")")
-					{
-						int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
-						newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
-					}
-					else
-					{
-						newL1file = newL1file.Insert(ind, " (1)");
-						if (File.Exists(newL1file))
-						{
-							int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
-							newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
-						}
-					}
-				}
-				File.Move(L1FITSImages[j], newL1file);
-			}
-
 			string[] L1tctfiles = Directory.GetFiles(dir, "*level1.tct", SearchOption.AllDirectories);
-			for (int j = 0; j < L1tctfiles.Length; j++)
-			{
-				string newL1file = dir + "\\" + L1tctfiles[j].Substring(L1tctfiles[j].LastIndexOf("\\") + 1);
-				while (File.Exists(newL1file))//then need to add some appendage
-				{
-					int ind = newL1file.LastIndexOf(".");
-					if (newL1file.Substring(ind - 1, 1) == ")")
-					{
-						int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
-						newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
-					}
-					else
-					{
-						newL1file = newL1file.Insert(ind, " (1)");
-						if (File.Exists(newL1file))
-						{
-							int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
-							newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
-						}
-					}
-				}
-				File.Move(L1tctfiles[j], newL1file);
-			}
-
 			string[] L1lbtfiles = Directory.GetFiles(dir, "*level1.lbt", SearchOption.AllDirectories);
-			for (int j = 0; j < L1lbtfiles.Length; j++)
+			int i = 0;
+
+			try
 			{
-				string newL1file = dir + "\\" + L1lbtfiles[j].Substring(L1lbtfiles[j].LastIndexOf("\\") + 1);
-				while (File.Exists(newL1file))//then need to add some appendage
-				{
-					int ind = newL1file.LastIndexOf(".");
-					if (newL1file.Substring(ind - 1, 1) == ")")
+				//remember where the L1 files folder was to delete it after
+				string[] alldirs = Directory.GetDirectories(dir);
+				string deldir = "";
+				for (i = 0; i < alldirs.Length; i++)
+					if (Directory.GetFiles(alldirs[i], "*level1.fits", SearchOption.AllDirectories).Length > 0)
 					{
-						int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
-						newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+						deldir = alldirs[i];
+						break;
 					}
-					else
+
+				for (i = 0; i < L1FITSImages.Length; i++)
+				{
+					//string newL1file = Path.Combine(dir, string.Join("_", Path.GetFileName(L1FITSImages[j]).Split(Path.GetInvalidFileNameChars())));
+
+					string newL1file = dir + "\\" + L1FITSImages[i].Substring(L1FITSImages[i].LastIndexOf("\\") + 1);
+					while (File.Exists(newL1file))//then need to add some appendage
 					{
-						newL1file = newL1file.Insert(ind, " (1)");
-						if (File.Exists(newL1file))
+						int ind = newL1file.LastIndexOf(".");
+						if (newL1file.Substring(ind - 1, 1) == ")")
 						{
 							int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
 							newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
 						}
+						else
+						{
+							newL1file = newL1file.Insert(ind, " (1)");
+							if (File.Exists(newL1file))
+							{
+								int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
+								newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+							}
+						}
 					}
+					File.Move(L1FITSImages[i], newL1file);
 				}
-				File.Move(L1lbtfiles[j], newL1file);
+				
+				for (i = 0; i < L1tctfiles.Length; i++)
+				{
+					string newL1file = dir + "\\" + L1tctfiles[i].Substring(L1tctfiles[i].LastIndexOf("\\") + 1);
+					while (File.Exists(newL1file))//then need to add some appendage
+					{
+						int ind = newL1file.LastIndexOf(".");
+						if (newL1file.Substring(ind - 1, 1) == ")")
+						{
+							int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
+							newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+						}
+						else
+						{
+							newL1file = newL1file.Insert(ind, " (1)");
+							if (File.Exists(newL1file))
+							{
+								int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
+								newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+							}
+						}
+					}
+					File.Move(L1tctfiles[i], newL1file);
+				}
+								
+				for (i = 0; i < L1lbtfiles.Length; i++)
+				{
+					string newL1file = dir + "\\" + L1lbtfiles[i].Substring(L1lbtfiles[i].LastIndexOf("\\") + 1);
+					while (File.Exists(newL1file))//then need to add some appendage
+					{
+						int ind = newL1file.LastIndexOf(".");
+						if (newL1file.Substring(ind - 1, 1) == ")")
+						{
+							int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
+							newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+						}
+						else
+						{
+							newL1file = newL1file.Insert(ind, " (1)");
+							if (File.Exists(newL1file))
+							{
+								int num = Convert.ToInt32(newL1file.Substring(newL1file.LastIndexOf("(") + 1, newL1file.LastIndexOf(")") - 1 - newL1file.LastIndexOf("(")));
+								newL1file = newL1file.Replace("(" + num.ToString() + ").", "(" + (num + 1).ToString() + ").");
+							}
+						}
+					}
+					File.Move(L1lbtfiles[i], newL1file);
+				}
+
+				Directory.Delete(deldir, true);
+			}
+			catch (Exception ee)
+			{
+				MessageBox.Show(ee.Data + "	" + ee.InnerException + "	" + ee.Message + "	" + ee.Source + "	" + ee.StackTrace + "	" + ee.TargetSite + " " + L1FITSImages[i] + " " + L1tctfiles[i] + " " + L1lbtfiles[i]);
 			}
 
-			Directory.Delete(deldir, true);
-
-			if (!L1AutoRunChck.Checked)
+			if (!UVITL1AutoRunChck.Checked)
 				if (MessageBox.Show("Finished processing folders.  Would you like to proceed with file digestion?", "Proceed?", MessageBoxButtons.YesNo) == DialogResult.No)
 					return;
 
 			SPAREFITSImageSet = new FITSImageSet();
-
 			string[] files = Directory.GetFiles(dir, "*level1*.fits");
 			DATE = DateTime.Now;
-			//this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.Text = "Digesting L1 Files...";
 			WAITBAR.ProgressBar.Maximum = files.Length;
-			DigestL1Wrkr.RunWorkerAsync(files);
+			UVITDigestL1Wrkr.RunWorkerAsync(files);
 			WAITBAR.ShowDialog();
 		}
 
-		private void DigestL1FITSImageMenuItem_Click(object sender, EventArgs e)
+		private void UVITDigestL1FITSImageMenuItem_Click(object sender, EventArgs e)
 		{
 			UVITMenu.HideDropDown();
-			DigestL1FITSImageMenuItem.HideDropDown();
-			L1AutoRunChck.Checked = false;
+			UVITDigestL1FITSImageMenuItem.HideDropDown();
+			UVITL1AutoRunChck.Checked = false;
 
 			string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
 			OpenFileDialog dlg = new OpenFileDialog();
@@ -3023,24 +3033,54 @@ namespace CCDLAB
 			SPAREFITSImageSet = new FITSImageSet();
 
 			DATE = DateTime.Now;
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.Text = "Digesting L1 Files...";
 			WAITBAR.ProgressBar.Maximum = dlg.FileNames.Length;
-			DigestL1Wrkr.RunWorkerAsync(dlg.FileNames);
+			UVITDigestL1Wrkr.RunWorkerAsync(dlg.FileNames);
 			WAITBAR.ShowDialog();
 		}
 
-		private void DigestL1Wrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDigestL1Wrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string[] argfiles = (string[])e.Argument;
 			ArrayList dir_list = new ArrayList();
 			bool ApplyDIST = L1DigestApplyDISTChck.Checked;
-			bool ApplyFPN = L1DigestApplyFPNChck.Checked;
+			bool ApplyFPN = UVITL1DigestApplyFPNChck.Checked;
 			bool discardparityerror = L1DigestPCParityChck.Checked;
 			bool discardtimebool = L1DiscardDataTimeChck.Checked;
 			bool interpDISTBiLin = L1DigestApplyDISTInterpBiLinChck.Checked;
 			bool do_parallel_L1 = L1MachineExtremeChck.Checked;
+			object lockobj = new object();
+
+			bool FUVignorehotpixel = L1IgnoreFUVHotPixelChck.Checked;
+			int[] FUV_x_hotignore = new int[0];
+			int[] FUV_y_hotignore = new int[0];
+			if (FUVignorehotpixel)
+			{
+				ArrayList x = new ArrayList();
+				ArrayList y = new ArrayList();
+				string pixtext = L1IgnoreFUVHotPixelTxt.Text;//(131; 216) (xxx; yyy)
+
+				while (pixtext.IndexOf("(") != -1)
+				{
+					int fi = pixtext.IndexOf("(");
+					int mi = pixtext.IndexOf(";");
+					int li = pixtext.IndexOf(")");
+
+					x.Add(pixtext.Substring(fi + 1, mi - fi - 1));
+					y.Add(pixtext.Substring(mi + 1, li - mi - 1));
+
+					pixtext = pixtext.Substring(li);
+				}
+				
+				FUV_x_hotignore = new int[x.Count];
+				FUV_y_hotignore = new int[y.Count];
+				for (int i = 0; i < x.Count; i++)
+				{
+					FUV_x_hotignore[i] = Convert.ToInt32(x[i].ToString());
+					FUV_y_hotignore[i] = Convert.ToInt32(y[i].ToString());
+				}
+			}
 
 			//TCT get the .tct file, and get the delta between absolute time and detector time from the first element in those tables
 			//apply (add) that difference to all detector times in order to get absolute local JD times, then use that to get BJD
@@ -3052,8 +3092,8 @@ namespace CCDLAB
 				TCTFILELIST.Add(tctfile);
 
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(tctfile, "TCT");
-				double[] SPS_TIME_MJD = bt.GetTTYPEEntry("SPS_TIME_MJD");
-				double[] LOCAL_TIMEF = bt.GetTTYPEEntry("LOCAL_TIMEF");
+				double[] SPS_TIME_MJD = (double[])bt.GetTTYPEEntry("SPS_TIME_MJD", out _, out _);
+				double[] LOCAL_TIMEF = (double[])bt.GetTTYPEEntry("LOCAL_TIMEF", out _, out _);
 
 				double mjdref = SPS_TIME_MJD[0];
 				double detref = LOCAL_TIMEF[0];
@@ -3082,10 +3122,10 @@ namespace CCDLAB
 				if (dofiltercorrection)
 				{
 					JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(lbtfile, "UVIT-LBTHK");
-					lbt_times = bt.GetTTYPEEntry("Time");
-					lbt_FUVfwangle = bt.GetTTYPEEntry("FilterWheelMotorAngle_FUV");
-					lbt_NUVfwangle = bt.GetTTYPEEntry("FilterWheelMotorAngle_NUV");
-					lbt_VISfwangle = bt.GetTTYPEEntry("FilterWheelMotorAngle_VIS");
+					lbt_times = (double[])bt.GetTTYPEEntry("Time", out _, out _);
+					lbt_FUVfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_FUV", out _, out _);
+					lbt_NUVfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_NUV", out _, out _);
+					lbt_VISfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_VIS", out _, out _);
 				}
 			}
 			else
@@ -3129,1050 +3169,934 @@ namespace CCDLAB
 
 			ParallelOptions opts = new ParallelOptions();
 			if (do_parallel_L1)
-				opts.MaxDegreeOfParallelism = (int)((double)Environment.ProcessorCount / Math.PI);
+				opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
 			else
 				opts.MaxDegreeOfParallelism = 1;
 
-			//int errorfileindex = 0;
 			int wbcounter = 0;
-			//try
-			{
-				Parallel.For(0, pcfiles.Count, opts, (xi, loopstate) =>
-				//for (int xi = 0; xi < pcfiles.Count; xi++)
-				{
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						loopstate.Stop();// break;// continue;
 
-					//errorfileindex = xi;
-					string FileName = (string)pcfiles[xi];
-					string dir = FileName.Substring(0, FileName.LastIndexOf("\\"));
-					string path = dir;
-					FITSImage source = new FITSImage(FileName, null, true, false, false, false);
-					//source.Header.RemoveKeys(new array<String^>(22) { });
-					source.Header.AddCommentKeyLine("SRCFILE " + source.FileName, 12);
-					string detector = source.Header.GetKeyValue("DETECTOR");
-					string filter = source.Header.GetKeyValue("FILTER");
-					string filterID = UVITFilter(detector, filter);
-					source.Header.SetKey("FILTERID", filterID, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
-					string orbnum = source.Header.GetKeyValue("ORB_NUM");
-					string sourceID;
-					if (!L1SpecifySourceNameChck.Checked)
+			Parallel.For(0, pcfiles.Count, opts, (xi, loopstate) =>
+			{
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					loopstate.Stop();
+
+				string FileName = (string)pcfiles[xi];
+				string dir = FileName.Substring(0, FileName.LastIndexOf("\\"));
+				string path = dir;
+				FITSImage source = new FITSImage(FileName, null, true, false, false, false);
+				//source.Header.RemoveKeys(new array<String^>(22) { });
+				source.Header.AddCommentKeyLine("SRCFILE " + source.FileName, 12);
+				string detector = source.Header.GetKeyValue("DETECTOR");
+				string filter = source.Header.GetKeyValue("FILTER");
+				string filterID = UVITFilter(detector, filter);
+				source.Header.SetKey("FILTERID", filterID, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
+				string orbnum = source.Header.GetKeyValue("ORB_NUM");
+				string sourceID;
+				if (!L1SpecifySourceNameChck.Checked)
+				{
+					sourceID = string.Join("_", source.Header.GetKeyValue("SOURCEID").Split(Path.GetInvalidFileNameChars()));
+					if (sourceID.Length > 17)
+						sourceID = sourceID.Substring(0, 17);
+				}
+				else
+					sourceID = string.Join("_", L1SourceNameTxt.Text.Split(Path.GetInvalidFileNameChars()));
+
+				double yeardotyear;
+				double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
+				source.Header.SetKey("YEARDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
+				source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
+
+				FITSBinTable detdata = new JPFITS.FITSBinTable(source.FullFileName, "DETECTOR_DATA");
+				int width = 0;
+				for (int h = 0; h < detdata.Header.Length; h++)
+					if (detdata.Header[h].Substring(0, 7) == "TFORM15")
 					{
-						sourceID = string.Join("_", source.Header.GetKeyValue("SOURCEID").Split(Path.GetInvalidFileNameChars()));
-						if (sourceID.Length > 17)
-							sourceID = sourceID.Substring(0, 17);
+						string tform15 = detdata.Header[h].Substring(11, 6);
+						tform15 = tform15.Replace("B", "");//PC mode
+						tform15 = tform15.Replace("I", "");//IM mode
+						width = Convert.ToInt32(tform15);
+						break;
+					}
+
+				if (DO_TBC)
+				{
+					lock (lockobj)
+					{
+						TBC(detdata.BINTABLEByteArray, detdata.Naxis1, detdata.Naxis2);
+					}
+				}
+
+				bool xword_parity_error = false;
+				bool yword_parity_error = false;
+				bool sword_parity_error = false;
+
+				uint discardtimeint = 0;
+				if (discardtimebool)
+				{
+					string discardtimestring = (string)L1DiscardDataTimeDrop.SelectedItem;
+					discardtimestring = discardtimestring.Replace(" Minutes", "");
+					discardtimeint = Convert.ToUInt32(discardtimestring) * 60 * 1000;
+				}
+
+				string alg = source.Header.GetKeyValue("CENTROID");
+				if (alg != "5S" && alg != "3S")//happened once with some L1 file
+					alg = "3S"; //3S is always running in orbit now...so just assume
+				string FPNFile = "";
+				FITSImage FPNFits = null;
+				Random rand = null;
+				int N_p_errors = 0;						
+
+				if (ApplyFPN)
+				{							
+					rand = new Random();
+					if (detector == "FUV")
+					{
+						if (alg == "3S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits";
+						}
+					}
+					else if (detector == "NUV")
+					{
+						if (alg == "3S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits";
+						}
+					}
+					else if (detector == "VIS")
+					{
+						if (alg == "3S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits";
+						}
+						if (alg == "5S")
+						{
+							if (File.Exists("C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits"))
+								FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits";
+						}
 					}
 					else
-						sourceID = string.Join("_", L1SourceNameTxt.Text.Split(Path.GetInvalidFileNameChars()));
-
-					double yeardotyear;
-					double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
-					source.Header.SetKey("YEARDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
-					source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
-
-					//try
 					{
-						FITSBinTable detdata = new JPFITS.FITSBinTable(source.FullFileName, "DETECTOR_DATA");
-						int width = 0;
-						for (int h = 0; h < detdata.Header.Length; h++)
-							if (detdata.Header[h].Substring(0, 7) == "TFORM15")
-							{
-								string tform15 = detdata.Header[h].Substring(11, 6);
-								tform15 = tform15.Replace("B", "");//PC mode
-								tform15 = tform15.Replace("I", "");//IM mode
-								width = Convert.ToInt32(tform15);
-								break;
-							}
+						MessageBox.Show("Cannot find FPN File for channel '" + detector + "' and algorithm '" + alg + "' for file: " + FileName);
+						loopstate.Stop();
+					}
 
-						if (DO_TBC)
+					FPNFits = new JPFITS.FITSImage(FPNFile, null, false, true, false, false);
+				}
+
+				string CPUXDistFile = "";
+				string CPUYDistFile = "";
+				JPFITS.FITSImage CPUXDistFits = null;
+				JPFITS.FITSImage CPUYDistFits = null;
+				if (ApplyDIST)
+				{
+					if (detector == "FUV")
+					{
+						if (File.Exists("C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits"))
 						{
-							lock (argfiles)
-							{
-								TBC(detdata.BINTABLEByteArray, detdata.Naxis1, detdata.Naxis2);
-							}
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dY.fits";
 						}
-
-						bool xword_parity_error = false;
-						bool yword_parity_error = false;
-						bool sword_parity_error = false;
-
-						uint discardtimeint = 0;
-						if (discardtimebool)
+					}
+					else if (detector == "NUV")
+					{
+						if (File.Exists("C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits"))
 						{
-							string discardtimestring = (string)L1DiscardDataTimeDrop.SelectedItem;
-							discardtimestring = discardtimestring.Replace(" Minutes", "");
-							discardtimeint = Convert.ToUInt32(discardtimestring) * 60 * 1000;
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dY.fits";
 						}
-
-						string alg = source.Header.GetKeyValue("CENTROID");
-						if (alg != "5S" && alg != "3S")//happened once with some L1 file
-							alg = "3S"; //3S is always running in orbit now...so just assume
-						string FPNFile = "";
-						FITSImage FPNFits = null;
-						Random rand = null;
-						int N_p_errors = 0;
-
-						if (ApplyFPN)
+					}
+					else if (detector == "VIS")
+					{
+						if (File.Exists("C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits"))
 						{
-							rand = new Random();
-							if (detector == "FUV")
-							{
-								if (alg == "3S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 3Sq FPN.fits";
-								}
-								if (alg == "5S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\FUV 5Sq FPN.fits";
-								}
-							}
-							else if (detector == "NUV")
-							{
-								if (alg == "3S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 3Sq FPN.fits";
-								}
-								if (alg == "5S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\NUV 5Sq FPN.fits";
-								}
-							}
-							else if (detector == "VIS")
-							{
-								if (alg == "3S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 3Sq FPN.fits";
-								}
-								if (alg == "5S")
-								{
-									if (File.Exists("C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits"))
-										FPNFile = "C:\\UVIT_CalDB\\FPN\\VIS 5Sq FPN.fits";
-								}
-							}
-							else
-							{
-								MessageBox.Show("Cannot find FPN File for channel '" + detector + "' and algorithm '" + alg + "' for file: " + FileName);
-								loopstate.Stop();//continue;
-							}
-							lock (FPNFile)
-							{
-								FPNFits = new JPFITS.FITSImage(FPNFile, null, false, true, false, false);
-							}
+							CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits";
+							CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dY.fits";
 						}
+					}
+					else
+					{
+						MessageBox.Show("Cannot find Distortion File for channel '" + detector + "' for file: " + FileName);
+						loopstate.Stop();
+					}
 
-						string CPUXDistFile = "";
-						string CPUYDistFile = "";
-						JPFITS.FITSImage CPUXDistFits = null;
-						JPFITS.FITSImage CPUYDistFits = null;
-						if (ApplyDIST)
-						{
-							if (detector == "FUV")
-							{
-								if (File.Exists("C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits"))
-								{
-									CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dX.fits";
-									CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\FUV_dist_dY.fits";
-								}
-							}
-							else if (detector == "NUV")
-							{
-								if (File.Exists("C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits"))
-								{
-									CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dX.fits";
-									CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\NUV_dist_dY.fits";
-								}
-							}
-							else if (detector == "VIS")
-							{
-								if (File.Exists("C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits"))
-								{
-									CPUXDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dX.fits";
-									CPUYDistFile = "C:\\UVIT_CalDB\\Distortion\\VIS_dist_dY.fits";
-								}
-							}
-							else
-							{
-								MessageBox.Show("Cannot find Distortion File for channel '" + detector + "' for file: " + FileName);
-								loopstate.Stop();//continue;
-							}
-							lock (CPUXDistFile)
-							{
-								CPUXDistFits = new JPFITS.FITSImage(CPUXDistFile, null, false, true, false, false);								
-							}
-							lock (CPUYDistFile)
-							{
-								CPUYDistFits = new JPFITS.FITSImage(CPUYDistFile, null, false, true, false, false);
-							}
-						}
+					CPUXDistFits = new JPFITS.FITSImage(CPUXDistFile, null, false, true, false, false);								
+					CPUYDistFits = new JPFITS.FITSImage(CPUYDistFile, null, false, true, false, false);
+				}
 
-						int byteindx = 0;
-						double bzero = 0;
-						//double bscale = 1;
+				int byteindx = 0;
+				double bzero = 0;
 
-						//first thing, get number of sets
-						int Nset = 0;
-						ushort prevframe = UInt16.MaxValue;
-						uint prevtime = UInt32.MaxValue;
-						for (int i = 0; i < detdata.Naxis2; i++)
-						{
-							//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 65;
-							bzero = 32768;
-							ushort currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
+				//first thing, get number of sets
+				int Nset = 0;
+				ushort prevframe = UInt16.MaxValue;
+				uint prevtime = UInt32.MaxValue;
+				for (int i = 0; i < detdata.Naxis2; i++)
+				{
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					ushort currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
 
-							//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 67;
-							bzero = 2147483648;
-							uint currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					uint currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
 
-							//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-							//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-							//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-							//and then not get written since it will be so small (single frame)
-							if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
-								Nset++;
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
+						Nset++;
 
-							prevframe = currframe;
-							prevtime = currtime;
-						}
+					prevframe = currframe;
+					prevtime = currtime;
+				}
 
-						//have number of sets, now need number of centroids in each set
-						int[] Ncentroids = new int[Nset];
-						int[] Nskipped = new int[Nset];//skipped frame numbers...not even with 0's
-						int Ncent = 0;
-						Nset = 0;
-						prevframe = UInt16.MaxValue;
+				//have number of sets, now need number of centroids in each set
+				int[] Ncentroids = new int[Nset];
+				int[] Nskipped = new int[Nset];//skipped frame numbers...not even with 0's
+				int Ncent = 0;
+				Nset = 0;
+				prevframe = UInt16.MaxValue;
+				prevtime = UInt32.MaxValue;
+				for (int i = 0; i < detdata.Naxis2; i++)
+				{
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					ushort currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
+
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					uint currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
+
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
+						Nset++;
+
+					if (Math.Abs((double)(currframe) - (double)(prevframe)) > 2)
+					{
+						prevframe = currframe;
+						prevtime = currtime;
+					}
+
+					if (currframe - prevframe > 1)
+						Nskipped[Nset - 1] += currframe - prevframe - 1;
+
+					prevframe = currframe;
+					prevtime = currtime;
+
+					//Centroid - TTYPE15 = 'Centroid'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 79;
+					int j = 0;
+
+					for (j = 0; j < width / 6; j++)
+					{
+						ushort xword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 1]);
+						ushort yword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 3]);
+						ushort sword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 5]);
+
+						if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
+							break;
+
+						Ncent++;//number of centroids, only incremented if there was more data for this row
+						Ncentroids[Nset - 1]++;
+					}
+				}
+
+				double[] BJDS = null;
+				ushort[] frames = null;
+				uint[] times = null;
+				short[,] ints = null;
+				short[,] decs = null;
+				ushort[,] mdMm = null;
+
+				Ncent = 0;
+				Nset = 0;
+				prevframe = UInt16.MaxValue;
+				prevtime = UInt32.MaxValue;
+				for (int i = 0; i <= detdata.Naxis2; i++)
+				{
+					double JD = 0;
+					ushort currframe = 0;
+					uint currtime = 0;
+
+					if (i == detdata.Naxis2)
+					{
+						prevframe = UInt16.MaxValue;//will force the last set to be written
 						prevtime = UInt32.MaxValue;
-						for (int i = 0; i < detdata.Naxis2; i++)
+						goto lastset;
+					}
+
+					//frame count - TTYPE11 = 'SecHdrImageFrameCount'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
+
+					//frame time - TTYPE12 = 'SecHdrImageFrameTime'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
+
+					//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
+					byteindx = i * detdata.Naxis1;
+					byteindx += 0;
+					bzero = 0;
+					byte[] dbl = new byte[8];
+					dbl[7] = detdata.BINTABLEByteArray[byteindx];
+					dbl[6] = detdata.BINTABLEByteArray[byteindx + 1];
+					dbl[5] = detdata.BINTABLEByteArray[byteindx + 2];
+					dbl[4] = detdata.BINTABLEByteArray[byteindx + 3];
+					dbl[3] = detdata.BINTABLEByteArray[byteindx + 4];
+					dbl[2] = detdata.BINTABLEByteArray[byteindx + 5];
+					dbl[1] = detdata.BINTABLEByteArray[byteindx + 6];
+					dbl[0] = detdata.BINTABLEByteArray[byteindx + 7];
+					double temptime = BitConverter.ToDouble(dbl, 0);
+					if (temptime > lasttime_mjd_forfilter)
+						lasttime_mjd_forfilter = temptime;
+					if (temptime < firsttime_mjd_forfilter)
+						firsttime_mjd_forfilter = temptime;
+
+					if (tctfileexists)
+						JD = ((double)(currtime) / 1000 + JD_abs_time_delta_sec) / 86400;//this should be the local JD...it will get used below to get BJD
+					else
+						JD = 0;
+
+					lastset:
+
+					//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
+					//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
+					//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
+					//and then not get written since it will be so small (single frame)
+					if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
+					{
+						if (Nset > 0 || i == detdata.Naxis2)//then the previous set data needs to be written
 						{
-							//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 65;
-							bzero = 32768;
-							ushort currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
-
-							//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 67;
-							bzero = 2147483648;
-							uint currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
-
-							//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-							//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-							//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-							//and then not get written since it will be so small (single frame)
-							if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
-								Nset++;
-
-							if (Math.Abs((double)(currframe) - (double)(prevframe)) > 2)
-							{
-								prevframe = currframe;
-								prevtime = currtime;
-							}
-
-							if (currframe - prevframe > 1)
-								Nskipped[Nset - 1] += currframe - prevframe - 1;
-
-							prevframe = currframe;
-							prevtime = currtime;
-
-							//Centroid - TTYPE15 = 'Centroid'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 79;
-							int j = 0;
-							//bool checkwidth = false;
-							//scanwidth:;
-							//try
-							{
-								for (j = 0; j < width / 6; j++)
-								{
-									ushort xword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 1]);
-									ushort yword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 3]);
-									ushort sword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 5]);
-
-									if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
-										/*continue;*/
-										break;
-
-									Ncent++;//number of centroids, only incremented if there was more data for this row
-									Ncentroids[Nset - 1]++;
-								}
-							}
-							/*catch
-							{
-								//checkwidth = true;
-								width -= 6;
-								goto scanwidth;
-							}*/
-							/*if (checkwidth)
-							{
-								//Ncent--;
-								//Ncentroids[Nset - 1]--;
-							}*/
-						}
-
-						double[] BJDS = null;
-						ushort[] frames = null;
-						uint[] times = null;
-						short[,] ints = null;
-						short[,] decs = null;
-						ushort[,] mdMm = null;
-
-						Ncent = 0;
-						Nset = 0;
-						prevframe = UInt16.MaxValue;
-						prevtime = UInt32.MaxValue;
-						for (int i = 0; i <= detdata.Naxis2; i++)
-						{
-							double JD = 0;
-							ushort currframe = 0;
-							uint currtime = 0;
-
-							if (i == detdata.Naxis2)
-							{
-								prevframe = UInt16.MaxValue;//will force the last set to be written
-								prevtime = UInt32.MaxValue;
-								goto lastset;
-							}
-
-							//frame count - TTYPE11 = 'SecHdrImageFrameCount'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 65;
-							bzero = 32768;
-							currframe = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);//MUST DO IT THIS WAY
-
-							//frame time - TTYPE12 = 'SecHdrImageFrameTime'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 67;
-							bzero = 2147483648;
-							currtime = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);//MUST DO IT THIS WAY
-
-							//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
-							byteindx = i * detdata.Naxis1;
-							byteindx += 0;
-							bzero = 0;
-							byte[] dbl = new byte[8];
-							dbl[7] = detdata.BINTABLEByteArray[byteindx];
-							dbl[6] = detdata.BINTABLEByteArray[byteindx + 1];
-							dbl[5] = detdata.BINTABLEByteArray[byteindx + 2];
-							dbl[4] = detdata.BINTABLEByteArray[byteindx + 3];
-							dbl[3] = detdata.BINTABLEByteArray[byteindx + 4];
-							dbl[2] = detdata.BINTABLEByteArray[byteindx + 5];
-							dbl[1] = detdata.BINTABLEByteArray[byteindx + 6];
-							dbl[0] = detdata.BINTABLEByteArray[byteindx + 7];
-							double temptime = BitConverter.ToDouble(dbl, 0);
-							if (temptime > lasttime_mjd_forfilter)
-								lasttime_mjd_forfilter = temptime;
-							if (temptime < firsttime_mjd_forfilter)
-								firsttime_mjd_forfilter = temptime;
-							//double JD = BitConverter.ToDouble(dbl, 0);
-							//the above time isn't exact.  Now use the JD_abs_time_delta_sec to get the BJD here
-
-							if (tctfileexists)
-								JD = ((double)(currtime) / 1000 + JD_abs_time_delta_sec) / 86400;//this should be the local JD...it will get used below to get BJD
-							else
-								JD = 0;
-
-							lastset:
-
-							//if: then imaging session set has reset, or first set, or frame or time rolled over & start new set on rollover,
-							//or erroneous (nonsequential) frame number greater than a CRC frame skip which are only skips of 1 frame (but using 2 here for the extremely rare adjacent-frame CRC skips)
-							//- in this case the erroneous frame (which will to extremely high probability always be larger difference than 2) will get singled out as its own list for that single frame
-							//and then not get written since it will be so small (single frame)
-							if (prevframe > currframe || prevtime > currtime || (Math.Abs((double)(currframe) - (double)(prevframe)) > 2))
-							{
-								if (Nset > 0 || i == detdata.Naxis2)//then the previous set data needs to be written
-								{
-									if (times != null)
-										if (times.Length > /*0*/1000)//so that short corrupt files dont get written
-											if (discardtimebool && (times[times.Length - 1] - times[0]) > discardtimeint || !discardtimebool)
-											{
-												//do filter correction........do this first for the next below
-												if (dofiltercorrection)
-												{
-													double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
-													int lbtcounter = 0;
-													while (/*midtime*/ firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
-														lbtcounter++;
-													double fwangle = 0;
-													if (detector == "FUV")
-														fwangle = lbt_FUVfwangle[lbtcounter];
-													if (detector == "NUV")
-														fwangle = lbt_NUVfwangle[lbtcounter];
-													string filterindex = UVITFilter_FWAngle_to_Index(source.Header.GetKeyValue("DETECTOR"), fwangle);
-
-													string filt = source.Header.GetKeyValue("FILTER");
-													if (filterindex != filt)
-													{
-														filt = filterindex;
-														source.Header.SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
-													}
-													filterID = UVITFilter(detector, filterindex);
-													source.Header.SetKey("FILTERID", filterID, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
-													lasttime_mjd_forfilter = Double.MinValue;
-													firsttime_mjd_forfilter = Double.MaxValue;
-												}
-
-												dir = path + "\\" + detector + "\\" + detector + "_" + filterID + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
-												lock (argfiles)
-												{
-													Directory.CreateDirectory(dir);
-												}
-												string obj_orb_chan;
-												obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
-												lock (argfiles)
-												{
-													dir_list.Add(dir);
-													e.Result = dir_list;
-												}
-
-												string BJDfile = obj_orb_chan + "_BJDList.fits";
-												if (tctfileexists)//else all 0's
-													BJDS = JPMath.BarycentricJuliianDayCorrection(BJDS, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
-
-												if (detector == "NUV" && L1TransformNUVtoFUVChck.Checked)
-													source.Header.SetKey("NUVTOFUV", "true", true, -1);
-												source.Header.SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
-												source.Header.SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
-												source.Header.SetKey("NCENTROD", times.Length.ToString(), "Number of Centroids", true, 14);
-												source.Header.SetKey("PARTREDC", Math.Round((double)(N_p_errors) / (double)(times.Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
-												source.Header.SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
-												source.Header.RemoveKey("NFRAMES");
-												source.Header.SetKey("NFRAMES", (frames[frames.Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
-												source.Header.SetKey("FRAMREDC", Math.Round((double)(Nskipped[Nset - 1]) / (double)(frames[frames.Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
-												N_p_errors = 0;//reset for new set
-												JPFITS.FITSImage f = new FITSImage(BJDfile, BJDS, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.Double, false);
-
-												string framefile = obj_orb_chan + "_FrameList.fits";
-												f = new FITSImage(framefile, frames, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.UInt16, false);
-
-												string timefile = obj_orb_chan + "_TimeList.fits";
-												f = new FITSImage(timefile, times, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.UInt32, false);
-
-												string flatid = "";
-												FITSImage flat = null;
-												string channel = f.Header.GetKeyValue("CHANNEL");
-												if (channel.Length == 0)
-													channel = detector;
-												if (channel == "FUV")
-												{
-													//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUV Normalized Flat.fits";
-
-													flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUVALL_flat_final_sens.fits";
-												}
-												if (channel == "NUV")
-												{
-													//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\NUV Normalized Flat.fits";
-
-													string filterid = source.Header.GetKeyValue("FILTERID");
-													if (filterid.Contains("Silica"))
-														flatid = "N242W_flat_final_sens.fits";
-													else if (filterid == "NUVB15")
-														flatid = "N219M_flat_final_sens.fits";
-													else if (filterid == "NUVB13")
-														flatid = "N245M_flat_final_sens.fits";
-													else if (filterid == "NUVB4")
-														flatid = "N263M_flat_final_sens.fits";
-													else if (filterid == "NUVN2")
-														flatid = "N279N_flat_final_sens.fits";
-													else
-														flatid = "NUV Normalized Flat.fits";
-													flatid = "C:\\UVIT_CalDB\\Flats Normalized\\" + flatid;
-												}
-												if (channel == "VIS")
-													flatid = "C:\\UVIT_CalDB\\Flats Normalized\\VIS Normalized Flat.fits";
-												if (!File.Exists(flatid))
-												{
-													MessageBox.Show("Couldn't find the flat file: '" + flatid + "' in the CalDB...stopping.", "Error");
-													WAITBAR.CancelBtn.PerformClick();
-													continue;
-												}
-												lock (argfiles)
-												{
-													flat = new FITSImage(flatid, null, false, true, false, false);
-												}
-
-												double[] flats = new double[Ncentroids[Nset - 1]];
-												int j = 0;
-												//try
-												{
-													for (j = 0; j < Ncentroids[Nset - 1]; j++)
-													{
-														int xpos = (int)(ints[0, j] / 32);
-														int ypos = (int)(ints[1, j] / 32);
-														if (xpos < 0 || xpos > 511 || ypos < 0 || ypos > 511)
-															flats[j] = 1;
-														else
-															flats[j] = flat[xpos, ypos];
-													}
-
-													//do NUV to FUV here, after the flat is created...simple!
-													if (channel == "NUV" && L1TransformNUVtoFUVChck.Checked)
-													{
-														Random r = new Random();
-														double x, y, xp, yp, center = 255 * 32;
-														int intsx, fracx, intsy, fracy;
-														double[] Pnuvtofuv = new double[] { 0.84898, 0.53007, 0.53007, -0.84898 };//from Shyam Feb 2017
-														for (j = 0; j < Ncentroids[Nset - 1]; j++)
-														{
-															x = (double)(ints[0, j] + decs[0, j] + 16) + r.NextDouble();
-															y = (double)(ints[1, j] + decs[1, j] + 16) + r.NextDouble();
-
-															xp = (x - center) * Pnuvtofuv[0] + (y - center) * Pnuvtofuv[1] + center;
-															yp = (x - center) * Pnuvtofuv[2] + (y - center) * Pnuvtofuv[3] + center;
-
-															//now need to split out integer and decimal parts back into their own lists...
-															intsx = Math.DivRem((int)((xp)), 32, out fracx) * 32;
-															fracx -= 16;//reset frac to be from -16
-															intsy = Math.DivRem((int)((yp)), 32, out fracy) * 32;
-															fracy -= 16;//reset frac to be from -16
-															ints[0, j] = (short)intsx;
-															ints[1, j] = (short)intsy;
-															decs[0, j] = (short)fracx;
-															decs[1, j] = (short)fracy;
-														}
-													}
-												}
-												/*catch
-												{
-													MessageBox.Show("xint: " + ((int)(ints[0, j] / 32)).ToString() + ";	yint: " + ((int)(ints[1, j] / 32)).ToString() + ";	j: " + j.ToString() + ";	lengthj: " + flats.Length.ToString());
-												}*/
-												string flatfile = obj_orb_chan + "_FlatList.fits";
-												FITSImage fitsflatlist = new FITSImage(flatfile, flats, false, false);
-												fitsflatlist.Header.CopyHeaderFrom(source.Header);
-												fitsflatlist.WriteImage(TypeCode.Double, false);
-
-												string intsfile = obj_orb_chan + "_XYInts_List.fits";
-												if (ApplyFPN)
-													intsfile = intsfile.Insert(intsfile.LastIndexOf("."), "_deFPN");
-												if (ApplyDIST)
-													intsfile = intsfile.Insert(intsfile.LastIndexOf("."), "_deDIST");
-												f = new FITSImage(intsfile, ints, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.Int16, false);
-
-												string fracfile = obj_orb_chan + "_XYFrac_List.fits";
-												if (ApplyFPN)
-													fracfile = fracfile.Insert(fracfile.LastIndexOf("."), "_deFPN");
-												if (ApplyDIST)
-													fracfile = fracfile.Insert(fracfile.LastIndexOf("."), "_deDIST");
-												f = new FITSImage(fracfile, decs, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.Int16, false);
-
-												string mdMmfile = obj_orb_chan + "_XYmdMm_List.fits";
-												f = new FITSImage(mdMmfile, mdMm, false, false);
-												f.Header.CopyHeaderFrom(source.Header);
-												f.WriteImage(TypeCode.Int16, false);
-											}
-								}
-
-								if (i == detdata.Naxis2)
-									goto lastset2;//last set was written so now go end
-
-								//reset everything for new centroids list
-								Nset++;
-								Ncent = 0;
-								BJDS = new double[Ncentroids[Nset - 1]];
-								frames = new ushort[Ncentroids[Nset - 1]];
-								times = new uint[Ncentroids[Nset - 1]];
-								ints = new short[2, Ncentroids[Nset - 1]];
-								decs = new short[2, Ncentroids[Nset - 1]];
-								mdMm = new ushort[2, Ncentroids[Nset - 1]];
-							}
-							prevframe = currframe;
-							prevtime = currtime;
-
-							//Centroid - TTYPE15 = 'Centroid'
-							byteindx = i * detdata.Naxis1;
-							byteindx += 79;
-							for (int j = 0; j < width / 6; j++)
-							{
-								ushort xword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 1]);
-								ushort yword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 3]);
-								ushort sword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 5]);
-
-								if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
-									/*continue;*/
-									break;
-
-								if (discardparityerror)
-								{
-									xword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(xword);
-									yword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(yword);
-									sword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(sword);
-								}
-
-								bool p_error = false;
-								if (xword_parity_error || yword_parity_error/* || sword_parity_error*/)//lets not worry about a parity error only on the sword because this doesn't affect the centroid photometry position itself, and it can still be used.  If it is a parity error on the x or y, then it does need to be accounted for.
-								{
-									p_error = true;
-									N_p_errors++;
-								}
-
-								ushort ixpos = 0, iypos = 0, mc = 0, dMm = 0;
-								short fxpos = 0, fypos = 0;
-
-								if (!p_error)
-								{
-									//x
-									ixpos = (ushort)(((xword) >> 7) * 32);
-									fxpos = (short)((xword & 0x7F) >> 1);
-									if (fxpos >= 32)
-										fxpos = (short)(fxpos - 64);
-
-									//y
-									iypos = (ushort)(((yword) >> 7) * 32);
-									fypos = (short)((yword & 0x7F) >> 1);
-									if (fypos >= 32)
-										fypos = (short)(fypos - 64);
-
-									//corner
-									mc = (ushort)(((sword & 0x1FF) >> 1) * 16);
-									dMm = (ushort)((sword >> 9) * 16);
-
-									if (ApplyFPN)
+							if (times != null)
+								if (times.Length > 1000)//so that short corrupt files dont get written
+									if (discardtimebool && (times[times.Length - 1] - times[0]) > discardtimeint || !discardtimebool)
 									{
-										if (fxpos < -16)//X
+										//do filter correction........do this first for the next below
+										if (dofiltercorrection)
 										{
-											ixpos -= 32;//adjust integer
-											fxpos += 32;//adjust fractional
-										}
-										if (fypos < -16)//Y
-										{
-											iypos -= 32;//adjust integer
-											fypos += 32;//adjust fractional
-										}
-										if (fxpos > 15)//X
-										{
-											ixpos += 32;//adjust integer
-											fxpos -= 32;//adjust fractional
-										}
-										if (fypos > 15)//Y
-										{
-											iypos += 32;//adjust integer
-											fypos -= 32;//adjust fractional
-										}
+											double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
+											int lbtcounter = 0;
+											while (/*midtime*/ firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
+												lbtcounter++;
+											double fwangle = 0;
+											if (detector == "FUV")
+												fwangle = lbt_FUVfwangle[lbtcounter];
+											if (detector == "NUV")
+												fwangle = lbt_NUVfwangle[lbtcounter];
+											string filterindex = UVITFilter_FWAngle_to_Index(source.Header.GetKeyValue("DETECTOR"), fwangle);
 
-										fxpos += 16;
-										fypos += 16;
-
-										double fx = (double)(fxpos);
-										double fy = (double)(fypos);
-
-										fx += rand.NextDouble();
-										fy += rand.NextDouble();
-
-										fx *= FPNFits[1, (int)(fx * 4096 / 32)];
-										fy *= FPNFits[2, (int)(fy * 4096 / 32)];
-
-										fxpos = (short)fx;
-										fypos = (short)fy;
-
-										fxpos -= 16;//x
-										fypos -= 16;//y
-									}
-
-									int xcorr, ycorr;
-									if (ApplyDIST)
-									{
-										if (ixpos > 0 && iypos > 0 && ixpos / 32 <= 511 && iypos / 32 <= 511)
-										{
-											if (interpDISTBiLin)
+											string filt = source.Header.GetKeyValue("FILTER");
+											if (filterindex != filt)
 											{
-												double x = ((double)(ixpos) + (double)(fxpos) + 16) / 32;
-												double y = ((double)(iypos) + (double)(fypos) + 16) / 32;
-												xcorr = (int)(32 * JPMath.InterpolateBiLinear(CPUXDistFits.Image, 512, 512, x, y));
-												ycorr = (int)(32 * JPMath.InterpolateBiLinear(CPUYDistFits.Image, 512, 512, x, y));
+												filt = filterindex;
+												source.Header.SetKey("FILTER", filterindex, "Filter index (CORRECTED)", false, -1);
 											}
+											filterID = UVITFilter(detector, filterindex);
+											source.Header.SetKey("FILTERID", filterID, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
+											lasttime_mjd_forfilter = Double.MinValue;
+											firsttime_mjd_forfilter = Double.MaxValue;
+										}
+
+										dir = path + "\\" + detector + "\\" + detector + "_" + filterID + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
+										lock (lockobj)
+										{
+											Directory.CreateDirectory(dir);
+										}
+										string obj_orb_chan;
+										obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + filterID + "_" + orbnum + "_" + (times[0]).ToString("0000000000000");
+										lock (lockobj)
+										{
+											dir_list.Add(dir);
+											e.Result = dir_list;
+										}
+
+										string BJDfile = obj_orb_chan + "_BJDList.fits";
+										if (tctfileexists)//else all 0's
+											BJDS = JPMath.BarycentricJulianDayCorrection(BJDS, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
+
+										if (detector == "NUV" && L1TransformNUVtoFUVChck.Checked)
+											source.Header.SetKey("NUVTOFUV", "true", true, -1);
+										source.Header.SetKey("BJD0", BJDS[0].ToString("#.0000000"), "BJD of start of imaging", true, 13);//now it will get added to all other copyheaders's
+										source.Header.SetKey("NPARTERR", N_p_errors.ToString(), "Number of Parity errors", true, 14);
+										source.Header.SetKey("NCENTROD", times.Length.ToString(), "Number of Centroids", true, 14);
+										source.Header.SetKey("PARTREDC", Math.Round((double)(N_p_errors) / (double)(times.Length), 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
+										source.Header.SetKey("NMISSFRM", Nskipped[Nset - 1].ToString(), "Number of MISSING frames", true, 14);
+										source.Header.RemoveKey("NFRAMES");
+										source.Header.SetKey("NFRAMES", (frames[frames.Length - 1] - frames[0] + 1).ToString(), "Number of frames, including missing ones", true, 14);
+										source.Header.SetKey("FRAMREDC", Math.Round((double)(Nskipped[Nset - 1]) / (double)(frames[frames.Length - 1] - frames[0] + 1), 5).ToString(), "Fractional int-time reduxn due to lost frames", true, 14);
+										N_p_errors = 0;//reset for new set
+										JPFITS.FITSImage f = new FITSImage(BJDfile, BJDS, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.Double, false);
+
+										string framefile = obj_orb_chan + "_FrameList.fits";
+										f = new FITSImage(framefile, frames, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.UInt16, false);
+
+										string timefile = obj_orb_chan + "_TimeList.fits";
+										f = new FITSImage(timefile, times, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.UInt32, false);
+
+										string flatid = "";
+										FITSImage flat = null;
+										string channel = f.Header.GetKeyValue("CHANNEL");
+										if (channel.Length == 0)
+											channel = detector;
+										if (channel == "FUV")
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\FUVALL_flat_final_sens.fits";
+										if (channel == "NUV")
+										{
+											//flatid = "C:\\UVIT_CalDB\\Flats Normalized\\NUV Normalized Flat.fits";
+
+											string filterid = source.Header.GetKeyValue("FILTERID");
+											if (filterid.Contains("Silica"))
+												flatid = "N242W_flat_final_sens.fits";
+											else if (filterid == "NUVB15")
+												flatid = "N219M_flat_final_sens.fits";
+											else if (filterid == "NUVB13")
+												flatid = "N245M_flat_final_sens.fits";
+											else if (filterid == "NUVB4")
+												flatid = "N263M_flat_final_sens.fits";
+											else if (filterid == "NUVN2")
+												flatid = "N279N_flat_final_sens.fits";
 											else
-											{
-												xcorr = (int)(32 * CPUXDistFits[ixpos / 32, iypos / 32]);
-												ycorr = (int)(32 * CPUYDistFits[ixpos / 32, iypos / 32]);
-											}
-
-											ixpos -= (ushort)xcorr;
-											iypos -= (ushort)ycorr;
+												flatid = "NUV Normalized Flat.fits";
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\" + flatid;
 										}
-										else
-											p_error = true;//treat this as p_error...it is an odd scenario but now seen to happen with Ashok Pati's data.							
+										if (channel == "VIS")
+											flatid = "C:\\UVIT_CalDB\\Flats Normalized\\VIS Normalized Flat.fits";
+										if (!File.Exists(flatid))
+										{
+											MessageBox.Show("Couldn't find the flat file: '" + flatid + "' in the CalDB...stopping.", "Error");
+											WAITBAR.CancelBtn.PerformClick();
+											continue;
+										}
+										flat = new FITSImage(flatid, null, false, true, false, false);
+
+										double[] flats = new double[Ncentroids[Nset - 1]];
+										int j = 0;
+										for (j = 0; j < Ncentroids[Nset - 1]; j++)
+										{
+											int xpos = (int)(ints[0, j] / 32);
+											int ypos = (int)(ints[1, j] / 32);
+											if (xpos < 0 || xpos > 511 || ypos < 0 || ypos > 511)
+												flats[j] = 1;
+											else
+												flats[j] = flat[xpos, ypos];
+										}
+										//optionally do hot pixel check
+										if (channel == "FUV" && FUVignorehotpixel)
+											for (j = 0; j < Ncentroids[Nset - 1]; j++)
+											{
+												int xpos = (int)(ints[0, j] / 32);
+												int ypos = (int)(ints[1, j] / 32);
+
+												for (int w = 0; w < FUV_x_hotignore.Length; w++)
+													if (xpos == FUV_x_hotignore[w] && ypos == FUV_y_hotignore[w])
+													{
+														flats[j] = 0;
+														break;
+													}
+											}													
+
+										//do NUV to FUV here, after the flat is created...simple!
+										if (channel == "NUV" && L1TransformNUVtoFUVChck.Checked)
+										{
+											Random r = new Random();
+											double x, y, xp, yp, center = 255 * 32;
+											int intsx, fracx, intsy, fracy;
+											double[] Pnuvtofuv = new double[] { 0.84898, 0.53007, 0.53007, -0.84898 };//from Shyam Feb 2017
+											for (j = 0; j < Ncentroids[Nset - 1]; j++)
+											{
+												x = (double)(ints[0, j] + decs[0, j] + 16) + r.NextDouble();
+												y = (double)(ints[1, j] + decs[1, j] + 16) + r.NextDouble();
+
+												xp = (x - center) * Pnuvtofuv[0] + (y - center) * Pnuvtofuv[1] + center;
+												yp = (x - center) * Pnuvtofuv[2] + (y - center) * Pnuvtofuv[3] + center;
+
+												//now need to split out integer and decimal parts back into their own lists...
+												intsx = Math.DivRem((int)((xp)), 32, out fracx) * 32;
+												fracx -= 16;//reset frac to be from -16
+												intsy = Math.DivRem((int)((yp)), 32, out fracy) * 32;
+												fracy -= 16;//reset frac to be from -16
+												ints[0, j] = (short)intsx;
+												ints[1, j] = (short)intsy;
+												decs[0, j] = (short)fracx;
+												decs[1, j] = (short)fracy;
+											}
+										}
+										string flatfile = obj_orb_chan + "_FlatList.fits";
+										FITSImage fitsflatlist = new FITSImage(flatfile, flats, false, false);
+										fitsflatlist.Header.CopyHeaderFrom(source.Header);
+										fitsflatlist.WriteImage(DiskPrecision.Double, false);
+
+										string intsfile = obj_orb_chan + "_XYInts_List.fits";
+										if (ApplyFPN)
+											intsfile = intsfile.Insert(intsfile.LastIndexOf("."), "_deFPN");
+										if (ApplyDIST)
+											intsfile = intsfile.Insert(intsfile.LastIndexOf("."), "_deDIST");
+										f = new FITSImage(intsfile, ints, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.Int16, false);
+
+										string fracfile = obj_orb_chan + "_XYFrac_List.fits";
+										if (ApplyFPN)
+											fracfile = fracfile.Insert(fracfile.LastIndexOf("."), "_deFPN");
+										if (ApplyDIST)
+											fracfile = fracfile.Insert(fracfile.LastIndexOf("."), "_deDIST");
+										f = new FITSImage(fracfile, decs, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.Int16, false);
+
+										string mdMmfile = obj_orb_chan + "_XYmdMm_List.fits";
+										f = new FITSImage(mdMmfile, mdMm, false, false);
+										f.Header.CopyHeaderFrom(source.Header);
+										f.WriteImage(DiskPrecision.Int16, false);
 									}
+						}
+
+						if (i == detdata.Naxis2)
+							goto lastset2;//last set was written so now go end
+
+						//reset everything for new centroids list
+						Nset++;
+						Ncent = 0;
+						BJDS = new double[Ncentroids[Nset - 1]];
+						frames = new ushort[Ncentroids[Nset - 1]];
+						times = new uint[Ncentroids[Nset - 1]];
+						ints = new short[2, Ncentroids[Nset - 1]];
+						decs = new short[2, Ncentroids[Nset - 1]];
+						mdMm = new ushort[2, Ncentroids[Nset - 1]];
+					}
+					prevframe = currframe;
+					prevtime = currtime;
+
+					//Centroid - TTYPE15 = 'Centroid'
+					byteindx = i * detdata.Naxis1;
+					byteindx += 79;
+					for (int j = 0; j < width / 6; j++)
+					{
+						ushort xword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 1]);
+						ushort yword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 3]);
+						ushort sword = (ushort)((detdata.BINTABLEByteArray[byteindx + j * 6 + 4] << 8) | detdata.BINTABLEByteArray[byteindx + j * 6 + 5]);
+
+						if (xword == 0 && yword == 0 && sword == 0)//end of data for this i'th row
+							break;
+
+						bool p_error = false;
+						if (discardparityerror)
+						{
+							xword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(xword);
+							yword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(yword);
+							sword_parity_error = GSEExtractImg.Check_Even_Parity_Flag(sword);
+						}								
+						if (xword_parity_error || yword_parity_error/* || sword_parity_error*/)//lets not worry about a parity error only on the sword because this doesn't affect the centroid photometry position itself, and it can still be used.  If it is a parity error on the x or y, then it does need to be accounted for.
+						{
+							p_error = true;
+							N_p_errors++;
+						}
+
+						ushort ixpos = 0, iypos = 0, mc = 0, dMm = 0;
+						short fxpos = 0, fypos = 0;
+
+						if (!p_error)
+						{
+							//x
+							ixpos = (ushort)(((xword) >> 7) * 32);
+							fxpos = (short)((xword & 0x7F) >> 1);
+							if (fxpos >= 32)
+								fxpos = (short)(fxpos - 64);
+
+							//y
+							iypos = (ushort)(((yword) >> 7) * 32);
+							fypos = (short)((yword & 0x7F) >> 1);
+							if (fypos >= 32)
+								fypos = (short)(fypos - 64);
+
+							//corner
+							mc = (ushort)(((sword & 0x1FF) >> 1) * 16);
+							dMm = (ushort)((sword >> 9) * 16);
+
+							if (ApplyFPN)
+							{
+								if (fxpos < -16)//X
+								{
+									ixpos -= 32;//adjust integer
+									fxpos += 32;//adjust fractional
+								}
+								if (fypos < -16)//Y
+								{
+									iypos -= 32;//adjust integer
+									fypos += 32;//adjust fractional
+								}
+								if (fxpos > 15)//X
+								{
+									ixpos += 32;//adjust integer
+									fxpos -= 32;//adjust fractional
+								}
+								if (fypos > 15)//Y
+								{
+									iypos += 32;//adjust integer
+									fypos -= 32;//adjust fractional
 								}
 
-								BJDS[Ncent] = JD;
-								frames[Ncent] = currframe;
-								times[Ncent] = currtime;
+								fxpos += 16;
+								fypos += 16;
 
-								if (p_error)
+								double fx = (double)(fxpos);
+								double fy = (double)(fypos);
+
+								fx += rand.NextDouble();
+								fy += rand.NextDouble();
+
+								fx *= FPNFits[1, (int)(fx * 4096 / 32)];
+								fy *= FPNFits[2, (int)(fy * 4096 / 32)];
+
+								fxpos = (short)fx;
+								fypos = (short)fy;
+
+								fxpos -= 16;//x
+								fypos -= 16;//y
+							}
+
+							int xcorr, ycorr;
+							if (ApplyDIST)
+							{
+								if (ixpos > 0 && iypos > 0 && ixpos / 32 <= 511 && iypos / 32 <= 511)
 								{
-									//MessageBox.Show("p_error");
-									ints[0, Ncent] = 0;//these will be seen in a final image as drifting around at the top left corner
-									ints[1, Ncent] = 0;
-									decs[0, Ncent] = 0;
-									decs[1, Ncent] = 0;
-									mdMm[0, Ncent] = 0;
-									mdMm[1, Ncent] = 0;
+									if (interpDISTBiLin)
+									{
+										double x = ((double)(ixpos) + (double)(fxpos) + 16) / 32;
+										double y = ((double)(iypos) + (double)(fypos) + 16) / 32;
+										xcorr = (int)(32 * JPMath.InterpolateBiLinear(CPUXDistFits.Image, 512, 512, x, y));
+										ycorr = (int)(32 * JPMath.InterpolateBiLinear(CPUYDistFits.Image, 512, 512, x, y));
+									}
+									else
+									{
+										xcorr = (int)(32 * CPUXDistFits[ixpos / 32, iypos / 32]);
+										ycorr = (int)(32 * CPUYDistFits[ixpos / 32, iypos / 32]);
+									}
+
+									ixpos -= (ushort)xcorr;
+									iypos -= (ushort)ycorr;
 								}
 								else
-								{
-									ints[0, Ncent] = (short)ixpos;
-									ints[1, Ncent] = (short)iypos;
-									decs[0, Ncent] = (short)fxpos;
-									decs[1, Ncent] = (short)fypos;
-									mdMm[0, Ncent] = mc;
-									mdMm[1, Ncent] = dMm;
-								}
-								Ncent++;//number of centroids, only incremented if there was more data for this row
+									p_error = true;//treat this as p_error...it is an odd scenario but now seen to happen with Ashok Pati's data.							
 							}
 						}
-					lastset2:;
+
+						BJDS[Ncent] = JD;
+						frames[Ncent] = currframe;
+						times[Ncent] = currtime;
+
+						if (p_error)
+						{
+							ints[0, Ncent] = 0;//these will be seen in a final image as drifting around at the top left corner
+							ints[1, Ncent] = 0;
+							decs[0, Ncent] = 0;
+							decs[1, Ncent] = 0;
+							mdMm[0, Ncent] = 0;
+							mdMm[1, Ncent] = 0;
+						}
+						else
+						{
+							ints[0, Ncent] = (short)ixpos;
+							ints[1, Ncent] = (short)iypos;
+							decs[0, Ncent] = (short)fxpos;
+							decs[1, Ncent] = (short)fypos;
+							mdMm[0, Ncent] = mc;
+							mdMm[1, Ncent] = dMm;
+						}
+						Ncent++;//number of centroids, only incremented if there was more data for this row
 					}
-					/*catch (Exception e)
-					{
-						MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite + "\n\r + \n\r" + "File: " + argfiles[errorfileindex]);
-					}*/
+				}
+			lastset2:;
+				
 
-					lock(argfiles)
-					{
-						wbcounter++;
-						DigestL1Wrkr.ReportProgress(wbcounter/*xi + 1*/, /*mode*/"PC" + "_" + argfiles.Length);
-					}
-
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						loopstate.Stop();//break;// continue;
-
-					if (!L1DigestDeleteFileChck.Checked)
-						File.Move(source.FullFileName, source.FilePath + "Digested L1\\" + source.FileName);
-					else
-						File.Delete(source.FullFileName);
-				});//end PC mode
-
-
-
-
+				lock(lockobj)
+				{
+					wbcounter++;
+					UVITDigestL1Wrkr.ReportProgress(wbcounter, "PC" + "_" + argfiles.Length);
+				}
 
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
-					return;
+					loopstate.Stop();
+
+				if (!L1DigestDeleteFileChck.Checked)
+					File.Move(source.FullFileName, source.FilePath + "Digested L1\\" + source.FileName);
+				else
+					File.Delete(source.FullFileName);
+			});
+			//end PC mode
 
 
 
 
 
-				bool degrade = L1DegradientINTMode.Checked;
-				double cleanthreshold = Convert.ToDouble(L1CleanINTLineThreshold.Text);
-				int cleanN = Convert.ToInt32(L1CleanINTNPix.Text);
-				for (int xi = 0; xi < imfiles.Count; xi++)
-				{
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						break;
-
-					//errorfileindex = xi;
-					string FileName = (string)imfiles[xi];
-					string dir = FileName.Substring(0, FileName.LastIndexOf("\\"));
-					string path = dir;
-					FITSImage source = new FITSImage(FileName, null, true, false, false, false);
-					source.Header.AddCommentKeyLine("SRCFILE " + source.FileName, 12);
-					string detector = source.Header.GetKeyValue("DETECTOR");
-					string filter = source.Header.GetKeyValue("FILTER");
-					string filterindex = UVITFilter(detector, filter);
-					source.Header.SetKey("FILTERID", filterindex, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
-					string orbnum = source.Header.GetKeyValue("ORB_NUM");
-					string sourceID;
-					if (!L1SpecifySourceNameChck.Checked)
-					{
-						sourceID = (source.Header.GetKeyValue("SOURCEID").Replace(" ", "")).Replace("/", "");
-						if (sourceID.Length > 17)
-							sourceID = sourceID.Substring(0, 17);
-					}
-					else
-						sourceID = L1SourceNameTxt.Text;
-
-					FITSBinTable detdata = null;
-					int width = 0;
-					if (!L1SkipINTMode.Checked)
-					{
-						detdata = new JPFITS.FITSBinTable(source.FullFileName, "DETECTOR_DATA");
-						for (int h = 0; h < detdata.Header.Length; h++)
-							if (detdata.Header[h].Substring(0, 7) == "TFORM15")
-							{
-								string tform15 = detdata.Header[h].Substring(11, 6);
-								tform15 = tform15.Replace("B", "");//PC mode
-								tform15 = tform15.Replace("I", "");//IM mode
-								width = Convert.ToInt32(tform15);
-								break;
-							}
-					}
-
-					if (!L1DigestDeleteFileChck.Checked)
-						File.Move(source.FullFileName, source.FilePath + "Digested L1\\" + source.FileName);
-					else
-						File.Delete(source.FullFileName);
-
-					if (L1SkipINTMode.Checked)
-						continue;
-
-					int xsize = Convert.ToInt32(source.Header.GetKeyValue("WIN_X_SZ"));//zero-based
-					int ysize = Convert.ToInt32(source.Header.GetKeyValue("WIN_Y_SZ"));//zero-based
-					int imsize = (xsize + 1) * (ysize + 1);
-					double[,] d2im = new double[xsize + 1, ysize + 1];
-					ushort[] d1im = new ushort[imsize];//just 1-D is fine cause we're just gonna write it
-					int pixnum = 0;
-					int intprog = 0;
-					int Nimages = width * detdata.Naxis2 / imsize;
-					ushort prevframe = UInt16.MaxValue - 1;
-					//int set = 0;				
-
-					lasttime_mjd_forfilter = Double.MinValue;
-					firsttime_mjd_forfilter = Double.MaxValue;
-
-					if (DO_TBC)
-					{
-						lock (argfiles)
-						{
-							TBC(detdata.BINTABLEByteArray, detdata.Naxis1, detdata.Naxis2);
-						}
-					}
+			if (WAITBAR.DialogResult == DialogResult.Cancel)
+				return;
 
 
 
 
 
-
-
-
-
-
-
-					//ArrayList framelist = new ArrayList();
-					//ArrayList dirlist = new ArrayList();
-					//int nfrm = 0;
-					//for (int i = 0; i < detdata.Naxis2; i++)
-					//{
-					//	int byteindx;
-					//	double bzero;
-					//	double bscale;
-
-					//	//frame count
-					//	byteindx = i * detdata.Naxis1;
-					//	byteindx += 65;
-					//	bzero = 32768;
-					//	ushort frame = (int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero;
-
-					//	//frame time
-					//	byteindx = i * detdata.Naxis1;
-					//	byteindx += 67;
-					//	bzero = 2147483648;
-					//	bscale = 1;
-					//	uint time = (int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero;
-
-					//	if (prevframe != frame)//then it is a new image; also fires at very beginning.
-					//	{					
-					//		if (prevframe > frame && prevframe != UInt16.MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
-					//		{
-					//			dir = path + "\\" + detector + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000");
-					//			Directory.CreateDirectory(dir);
-					//		}
-					//		prevframe = frame;
-					//		framelist.Add(frame);
-					//		dirlist.Add(dir);
-					//		nfrm++;
-					//	}
-					//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-					//try
-					{
-						for (int i = 0; i < detdata.Naxis2; i++)
-						{
-							int byteindx;
-							double bzero;
-							//double bscale;
-
-							//frame count
-							byteindx = i * detdata.Naxis1;
-							byteindx += 65;
-							bzero = 32768;
-							ushort frame = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);
-
-							//frame time
-							byteindx = i * detdata.Naxis1;
-							byteindx += 67;
-							bzero = 2147483648;
-							//bscale = 1;
-							uint time = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);
-
-							//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
-							byteindx = i * detdata.Naxis1;
-							byteindx += 0;
-							bzero = 0;
-							byte[] dbl = new byte[8];
-							dbl[7] = detdata.BINTABLEByteArray[byteindx];
-							dbl[6] = detdata.BINTABLEByteArray[byteindx + 1];
-							dbl[5] = detdata.BINTABLEByteArray[byteindx + 2];
-							dbl[4] = detdata.BINTABLEByteArray[byteindx + 3];
-							dbl[3] = detdata.BINTABLEByteArray[byteindx + 4];
-							dbl[2] = detdata.BINTABLEByteArray[byteindx + 5];
-							dbl[1] = detdata.BINTABLEByteArray[byteindx + 6];
-							dbl[0] = detdata.BINTABLEByteArray[byteindx + 7];
-							double temptime = BitConverter.ToDouble(dbl, 0);
-							if (temptime > lasttime_mjd_forfilter)
-								lasttime_mjd_forfilter = temptime;
-							if (temptime < firsttime_mjd_forfilter)
-								firsttime_mjd_forfilter = temptime;
-
-							if (prevframe != frame)//then it is a new image; also fires at very beginning.
-							{
-								if (WAITBAR.DialogResult == DialogResult.Cancel)
-									break;
-
-								if (prevframe > frame && prevframe != UInt16.MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
-								{
-									if (dofiltercorrection)
-									{
-										double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
-										int lbtcounter = 0;
-										//MessageBox.Show(firsttime_mjd_forfilter + "    " + lbt_times[0] + "    " + lbt_times[lbt_times.Length - 1]);
-										while (/*midtime*/ lbtcounter < lbt_times.Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
-											lbtcounter++;
-										if (lbtcounter == lbt_times.Length)
-											lbtcounter /= 2;//?????
-										double fwangle = lbt_VISfwangle[lbtcounter];
-										string filterind = UVITFilter_FWAngle_to_Index(detector, fwangle);
-
-										if (DO_TBC && filterind == "F0" || DO_TBC && filterind == "NA")
-										{
-											lbtcounter = 0;
-											firsttime_mjd_forfilter -= 524;
-											while (lbtcounter < lbt_times.Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])
-												lbtcounter++;
-											if (lbtcounter == lbt_times.Length)
-												lbtcounter /= 2;//?????
-											fwangle = lbt_VISfwangle[lbtcounter];
-											filterind = UVITFilter_FWAngle_to_Index(detector, fwangle);
-										}
-
-										if (filterind != filter)
-											source.Header.SetKey("FILTER", filterind, "Filter index (CORRECTED)", false, -1);
-										string filtertype = UVITFilter(detector, filterind);
-										source.Header.SetKey("FILTERID", filtertype, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
-										lasttime_mjd_forfilter = Double.MinValue;
-										firsttime_mjd_forfilter = Double.MaxValue;
-									}
-
-									//set++;//used in file name of image
-									dir = path + "\\" + detector + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000");
-									Directory.CreateDirectory(dir);
-								}
-								pixnum = 0;//force restart
-								prevframe = frame;
-							}
-
-							try
-							{
-								//Pixel
-								byteindx = i * detdata.Naxis1;
-								byteindx += 79;
-								bzero = 32768;
-								for (int j = 0; j < width; j++)
-								{
-									if (pixnum >= imsize)//image is done
-									{
-										if (WAITBAR.DialogResult == DialogResult.Cancel)
-											break;
-
-										intprog++;
-										DigestL1Wrkr.ReportProgress(100 * intprog / Nimages, "IM" + "_" + (xi + 1 + pcfiles.Count).ToString() + "_" + (pcfiles.Count + imfiles.Count));
-
-										pixnum = 0;//reset pixel index
-
-										for (int jj = 0; jj < ysize + 1; jj++)
-											for (int ii = 0; ii < xsize + 1; ii++)
-												d2im[ii, jj] = (double)(d1im[jj * (xsize + 1) + ii]);
-
-										string obj_orb_chan;
-										obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000") + ".fits";
-										if (degrade)
-											d2im = JPMath.DeGradient(d2im, 0, true);
-										FITSImage fits = new FITSImage(obj_orb_chan, d2im, false, true);
-										fits.Header.CopyHeaderFrom(source.Header);
-										fits.Header.AddKey("FRMTIME", ((double)(time) / 1000).ToString(), "EU Frame Time (s)", 18);
-										fits.Header.AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
-										//fits.Header.AddKey("FRAMESET", set.ToString(), "Frame Set", 18);
-										double[] JD = new double[1] { ((double)(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
-										JD = JPMath.BarycentricJuliianDayCorrection(JD, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
-										fits.Header.AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
-										if (frame > 16)//skip writing first image so that noise images don't come in
-										{
-											if (L1CleanINTMode.Checked)
-												CLEAN_UVITVISIMG(fits, cleanthreshold, cleanN, true);
-
-											if (do_parallel_L1)
-												SPAREFITSImageSet.Add(fits);
-											else
-												fits.WriteImage(TypeCode.Int32, false);
-
-										}
-										d2im = new double[xsize + 1, ysize + 1];
-										d1im = new ushort[imsize];
-										break;
-									}
-
-									d1im[pixnum] = (ushort)(((detdata.BINTABLEByteArray[byteindx + j * 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 2 + 1]) + 32768);
-									pixnum++;
-								}
-							}
-							catch { /*MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);*/ }
-						}
-					}
-					/*catch (Exception e)
-					{
-						MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-					}*/
-
-					WAITBAR.Tag = path + "\\" + "VIS";//need to sneak in the VIS directory for when no PC files were digested
-
-					if (do_parallel_L1 && SPAREFITSImageSet.Count > 0 && WAITBAR.DialogResult != DialogResult.Cancel)
-					{
-						SPAREFITSImageSet.Write(TypeCode.Int32, true, true, "Saving Orbit VIS Images to Disk");
-						SPAREFITSImageSet.Clear();
-						SPAREFITSImageSet = new FITSImageSet();
-					}
-				}//end IM mode
-			}
-			/*catch (Exception e)
+			bool degrade = L1DegradientINTMode.Checked;
+			double cleanthreshold = Convert.ToDouble(L1CleanINTLineThreshold.Text);
+			int cleanN = Convert.ToInt32(L1CleanINTNPix.Text);
+			for (int xi = 0; xi < imfiles.Count; xi++)
 			{
-				MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite + "\n\r" + "File: " + argfiles[errorfileindex]);
-			}*/
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					break;
+
+				string FileName = (string)imfiles[xi];
+				string dir = FileName.Substring(0, FileName.LastIndexOf("\\"));
+				string path = dir;
+				FITSImage source = new FITSImage(FileName, null, true, false, false, false);
+				source.Header.AddCommentKeyLine("SRCFILE " + source.FileName, 12);
+				string detector = source.Header.GetKeyValue("DETECTOR");
+				string filter = source.Header.GetKeyValue("FILTER");
+				string filterindex = UVITFilter(detector, filter);
+				source.Header.SetKey("FILTERID", filterindex, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
+				string orbnum = source.Header.GetKeyValue("ORB_NUM");
+				string sourceID;
+				if (!L1SpecifySourceNameChck.Checked)
+				{
+					sourceID = (source.Header.GetKeyValue("SOURCEID").Replace(" ", "")).Replace("/", "");
+					if (sourceID.Length > 17)
+						sourceID = sourceID.Substring(0, 17);
+				}
+				else
+					sourceID = L1SourceNameTxt.Text;
+
+				FITSBinTable detdata = null;
+				int width = 0;
+				if (!L1SkipINTMode.Checked)
+				{
+					detdata = new JPFITS.FITSBinTable(source.FullFileName, "DETECTOR_DATA");
+					for (int h = 0; h < detdata.Header.Length; h++)
+						if (detdata.Header[h].Substring(0, 7) == "TFORM15")
+						{
+							string tform15 = detdata.Header[h].Substring(11, 6);
+							tform15 = tform15.Replace("B", "");//PC mode
+							tform15 = tform15.Replace("I", "");//IM mode
+							width = Convert.ToInt32(tform15);
+							break;
+						}
+				}
+
+				if (!L1DigestDeleteFileChck.Checked)
+					File.Move(source.FullFileName, source.FilePath + "Digested L1\\" + source.FileName);
+				else
+					File.Delete(source.FullFileName);
+
+				if (L1SkipINTMode.Checked)
+					continue;
+
+				int xsize = Convert.ToInt32(source.Header.GetKeyValue("WIN_X_SZ"));//zero-based
+				int ysize = Convert.ToInt32(source.Header.GetKeyValue("WIN_Y_SZ"));//zero-based
+				int imsize = (xsize + 1) * (ysize + 1);
+				double[,] d2im = new double[xsize + 1, ysize + 1];
+				ushort[] d1im = new ushort[imsize];//just 1-D is fine cause we're just gonna write it
+				int pixnum = 0;
+				int intprog = 0;
+				int Nimages = width * detdata.Naxis2 / imsize;
+				WAITBAR.ProgressBar.Maximum = Nimages;
+				ushort prevframe = UInt16.MaxValue - 1;				
+
+				lasttime_mjd_forfilter = Double.MinValue;
+				firsttime_mjd_forfilter = Double.MaxValue;
+
+				if (DO_TBC)
+				{
+					lock (lockobj)
+					{
+						TBC(detdata.BINTABLEByteArray, detdata.Naxis1, detdata.Naxis2);
+					}
+				}
+
+				for (int i = 0; i < detdata.Naxis2; i++)
+				{
+					int byteindx;
+					double bzero;
+
+					//frame count
+					byteindx = i * detdata.Naxis1;
+					byteindx += 65;
+					bzero = 32768;
+					ushort frame = (ushort)((int)(((detdata.BINTABLEByteArray[byteindx]) << 8) | detdata.BINTABLEByteArray[byteindx + 1]) + (ushort)bzero);
+
+					//frame time
+					byteindx = i * detdata.Naxis1;
+					byteindx += 67;
+					bzero = 2147483648;
+					uint time = (uint)((int)(((detdata.BINTABLEByteArray[byteindx]) << 24) | (detdata.BINTABLEByteArray[byteindx + 1] << 16) | (detdata.BINTABLEByteArray[byteindx + 2]) << 8 | detdata.BINTABLEByteArray[byteindx + 3]) + (uint)bzero);
+
+					//TIME //supposedly mission elapsed time, or something, but perhaps can use with lbt file for aligning filter
+					byteindx = i * detdata.Naxis1;
+					byteindx += 0;
+					bzero = 0;
+					byte[] dbl = new byte[8];
+					dbl[7] = detdata.BINTABLEByteArray[byteindx];
+					dbl[6] = detdata.BINTABLEByteArray[byteindx + 1];
+					dbl[5] = detdata.BINTABLEByteArray[byteindx + 2];
+					dbl[4] = detdata.BINTABLEByteArray[byteindx + 3];
+					dbl[3] = detdata.BINTABLEByteArray[byteindx + 4];
+					dbl[2] = detdata.BINTABLEByteArray[byteindx + 5];
+					dbl[1] = detdata.BINTABLEByteArray[byteindx + 6];
+					dbl[0] = detdata.BINTABLEByteArray[byteindx + 7];
+					double temptime = BitConverter.ToDouble(dbl, 0);
+					if (temptime > lasttime_mjd_forfilter)
+						lasttime_mjd_forfilter = temptime;
+					if (temptime < firsttime_mjd_forfilter)
+						firsttime_mjd_forfilter = temptime;
+
+					if (prevframe != frame)//then it is a new image; also fires at very beginning.
+					{
+						if (WAITBAR.DialogResult == DialogResult.Cancel)
+							break;
+
+						if (prevframe > frame && prevframe != UInt16.MaxValue || ((int)frame - (int)prevframe) > 5 * 16)//then frame has reset for some reason, so start a new file name set; also fires at very beginning
+						{
+							if (dofiltercorrection)
+							{
+								double midtime = (lasttime_mjd_forfilter + firsttime_mjd_forfilter) / 2;
+								int lbtcounter = 0;
+								while (/*midtime*/ lbtcounter < lbt_times.Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])//midtime still wouldn't align when the time-filter alignment was off...first time seems to work better than the last time
+									lbtcounter++;
+								if (lbtcounter == lbt_times.Length)
+									lbtcounter /= 2;//?????
+								double fwangle = lbt_VISfwangle[lbtcounter];
+								string filterind = UVITFilter_FWAngle_to_Index(detector, fwangle);
+
+								if (DO_TBC && filterind == "F0" || DO_TBC && filterind == "NA")
+								{
+									lbtcounter = 0;
+									firsttime_mjd_forfilter -= 524;
+									while (lbtcounter < lbt_times.Length && firsttime_mjd_forfilter > lbt_times[lbtcounter])
+										lbtcounter++;
+									if (lbtcounter == lbt_times.Length)
+										lbtcounter /= 2;//?????
+									fwangle = lbt_VISfwangle[lbtcounter];
+									filterind = UVITFilter_FWAngle_to_Index(detector, fwangle);
+								}
+
+								if (filterind != filter)
+									source.Header.SetKey("FILTER", filterind, "Filter index (CORRECTED)", false, -1);
+								string filtertype = UVITFilter(detector, filterind);
+								source.Header.SetKey("FILTERID", filtertype, "Filter type", true, source.Header.GetKeyIndex("FILTER", false) + 1);
+								lasttime_mjd_forfilter = Double.MinValue;
+								firsttime_mjd_forfilter = Double.MaxValue;
+							}
+
+							//set++;//used in file name of image
+							dir = path + "\\" + detector + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000");
+							Directory.CreateDirectory(dir);
+						}
+						pixnum = 0;//force restart
+						prevframe = frame;
+					}
+
+					//Pixel
+					byteindx = i * detdata.Naxis1;
+					byteindx += 79;
+					bzero = 32768;
+					for (int j = 0; j < width; j++)
+					{
+						if (pixnum >= imsize)//image is done
+						{
+							if (WAITBAR.DialogResult == DialogResult.Cancel)
+								break;
+
+							intprog++;
+							int rem;
+							Math.DivRem(intprog, 25, out rem);
+							if (rem == 0 || intprog > (Nimages - 25))
+								UVITDigestL1Wrkr.ReportProgress(intprog, "IM" + "_" + (xi + 1 + pcfiles.Count).ToString() + "_" + (pcfiles.Count + imfiles.Count));
+
+							pixnum = 0;//reset pixel index
+
+							for (int jj = 0; jj < ysize + 1; jj++)
+								for (int ii = 0; ii < xsize + 1; ii++)
+									d2im[ii, jj] = (double)(d1im[jj * (xsize + 1) + ii]);
+
+							string obj_orb_chan;
+							obj_orb_chan = dir + "\\" + sourceID + "_" + detector + "_" + UVITFilter(detector, filter) + "_" + orbnum + "_" + (time).ToString("0000000000000") + ".fits";
+							if (degrade)
+								d2im = JPMath.DeGradient(d2im, 0, true);
+							FITSImage fits = new FITSImage(obj_orb_chan, d2im, false, true);
+							fits.Header.CopyHeaderFrom(source.Header);
+							fits.Header.AddKey("FRMTIME", ((double)(time) / 1000).ToString(), "EU Frame Time (s)", 18);
+							fits.Header.AddKey("FRAMENO", frame.ToString(), "Frame Number", 18);
+							double[] JD = new double[1] { ((double)(time) / 1000 + JD_abs_time_delta_sec) / 86400 };
+							JD = JPMath.BarycentricJulianDayCorrection(JD, Convert.ToDouble(source.Header.GetKeyValue("RA_PNT")), Convert.ToDouble(source.Header.GetKeyValue("DEC_PNT")), false);
+							fits.Header.AddKey("FRAMEBJD", JD[0].ToString(), "Heliocentric Julian Date (days)", 18);
+							if (frame > 16)//skip writing first image so that noise images don't come in
+							{
+								if (L1CleanINTMode.Checked)
+									CLEAN_UVITVISIMG(fits, cleanthreshold, cleanN, true);
+
+								if (do_parallel_L1)
+									SPAREFITSImageSet.Add(fits);
+								else
+									fits.WriteImage(DiskPrecision.Int32, false);
+							}
+							d2im = new double[xsize + 1, ysize + 1];
+							d1im = new ushort[imsize];
+							break;
+						}
+
+						d1im[pixnum] = (ushort)(((detdata.BINTABLEByteArray[byteindx + j * 2] << 8) | detdata.BINTABLEByteArray[byteindx + j * 2 + 1]) + 32768);
+						pixnum++;
+					}
+				}
+
+				WAITBAR.Tag = path + "\\" + "VIS";//need to sneak in the VIS directory for when no PC files were digested
+
+				if (do_parallel_L1 && SPAREFITSImageSet.Count > 0 && WAITBAR.DialogResult != DialogResult.Cancel)
+				{
+					//SPAREFITSImageSet.Write(TypeCode.Int32, true, "Saving Orbit VIS Images to Disk");
+					SPAREFITSImageSet.Write(DiskPrecision.Int32, true);
+					SPAREFITSImageSet.Clear();
+					SPAREFITSImageSet = new FITSImageSet();
+				}
+			}
+			//end IM mode			
 		}
 
-		private void DigestL1Wrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDigestL1Wrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			string mode = (string)e.UserState;
 			if (mode.Substring(0, 2) == "PC")
@@ -4188,21 +4112,19 @@ namespace CCDLAB
 				int first = mode.IndexOf("_");
 				int last = mode.LastIndexOf("_");
 				WAITBAR.Text = "Digesting L1 Files: " + mode.Substring(first + 1, last - first - 1) + " of " + mode.Substring(last + 1);
-				WAITBAR.ProgressBar.Maximum = 100;
 				WAITBAR.ProgressBar.Value = e.ProgressPercentage;
-				WAITBAR.TextMsg.Text = String.Concat("Extracting INT-mode frames: ", e.ProgressPercentage, "%");
+				WAITBAR.TextMsg.Text = String.Concat("Extracting INT-mode frames: ", e.ProgressPercentage, "");
 			}
 			WAITBAR.Refresh();
 		}
 
-		private void DigestL1Wrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDigestL1Wrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
-			{
-				this.Enabled = true;
-				this.BringToFront();
 				return;
-			}
+
+			string tag = (string)WAITBAR.Tag;
+			WAITBAR.Close();
 
 			string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");//may be top-level only of multidirs
 			REG.SetReg("CCDLAB", "OpenFilesPath", dir);
@@ -4245,101 +4167,100 @@ namespace CCDLAB
 
 			if (L1DiscardDuplicateChck.Checked)
 			{
+				WAITBAR = new WaitBar();
 				WAITBAR.Text = "Searching for duplicated data...";
+				WAITBAR.Tag = tag;//VIS directory
+
 				if (e.Result != null)//result = null if only IM done.  Here, VIS directories will be checked for duplicates
 				{
 					ArrayList dir_list = (ArrayList)e.Result;
 					WAITBAR.ProgressBar.Maximum = dir_list.Count - 1;
-					DiscardL1DuplicateWrkr.RunWorkerAsync(dir_list);
-					//WAITBAR.ShowDialog(); already shown
+					UVITDiscardL1DuplicateWrkr.RunWorkerAsync(dir_list);
+					WAITBAR.ShowDialog();
 					return;
 				}
 				else//then only IM done.  Need to scan the VIS images and dirs for duplicates
 				{
-					DiscardL1DuplicateWrkr.RunWorkerAsync();
-					//WAITBAR.ShowDialog(); already shown...and has VIS dir tag
+					UVITDiscardL1DuplicateWrkr.RunWorkerAsync();
+					WAITBAR.ShowDialog();
 					return;
 				}
 			}
 			else
-				if (L1AutoRunChck.Checked)
-				DiscardL1DuplicateWrkr_RunWorkerCompleted(sender, e);
+				if (UVITL1AutoRunChck.Checked)
+					UVITDiscardL1DuplicateWrkr_RunWorkerCompleted(sender, e);
 
 			//finish
 			TimeSpan ts = DateTime.Now - DATE;
 			MessageBox.Show("Completed digesting L1 data in " + ts.Minutes.ToString() + "m" + ts.Seconds.ToString() + "s.", "Finished...");
-			WAITBAR.Hide();
-			WAITBAR.Close();
-			this.Enabled = true;
-			this.BringToFront();
 		}
 
-		private void autoRunToolStripMenuItem_Click(System.Object sender, EventArgs e)
+		private void UVITL1AutoRunChck_Click(System.Object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "L1AutoRunChck", L1AutoRunChck.Checked);
-			if (L1AutoRunChck.Checked)
-				L1AutoProceedVISBackGround.Enabled = true;
+			REG.SetReg("CCDLAB", "L1AutoRunChck", UVITL1AutoRunChck.Checked);
+			if (UVITL1AutoRunChck.Checked)
+				UVITL1AutoProceedVISBackGroundChck.Enabled = true;
 			else
 			{
-				L1AutoProceedVISBackGround.Enabled = false;
-				L1AutoProceedVISTracking.Enabled = false;
-				L1AutoProceedVISBackGround.Checked = false;
-				L1AutoProceedVISTracking.Checked = false;
-				L1AutoApplyVISDrift.Enabled = false;
-				L1AutoApplyVISDrift.Checked = false;
+				UVITL1AutoProceedVISBackGroundChck.Enabled = false;
+				UVITL1AutoProceedVISTrackingChck.Enabled = false;
+				UVITL1AutoProceedVISBackGroundChck.Checked = false;
+				UVITL1AutoProceedVISTrackingChck.Checked = false;
+				UVITL1AutoApplyVISDriftChck.Enabled = false;
+				UVITL1AutoApplyVISDriftChck.Checked = false;
 			}
-			REG.SetReg("CCDLAB", "L1AutoProceedVISBackGround", L1AutoProceedVISBackGround.Checked);
-			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", L1AutoProceedVISTracking.Checked);
-			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", L1AutoApplyVISDrift.Checked);
+			REG.SetReg("CCDLAB", "L1AutoProceedVISBackGround", UVITL1AutoProceedVISBackGroundChck.Checked);
+			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", UVITL1AutoProceedVISTrackingChck.Checked);
+			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", UVITL1AutoApplyVISDriftChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			ExtractL1gzsMenuItem.ShowDropDown();
+			UVITExtractL1gzsMenuItem.ShowDropDown();
 		}
 
-		private void L1AutoProceedVISBackGround_Click(System.Object sender, EventArgs e)
+		private void UVITL1AutoProceedVISBackGroundChck_Click(System.Object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "L1AutoProceedVISBackGround", L1AutoProceedVISBackGround.Checked);
-			if (L1AutoProceedVISBackGround.Checked)
-				L1AutoProceedVISTracking.Enabled = true;
+			REG.SetReg("CCDLAB", "L1AutoProceedVISBackGround", UVITL1AutoProceedVISBackGroundChck.Checked);
+			if (UVITL1AutoProceedVISBackGroundChck.Checked)
+				UVITL1AutoProceedVISTrackingChck.Enabled = true;
 			else
 			{
-				L1AutoProceedVISTracking.Enabled = false;
-				L1AutoProceedVISTracking.Checked = false;
-				L1AutoApplyVISDrift.Enabled = false;
-				L1AutoApplyVISDrift.Checked = false;
+				UVITL1AutoProceedVISTrackingChck.Enabled = false;
+				UVITL1AutoProceedVISTrackingChck.Checked = false;
+				UVITL1AutoApplyVISDriftChck.Enabled = false;
+				UVITL1AutoApplyVISDriftChck.Checked = false;
 			}
-			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", L1AutoProceedVISTracking.Checked);
-			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", L1AutoApplyVISDrift.Checked);
+			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", UVITL1AutoProceedVISTrackingChck.Checked);
+			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", UVITL1AutoApplyVISDriftChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			ExtractL1gzsMenuItem.ShowDropDown();
+			UVITExtractL1gzsMenuItem.ShowDropDown();
 		}
 
-		private void L1AutoProceedVISTracking_Click(System.Object sender, EventArgs e)
+		private void UVITL1AutoProceedVISTrackingChck_Click(System.Object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", L1AutoProceedVISTracking.Checked);
-			if (L1AutoProceedVISTracking.Checked)
-				L1AutoApplyVISDrift.Enabled = true;
+			REG.SetReg("CCDLAB", "L1AutoProceedVISTracking", UVITL1AutoProceedVISTrackingChck.Checked);
+			if (UVITL1AutoProceedVISTrackingChck.Checked)
+				UVITL1AutoApplyVISDriftChck.Enabled = true;
 			else
 			{
-				L1AutoApplyVISDrift.Enabled = false;
-				L1AutoApplyVISDrift.Checked = false;
+				UVITL1AutoApplyVISDriftChck.Enabled = false;
+				UVITL1AutoApplyVISDriftChck.Checked = false;
 			}
-			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", L1AutoApplyVISDrift.Checked);
+			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", UVITL1AutoApplyVISDriftChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			ExtractL1gzsMenuItem.ShowDropDown();
+			UVITExtractL1gzsMenuItem.ShowDropDown();
 		}
 
-		private void L1AutoApplyVISDrift_Click(System.Object sender, EventArgs e)
+		private void UVITL1AutoApplyVISDriftChck_Click(System.Object sender, EventArgs e)
 		{
-			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", L1AutoApplyVISDrift.Checked);
+			REG.SetReg("CCDLAB", "L1AutoApplyVISDrift", UVITL1AutoApplyVISDriftChck.Checked);
 
 			UVITMenu.ShowDropDown();
-			ExtractL1gzsMenuItem.ShowDropDown();
+			UVITExtractL1gzsMenuItem.ShowDropDown();
 		}
 
-		private void DiscardL1DuplicateWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDiscardL1DuplicateWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			//how to handle multiple top level dirs...
 			string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
@@ -4368,7 +4289,7 @@ namespace CCDLAB
 					{
 						if (WAITBAR.DialogResult == DialogResult.Cancel)
 							return;
-						DiscardL1DuplicateWrkr.ReportProgress(i + 1, new object[] { delete_dir_list.Count, timelists.Length, multidirs.Length, dirindex + 1 });
+						UVITDiscardL1DuplicateWrkr.ReportProgress(i + 1, new object[] { delete_dir_list.Count, timelists.Length, multidirs.Length, dirindex + 1 });
 
 						string filei = timelists[i];
 						string diri = filei.Substring(0, filei.LastIndexOf("\\"));
@@ -4529,7 +4450,7 @@ namespace CCDLAB
 					continue;//return;//leave because there is no VIS directory
 
 				ArrayList del_file_list = new ArrayList();
-				DiscardL1DuplicateWrkr.ReportProgress(-1, /*null*/ new object[] { multidirs.Length, dirindex + 1, del_file_list.Count });
+				UVITDiscardL1DuplicateWrkr.ReportProgress(-1, new object[] { multidirs.Length, dirindex + 1, del_file_list.Count });
 				string[] VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");//there may be multiple VIS directories...go through them and check for repeated VIS files
 
 				//for all VIS files, scan forward and delete the forward/secondary ones...i.e. the repeated files with the exact same time
@@ -4548,14 +4469,12 @@ namespace CCDLAB
 					if (100 * j / VISfiles.Length > intprog)
 					{
 						intprog++;
-						DiscardL1DuplicateWrkr.ReportProgress(-intprog, new object[] { multidirs.Length, dirindex + 1, del_file_list.Count });
+						UVITDiscardL1DuplicateWrkr.ReportProgress(-intprog, new object[] { multidirs.Length, dirindex + 1, del_file_list.Count });
 					}
 
-					//String Jtime = VISfiles[j].Substring(VISfiles[j].LastIndexOf("_") + 1, 13);
 					uint Jtime = times[j];
 					for (int k = j + 1; k < VISfiles.Length; k++)
 					{
-						//String Ktime = VISfiles[k].Substring(VISfiles[k].LastIndexOf("_") + 1, 13);
 						uint Ktime = times[k];
 						if (Ktime == Jtime)
 							del_file_list.Add(VISfiles[k]);
@@ -4572,82 +4491,73 @@ namespace CCDLAB
 						Directory.Delete(VISdirs[j]);
 				VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");
 
-				try
+				//now must check for directories which have been created but should actually be continuations
+				//so sort the directories by time, then for each sorted directory, check the first and last files for continuation
+				//if there is, then move the secondary files to the first directory
+				double[] VISdirtimes = new double[VISdirs.Length];
+				for (int j = 0; j < VISdirs.Length; j++)
+					VISdirtimes[j] = Convert.ToDouble(VISdirs[j].Substring(VISdirs[j].LastIndexOf("_") + 1));
+				Array.Sort(VISdirtimes, VISdirs);
+				//directories now sorted by start times
+
+				intprog = 1;
+				for (int j = 1; j < VISdirs.Length; j++)
 				{
-					//now must check for directories which have been created but should actually be continuations
-					//so sort the directories by time, then for each sorted directory, check the first and last files for continuation
-					//if there is, then move the secondary files to the first directory
-					double[] VISdirtimes = new double[VISdirs.Length];
-					for (int j = 0; j < VISdirs.Length; j++)
-						VISdirtimes[j] = Convert.ToDouble(VISdirs[j].Substring(VISdirs[j].LastIndexOf("_") + 1));
-					Array.Sort(VISdirtimes, VISdirs);
-					//directories now sorted by start times
-
-					intprog = 1;
-					for (int j = 1; j < VISdirs.Length; j++)
+					if (WAITBAR.DialogResult == DialogResult.Cancel)
+						return;
+					if (100 * j / VISdirs.Length > intprog)
 					{
-						if (WAITBAR.DialogResult == DialogResult.Cancel)
-							return;
-						if (100 * j / VISdirs.Length > intprog)
-						{
-							intprog++;
-							DiscardL1DuplicateWrkr.ReportProgress(-intprog - 100, new object[] { multidirs.Length, dirindex });//null to tell it to display stuff about VIS
-						}
-
-						string[] jm1files = Directory.GetFiles(VISdirs[j - 1], "*VIS*.fits");
-						string[] jfiles = Directory.GetFiles(VISdirs[j], "*VIS*.fits");
-						if (jm1files.Length == 0)
-							continue;
-						Array.Sort(jm1files);
-						Array.Sort(jfiles);
-						double jm1fileendtime = Convert.ToDouble(jm1files[jm1files.Length - 1].Substring(jm1files[jm1files.Length - 1].LastIndexOf("_") + 1, 13));
-						double jfilestartttime = Convert.ToDouble(jfiles[0].Substring(jfiles[0].LastIndexOf("_") + 1, 13));
-						string jm1path = jm1files[0].Substring(0, jm1files[0].LastIndexOf("\\")) + "\\";
-
-						if (jfilestartttime - jm1fileendtime <= 4 * 1000)//less than 4 seconds they should be the same sequence...1 ideally should be enough of a check
-						{
-							//then move the j files into j-1
-							for (int k = 0; k < jfiles.Length; k++)
-							{
-								jfilestartttime = Convert.ToDouble(jfiles[k].Substring(jfiles[k].LastIndexOf("_") + 1, 13));
-								if (jfilestartttime - jm1fileendtime <= 4 * 1000)
-								{
-									string jfile = jfiles[k].Substring(jfiles[k].LastIndexOf("\\") + 1);
-									File.Move(jfiles[k], jm1path + jfile);
-									jm1fileendtime = jfilestartttime;
-								}
-							}
-							//and skip the current directory on next iteration
-							//j++;
-						}
+						intprog++;
+						UVITDiscardL1DuplicateWrkr.ReportProgress(-intprog - 100, new object[] { multidirs.Length, dirindex });//null to tell it to display stuff about VIS
 					}
 
-					//delete any empty directories
-					VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");
-					for (int j = 0; j < VISdirs.Length; j++)
-						if (Directory.GetFiles(VISdirs[j]).Length == 0)
-							Directory.Delete(VISdirs[j]);
+					string[] jm1files = Directory.GetFiles(VISdirs[j - 1], "*VIS*.fits");
+					string[] jfiles = Directory.GetFiles(VISdirs[j], "*VIS*.fits");
+					if (jm1files.Length == 0)
+						continue;
+					Array.Sort(jm1files);
+					Array.Sort(jfiles);
+					double jm1fileendtime = Convert.ToDouble(jm1files[jm1files.Length - 1].Substring(jm1files[jm1files.Length - 1].LastIndexOf("_") + 1, 13));
+					double jfilestartttime = Convert.ToDouble(jfiles[0].Substring(jfiles[0].LastIndexOf("_") + 1, 13));
+					string jm1path = jm1files[0].Substring(0, jm1files[0].LastIndexOf("\\")) + "\\";
 
-					if (L1DiscardDataTimeChck.Checked)
+					if (jfilestartttime - jm1fileendtime <= 4 * 1000)//less than 4 seconds they should be the same sequence...1 ideally should be enough of a check
 					{
-						string discardtimestring = (string)L1DiscardDataTimeDrop.SelectedItem;
-						discardtimestring = discardtimestring.Replace(" Minutes", "");
-						int discardtimeint = Convert.ToInt32(discardtimestring) * 60;
-
-						VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");
-						for (int i = 0; i < VISdirs.Length; i++)
-							if (Directory.GetFiles(VISdirs[i]).Length < discardtimeint)
-								Directory.Delete(VISdirs[i], true);
+						//then move the j files into j-1
+						for (int k = 0; k < jfiles.Length; k++)
+						{
+							jfilestartttime = Convert.ToDouble(jfiles[k].Substring(jfiles[k].LastIndexOf("_") + 1, 13));
+							if (jfilestartttime - jm1fileendtime <= 4 * 1000)
+							{
+								string jfile = jfiles[k].Substring(jfiles[k].LastIndexOf("\\") + 1);
+								File.Move(jfiles[k], jm1path + jfile);
+								jm1fileendtime = jfilestartttime;
+							}
+						}
 					}
 				}
-				catch (Exception ex)
+
+				//delete any empty directories
+				VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");
+				for (int j = 0; j < VISdirs.Length; j++)
+					if (Directory.GetFiles(VISdirs[j]).Length == 0)
+						Directory.Delete(VISdirs[j]);
+
+				if (L1DiscardDataTimeChck.Checked)
 				{
-					MessageBox.Show(ex.Data + "	" + ex.InnerException + "	" + ex.Message + "	" + ex.Source + "	" + ex.StackTrace + "	" + ex.TargetSite);
+					string discardtimestring = (string)L1DiscardDataTimeDrop.SelectedItem;
+					discardtimestring = discardtimestring.Replace(" Minutes", "");
+					int discardtimeint = Convert.ToInt32(discardtimestring) * 60;
+
+					VISdirs = Directory.GetDirectories(objVISdir, "*VIS*");
+					for (int i = 0; i < VISdirs.Length; i++)
+						if (Directory.GetFiles(VISdirs[i]).Length < discardtimeint)
+							Directory.Delete(VISdirs[i], true);
 				}
 			}
 		}
 
-		private void DiscardL1DuplicateWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDiscardL1DuplicateWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			if (e.UserState != null && e.ProgressPercentage >= 0)
 			{
@@ -4663,7 +4573,7 @@ namespace CCDLAB
 				WAITBAR.Refresh();
 				return;
 			}
-			if (/*e.UserState == null &&*/ e.ProgressPercentage < 0 && e.ProgressPercentage >= -100)
+			if (e.ProgressPercentage < 0 && e.ProgressPercentage >= -100)
 			{
 				object[] ustate = (object[])e.UserState;
 				int dirindex = (int)ustate[1];
@@ -4675,7 +4585,7 @@ namespace CCDLAB
 				WAITBAR.TextMsg.Text = "Processing target session folder " + dirindex.ToString() + " of " + ndirs.ToString() + "; Files Duplicates: " + nfils;
 				WAITBAR.Refresh();
 			}
-			if (/*e.UserState == null &&*/ e.ProgressPercentage < -100)
+			if (e.ProgressPercentage < -100)
 			{
 				object[] ustate = (object[])e.UserState;
 				int dirindex = (int)ustate[1];
@@ -4688,22 +4598,20 @@ namespace CCDLAB
 			}
 		}
 
-		private void DiscardL1DuplicateWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDiscardL1DuplicateWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult != DialogResult.Cancel)
 			{
-				WAITBAR.ProgressBar.Value = WAITBAR.ProgressBar.Maximum;
-				WAITBAR.Refresh();
 				TimeSpan ts = DateTime.Now - DATE;
-				if (!L1AutoRunChck.Checked)
+				if (!UVITL1AutoRunChck.Checked)
 					MessageBox.Show("Completed digesting L1 data and discarding duplicated data in " + ts.Minutes.ToString() + "m" + ts.Seconds.ToString() + "s.", "Finished...");
 			}
-			WAITBAR.Hide();
-			WAITBAR.Close();
-			this.Enabled = true;
-			this.BringToFront();
+			else
+				return;
 
-			if (L1AutoRunChck.Checked && !L1SkipINTMode.Checked)
+			WAITBAR.Close();
+
+			if (UVITL1AutoRunChck.Checked && !L1SkipINTMode.Checked)
 			{
 				string visparentdir = (string)REG.GetReg("CCDLAB", "L2EventListPath") + "\\" + "VIS";
 				string[] visdirs = Directory.GetDirectories(visparentdir);
@@ -4718,40 +4626,41 @@ namespace CCDLAB
 				string[] files = Directory.GetFiles(visdirs[index], "*VIS*.fits");
 
 				FITSImageSet medianset = new FITSImageSet();
-				medianset.Load(files, null, false, true, true, "");
+				if (!medianset.Load(files, null, false, true, "Loading median set"))
+					return;
 
-				FITSImage median = FITSImageSet.Median(medianset, false, true, "Median Background");
+				FITSImage median = medianset.Median(true, true, "Median Background");
+				if (median == null)
+					return;
 				median.Header.AddKey("NIMAGES", medianset.Count.ToString(), "Number of images used", -1);
-				median.WriteImage(visparentdir + "\\" + "median.fts", TypeCode.Double, true);
+				median.WriteImage(visparentdir + "\\" + "median.fts", DiskPrecision.Double, true);
 
 				FileListDrop.Items.Clear();
 				IMAGESET.Clear();
 				string[] filelist = new string[] { median.FullFileName };
 				AddToImageSet(filelist, true);
-				this.Enabled = true;
-				this.BringToFront();
 
-				if (!L1AutoProceedVISBackGround.Checked)
+				if (!UVITL1AutoProceedVISBackGroundChck.Checked)
 					if (MessageBox.Show("OK to proceed with this image for background subtraction?", "Background correction?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 						return;
-
-				UVITBATCHOP = true;
+				
 				MainTab.SelectTab("BatchTab");
 				BatchOperationTab.SelectTab("BatchIndividualTab");
 				BatchScanDirectoryBtn.PerformClick();
 				BatchFileParallelChck.Checked = L1MachineExtremeChck.Checked;
-				UVITBATCHMESG = "Subtracting Median from " + BATCHLIST.Length + " VIS Images...";
-				FILESAVEPREC = TypeCode.Int32;
-				BatchComputeBtn_Click(sender, e);
-				FILESAVEPREC = TypeCode.Double;
-				UVITBATCHMESG = "";
-				if (UVITBATCHOP_CANCELLED)
-				{
-					UVITBATCHOP_CANCELLED = false;
-					return;
-				}
 
-				if (!L1AutoProceedVISTracking.Checked)
+				WAITBAR = new WaitBar();
+				WAITBAR.Text = "Subtracting Median from " + BATCHLIST.Length + " VIS Images...";
+				UVITBATCHOP = true;
+				FILESAVEPREC = DiskPrecision.Int32;
+				BatchBGWrkr.RunWorkerAsync(BatchOperationTab.SelectedTab.Name);
+				WAITBAR.ShowDialog();
+				FILESAVEPREC = DiskPrecision.Double;
+				//UVITBATCHOP = false;//done in batch worker completion
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+
+				if (!UVITL1AutoProceedVISTrackingChck.Checked)
 					if (MessageBox.Show("Proceed to Drift Series Tracking?", "Proceed with Drift?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 					{
 						AUTOVISDRIFT = false;
@@ -4763,8 +4672,7 @@ namespace CCDLAB
 				UVITMANREGDIRLISTINDEX = 0;
 				HalfWidthXUpD.Value = 5;
 				HalfWidthYUpD.Value = 5;
-				ManRegTrkHWUpD.Value = HalfWidthXUpD.Value;
-				CreateDriftFromINTMenuItem_Click(sender, e);
+				UVITCreateDriftFromINTMenuItem_Click(sender, e);
 				return;
 			}
 		}
@@ -4837,8 +4745,8 @@ namespace CCDLAB
 
 				string name = dlg.FileNames[i].Substring(0, dlg.FileNames[i].IndexOf("XYInts")) + "FlatList.fits";
 				FITSImage fitsflatlist = new FITSImage(name, flatlist, false, true);
-				fitsflatlist.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-				fitsflatlist.WriteImage(TypeCode.Double, true);
+				fitsflatlist.Header.CopyHeaderFrom(intsfits.Header);
+				fitsflatlist.WriteImage(DiskPrecision.Double, true);
 			}
 
 			MessageBox.Show("Completed making the flat field list(s).", "Finished...");
@@ -4914,16 +4822,15 @@ namespace CCDLAB
 				arg[3] = null;
 			}
 
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = 100;
 			WAITBAR.DialogResult = DialogResult.OK;
 			WAITBAR.Text = "Parcelling List...";
-			ParcelUVCentroidWrkr.RunWorkerAsync(arg);
-			WAITBAR.Show();
+			UVITParcelCentroidWrkr.RunWorkerAsync(arg);
+			WAITBAR.ShowDialog();
 		}
 
-		private void ParcelUVCentroidWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITParcelCentroidWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			object[] arg = (object[])e.Argument;
 			string intslistfile = (string)arg[0];
@@ -5023,7 +4930,7 @@ namespace CCDLAB
 				{
 					intprog++;
 				}
-				ParcelUVCentroidWrkr.ReportProgress(intprog, c + 1);
+				UVITParcelCentroidWrkr.ReportProgress(intprog, c + 1);
 
 				c++;
 				currtime = (uint)times[ind + 1];
@@ -5070,10 +4977,10 @@ namespace CCDLAB
 
 				parcelname = parceldir + currtime.ToString("0000000000000") + ".fits";
 				FITSimg = new FITSImage(parcelname, img, false, true);
-				FITSimg.Header.CopyHeaderFrom(intslist.Header);// CopyHeader(intslist);
+				FITSimg.Header.CopyHeaderFrom(intslist.Header);
 				FITSimg.Header.AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
 				FITSimg.Header.AddKey("FRMTIME", ((double)(currtime) / 1000).ToString(), "Frame time.", 11);
-				FITSimg.WriteImage(TypeCode.UInt16, true);
+				FITSimg.WriteImage(DiskPrecision.UInt16, true);
 				imgfilenames.Add(parcelname);
 
 				if (mindir != null)
@@ -5084,36 +4991,33 @@ namespace CCDLAB
 					FITSminimg = new FITSImage(minname, minimg, false, true);
 					FITSmaxminimg = new FITSImage(maxminname, maxminimg, false, true);
 
-					FITSminimg.Header.CopyHeaderFrom(intslist.Header);// CopyHeader(intslist);
-					FITSmaxminimg.Header.CopyHeaderFrom(intslist.Header);// CopyHeader(intslist);
+					FITSminimg.Header.CopyHeaderFrom(intslist.Header);
+					FITSmaxminimg.Header.CopyHeaderFrom(intslist.Header);
 
 					FITSminimg.Header.AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
 					FITSminimg.Header.AddKey("FRMTIME", ((double)(currtime) / 1000).ToString(), "Frame time.", 11);
-					FITSminimg.WriteImage(TypeCode.UInt16, true);
+					FITSminimg.WriteImage(DiskPrecision.UInt16, true);
 
 					FITSmaxminimg.Header.AddKey("PARCTIME", currtime.ToString("0000000000000"), "Parcel time.", 10);
 					FITSmaxminimg.Header.AddKey("FRMTIME", ((double)(currtime) / 1000).ToString(), "Frame time.", 11);
-					FITSmaxminimg.WriteImage(TypeCode.UInt16, true);
+					FITSmaxminimg.WriteImage(DiskPrecision.UInt16, true);
 				}
 			}
 
 			e.Result = imgfilenames;
 		}
 
-		private void ParcelUVCentroidWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITParcelCentroidWrkr_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Completed: " + e.ProgressPercentage + "%: " + (int)e.UserState + " frames...";
 			WAITBAR.Refresh();
 		}
 
-		private void ParcelUVCentroidWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITParcelCentroidWrkr_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			WAITBAR.Hide();
 			WAITBAR.Close();
-			this.Enabled = true;
-			this.BringToFront();
-			//if (WAITBAR.DialogResult != DialogResult.Cancel)
+
 			if (MessageBox.Show("Parcelling completed or stopped.  Would you like to load the images for viewing?", "Finished...", MessageBoxButtons.YesNo) == DialogResult.No)
 				return;
 
@@ -5125,18 +5029,13 @@ namespace CCDLAB
 			FileListDrop.Items.Clear();
 			IMAGESET.Clear();
 			AddToImageSet(filelist, true);
-			this.Enabled = true;
-			this.BringToFront();
 		}
 
 		private void PlotDriftListMenuItem_Click(object sender, EventArgs e)
 		{
 			string driftlistfile;
 			if (UVPLOTDRIFTLISTNOW)
-			{
-				//UVPLOTDRIFTLISTNOW = false;***************************************done below with multi-source track plot now
 				driftlistfile = UVPLOTDRIFTFILENAME;
-			}
 			else
 			{
 				string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
@@ -5194,19 +5093,23 @@ namespace CCDLAB
 
 			string title = "Orbit: " + driftfits.Header.GetKeyValue("ORB_NUM") + "; Source: " + driftfits.Header.GetKeyValue("SOURCEID") + "; Detector:" + driftfits.Header.GetKeyValue("DETECTOR");
 
-			if (XDRIFT_PLOT.IsDisposed)
-				XDRIFT_PLOT = new JPPlot();
-			if (YDRIFT_PLOT.IsDisposed)
-				YDRIFT_PLOT = new JPPlot();
+			if (XDRIFT_PLOT == null || XDRIFT_PLOT.IsDisposed)
+				XDRIFT_PLOT = new Plotter("X-Drift", true, true);// JPPlot();
+			if (YDRIFT_PLOT == null || YDRIFT_PLOT.IsDisposed)
+				YDRIFT_PLOT = new Plotter("Y-Drift", true, true);// JPPlot();
 
 			XDRIFT_PLOT.Text = "X-Drift";
-			XDRIFT_PLOT.PlotLine(JPMath.VectorSubScalar(time, time[0], true), xdrift, "Time - " + time[0].ToString() + " (seconds)", "X-Drift (pixels)", title, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "XDrift");
-			if (XDRIFT_PLOT.JPChart1.ChartContextGridChck.Checked == false)
-				XDRIFT_PLOT.JPChart1.ChartContextGridChck.PerformClick();
+			XDRIFT_PLOT.ChartGraph.PlotXYData(JPMath.VectorSubScalar(time, time[0], true), xdrift, title, "Time - " + time[0].ToString() + " (seconds)", "X-Drift (pixels)", JPChart.SeriesType.Line, "XDrift");
+			if (XDRIFT_PLOT.ChartGraph.ChartContextGridChck.Checked == false)
+				XDRIFT_PLOT.ChartGraph.ChartContextGridChck.PerformClick();
+			XDRIFT_PLOT.TopMost = true;
+			XDRIFT_PLOT.Show();
 			YDRIFT_PLOT.Text = "Y-Drift";
-			YDRIFT_PLOT.PlotLine(JPMath.VectorSubScalar(time, time[0], true), ydrift, "Time - " + time[0].ToString() + " (seconds)", "Y-Drift (pixels)", title, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, "YDrift");
-			if (YDRIFT_PLOT.JPChart1.ChartContextGridChck.Checked == false)
-				YDRIFT_PLOT.JPChart1.ChartContextGridChck.PerformClick();
+			YDRIFT_PLOT.ChartGraph.PlotXYData(JPMath.VectorSubScalar(time, time[0], true), ydrift, title, "Time - " + time[0].ToString() + " (seconds)", "Y-Drift (pixels)", JPChart.SeriesType.Line, "YDrift");
+			if (YDRIFT_PLOT.ChartGraph.ChartContextGridChck.Checked == false)
+				YDRIFT_PLOT.ChartGraph.ChartContextGridChck.PerformClick();
+			YDRIFT_PLOT.TopMost = true;
+			YDRIFT_PLOT.Show();
 
 			if (UVPLOTDRIFTLISTNOW && MANREGCENTROIDS != null)
 			{
@@ -5233,68 +5136,46 @@ namespace CCDLAB
 						xxdrft[i] = (MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0]) - meanxxd;
 						yydrft[i] = (MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0]) - meanyyd;
 					}
-					XDRIFT_PLOT.AddLine(tttime, xxdrft, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, j.ToString());
-					YDRIFT_PLOT.AddLine(tttime, yydrft, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line, j.ToString());
+					XDRIFT_PLOT.ChartGraph.AddXYData(tttime, xxdrft, JPChart.SeriesType.Line, j.ToString());
+					YDRIFT_PLOT.ChartGraph.AddXYData(tttime, yydrft, JPChart.SeriesType.Line, j.ToString());
 				}
 			}
 			MANREGCENTROIDS = null;
 			UVPLOTDRIFTLISTNOW = false;
 		}
 
-		private void DriftFromPCPSTrackBtn_Click(System.Object sender, EventArgs e)
+		private void UVITDriftOptimizationBtn_Click(System.Object sender, EventArgs e)
 		{
 			//this function is the initiator and also the revisitor
 
 			//initiator on !UVDRIFTBATCH
 			if (!UVDRIFTBATCH)
 			{
-				if (PSEEllipticalROI.Checked)
-					MakeEllipticalROI_REGION(SubImageSlideX.Value - 1, SubImageSlideY.Value - 1, (int)HalfWidthXUpD.Value, (int)HalfWidthYUpD.Value);
-
-				if (PointSrcROIFindSrcChck.Checked && !PointSrcROIAutoRunChck.Checked)
+				if (IMAGESET.Count > 1)
 				{
-					int Nsrc = Convert.ToInt32(PointSrcROIFindNSrcDrop.SelectedItem);
-					PSES = new JPFITS.PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
-					PSESINDEX = 0;
-					/*PSES[PSESINDEX].Extract_Attempt_N_Sources(Nsrc, IMAGESET[FILELISTINDEX].Image, 0, 0, Double.MaxValue, 0, Double.MaxValue, false, 2, 35, true, "", ROI_REGION, false);
-					if (PSES[PSESINDEX].N_Sources > Nsrc)
-						PSES[PSESINDEX].ClipToNBrightest(Nsrc);*/
-					int niters;
-					PSES[PSESINDEX].Extract_Attempt_NBrightestSources(Nsrc, IMAGESET[FILELISTINDEX].Image, 0, 2, 35, true, "", ROI_REGION, false, out niters);
+					DialogResult res = MessageBox.Show("Perform Drift Optimization on all images, or only the current one?\r\rYes: All\rNo: Current", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button3);
+					if (res == DialogResult.No)
+						SingleOutBtn.PerformClick();
+					if (res == DialogResult.Cancel)
+						return;
+				}				
 
-					if (PSES[PSESINDEX].N_Sources == 0)
+				if (PointSrcROIAutoRunChck.Checked && !PointSrcROIFindSrcChck.Checked)
+					if (MARKCOORDS == null || MARKCOORDS.Length < 2)
 					{
-						MessageBox.Show("No sources found. Please manually select sources.", "Error...");
+						MessageBox.Show("May only auto-optimize with two or more sources pre-selected, or with Auto Detect Sources checked to true.", "Error...");
 						return;
 					}
 
-					MARKCOORDS = new double[2, PSES[PSESINDEX].N_Sources];
-					for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
-					{
-						MARKCOORDS[0, i] = PSES[PSESINDEX].Centroids_X[i];
-						MARKCOORDS[1, i] = PSES[PSESINDEX].Centroids_Y[i];
-					}
-					MAKEMARKCOORDRECTS();
-					PSES = null;
-
-					ImageWindow.Refresh();
-					SubImageWindow.Refresh();
-
-					if (MessageBox.Show("Use these sources for optimization?", "Proceed with these sources?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
-						return;
-				}
+				if (PSEEllipticalROI.Checked)
+					MakeEllipticalROI_REGION();
 
 				if (PointSrcROIAutoRunChck.Checked)
 					if (HalfWidthXUpD.Value > 9 || HalfWidthYUpD.Value > 9)
 					{
-						HalfWidthXUpD.Value = /*SUBIMAGE_HWX_OLD;*/9;
-						HalfWidthYUpD.Value = /*SUBIMAGE_HWY_OLD;*/9;
+						HalfWidthXUpD.Value = 9;
+						HalfWidthYUpD.Value = 9;
 					}
-				/*if (HalfWidthXUpD.Value == 0 || HalfWidthYUpD.Value == 0)
-				{
-					HalfWidthXUpD.Value = 9;
-					HalfWidthYUpD.Value = 9;
-				}*/
 
 				AUTOLOADIMAGESFILES = new string[IMAGESET.Count];
 				UVDRIFTBATCHFILES = new string[IMAGESET.Count];//must fill these here first with XYInts
@@ -5318,19 +5199,20 @@ namespace CCDLAB
 				UVDRIFTBATCHFILESINDEX = 0;
 			}
 
-			if (PointSrcROIAutoRunChck.Checked)
-			{
-				FileListDrop.SelectedIndex = UVDRIFTBATCHFILESINDEX;
-				int Nsrc = Convert.ToInt32(PointSrcROIFindNSrcDrop.SelectedItem);//or just set to 3???
-				PSES = new JPFITS.PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
-				PSESINDEX = 0;
-				/*PSES[PSESINDEX].Extract_Attempt_N_Sources(Nsrc, IMAGESET[UVDRIFTBATCHFILESINDEX].Image, 0, 0, Double.MaxValue, 0, Double.MaxValue, false, 9, 35, true, "", ROI_REGION, false);
-				if (PSES[PSESINDEX].N_Sources > Nsrc)
-					PSES[PSESINDEX].ClipToNBrightest(Nsrc);*/
-				int iters;
-				PSES[PSESINDEX].Extract_Attempt_NBrightestSources(Nsrc, IMAGESET[UVDRIFTBATCHFILESINDEX].Image, 0, 2, 35, true, "", ROI_REGION, false, out iters);//why was it 9 instead of 2 above?
+			FileListDrop.SelectedIndex = UVDRIFTBATCHFILESINDEX;
+			ImageWindow.Refresh();
+			SubImageWindow.Refresh();
 
-				if (PSES[PSESINDEX].N_Sources == 0)
+			if (PointSrcROIFindSrcChck.Checked)
+			{
+				int Nsrc = Convert.ToInt32(PointSrcROIFindNSrcDrop.SelectedItem);//or just set to 3???
+				PSESET.Clear();
+				PSESET.Add(new JPFITS.PointSourceExtractor());
+				PSESETINDEX = 0;
+				int iters;
+				PSESET[PSESETINDEX].Extract_Attempt_NBrightestSources(Nsrc, IMAGESET[UVDRIFTBATCHFILESINDEX].Image, 0, 2, 35, true, "", ROI_REGION, false, out iters);
+
+				if (PSESET[PSESETINDEX].N_Sources == 0)
 				{
 					MessageBox.Show("No sources found. Please manually select sources.", "Error...");
 					AUTOLOADIMAGESFILES = null;
@@ -5345,39 +5227,39 @@ namespace CCDLAB
 					return;
 				}
 
-				MARKCOORDS = new double[2, PSES[PSESINDEX].N_Sources];
-				for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
+				MARKCOORDS = new double[2, PSESET[PSESETINDEX].N_Sources];
+				for (int i = 0; i < PSESET[PSESETINDEX].N_Sources; i++)
 				{
-					MARKCOORDS[0, i] = PSES[PSESINDEX].Centroids_X[i];
-					MARKCOORDS[1, i] = PSES[PSESINDEX].Centroids_Y[i];
+					MARKCOORDS[0, i] = PSESET[PSESETINDEX].Centroids_X[i];
+					MARKCOORDS[1, i] = PSESET[PSESETINDEX].Centroids_Y[i];
 				}
 				MAKEMARKCOORDRECTS();
-				PSES = null;
+				PSESET.Clear();
 
 				ImageWindow.Refresh();
 				SubImageWindow.Refresh();
 			}
 
+			if (MARKCOORDS == null)//then use current ROI only
+				MARKCOORDS = new double[2, 1] { { (double)XSUBRANGE[SUBIMAGE_HWX] }, { (double)YSUBRANGE[SUBIMAGE_HWY] } };
+
 			if (UVDRIFTBATCHFILESINDEX == 0)//initiator
 			{
-				//DATE = DateTime.Now;
-
-				this.Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = 100;
 				WAITBAR.Text = "File " + (UVDRIFTBATCHFILESINDEX + 1).ToString() + " of " + UVDRIFTBATCHFILES.Length + ". Optimizing PSF...";
-				DriftFromPCPSTrackBGWrkr.RunWorkerAsync();
+				UVITDriftFromPCPSTrackBGWrkr.RunWorkerAsync();
 				WAITBAR.ShowDialog();
 			}
 			else//revisitor
 			{
 				WAITBAR.ProgressBar.Value = (UVDRIFTBATCHFILESINDEX + 1) * 100 / UVDRIFTBATCHFILES.Length;
 				WAITBAR.Text = "File " + (UVDRIFTBATCHFILESINDEX + 1).ToString() + " of " + UVDRIFTBATCHFILES.Length + ". Optimizing PSF...";
-				DriftFromPCPSTrackBGWrkr.RunWorkerAsync();
+				UVITDriftFromPCPSTrackBGWrkr.RunWorkerAsync();
 			}
 		}
 
-		private void DriftFromPCPSTrackBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDriftFromPCPSTrackBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
 				return;
@@ -5442,9 +5324,6 @@ namespace CCDLAB
 			if (stroffset != "")
 				offset = Convert.ToInt32(stroffset);
 
-			if (MARKCOORDS == null)//then use current ROI only
-				MARKCOORDS = new double[2, 1] { { (double)XSUBRANGE[SUBIMAGE_HWX] }, { (double)YSUBRANGE[SUBIMAGE_HWY] } };
-
 			ArrayList[] ROIsTRUE = new ArrayList[MARKCOORDS.GetLength(1)];
 			int[] XSTARTS = new int[MARKCOORDS.GetLength(1)];
 			int[] XENDS = new int[MARKCOORDS.GetLength(1)];
@@ -5452,21 +5331,18 @@ namespace CCDLAB
 			int[] YENDS = new int[MARKCOORDS.GetLength(1)];
 
 			Parallel.For(0, ROIsTRUE.Length, i =>
-			//for (int i = 0; i < ROIsTRUE.Length; i++)
 			{
-				double[,] bigbox = IMAGESET[UVDRIFTBATCHFILESINDEX].GetSubImage((int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i], 20, 20);
+				double[,] bigbox = IMAGESET[UVDRIFTBATCHFILESINDEX].GetSubImage((int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i], SUBIMAGE_HWX * 2, SUBIMAGE_HWY * 2);
 				int maxx, maxy;
 				JPMath.Max(bigbox, out maxx, out maxy, false);
-				int xcent = (int)MARKCOORDS[0, i] - 20 + maxx;
-				int ycent = (int)MARKCOORDS[1, i] - 20 + maxy;
+				int xcent = (int)MARKCOORDS[0, i] - SUBIMAGE_HWX * 2 + maxx;
+				int ycent = (int)MARKCOORDS[1, i] - SUBIMAGE_HWY * 2 + maxy;
 
 				XSTARTS[i] = xcent - SUBIMAGE_HWX - offset * (int)(prec);
 				YSTARTS[i] = ycent - SUBIMAGE_HWY - offset * (int)(prec);
 				XENDS[i] = xcent + SUBIMAGE_HWX + 1 - offset * (int)(prec);
 				YENDS[i] = ycent + SUBIMAGE_HWY + 1 - offset * (int)(prec);
 				ROIsTRUE[i] = new ArrayList();
-
-				//MessageBox.Show((XENDS[i] - XSTARTS[i]) + " "  + (YENDS[i] - YSTARTS[i]));
 
 				for (int j = 0; j < times.Length; j++)
 				{
@@ -5480,7 +5356,6 @@ namespace CCDLAB
 
 			Parallel.For(0, ROIsTRUE.Length, i =>
 			{
-				//for (int i = 0; i < ROIsTRUE.Length; i++)
 				ROIsTRUE[i].Sort();
 			});
 
@@ -5500,7 +5375,6 @@ namespace CCDLAB
 
 			Parallel.For(0, ROIsTRUE.Length, i =>
 			{
-				//for (int i = 0; i < ROIsTRUE.Length; i++)
 				for (int j = 0; j < ROIsTRUE[i].Count; j++)
 				{
 					ROIindexes[i][j] = Convert.ToInt32(ROIsTRUE[i][j]);
@@ -5516,7 +5390,7 @@ namespace CCDLAB
 			bool final_determination = false;
 
 		goagaion:
-			if (PointSrcROIAutoRunChck.Checked/*MARKCOORDS.GetLength(1) > 1*/ && !final_determination)//then auto run through and find best stack time?
+			if (PointSrcROIAutoRunChck.Checked && !final_determination)//then auto run through and find best stack time?
 			{
 				index++;
 				if (index < PointSrcROIStackDriftDrop.Items.Count)
@@ -5524,9 +5398,9 @@ namespace CCDLAB
 				if (index == PointSrcROIStackDriftDrop.Items.Count - 1)
 					endanalysis = true;
 				stakMAXarray[index] = Convert.ToDouble(PointSrcROIStackDriftDrop.SelectedItem);
-				DriftFromPCPSTrackBGWrkr.ReportProgress(index);
+				UVITDriftFromPCPSTrackBGWrkr.ReportProgress(index);
 			}
-			if (/*MARKCOORDS.GetLength(1) == 1*/!PointSrcROIAutoRunChck.Checked)
+			if (!PointSrcROIAutoRunChck.Checked)
 			{
 				index = PointSrcROIStackDriftDrop.SelectedIndex;
 				endanalysis = true;
@@ -5540,7 +5414,6 @@ namespace CCDLAB
 					return;
 
 				Parallel.For(0, ROIxcents[i].Length, jj =>
-				//for (int jj = 0; jj < ROIxcents[i].Length; jj++)
 				{
 					ROIxcents[i][jj] = ints[0, ROIindexes[i][jj]] - rx132ox32 + fracs[0, ROIindexes[i][jj]] + 16;
 					ROIycents[i][jj] = ints[1, ROIindexes[i][jj]] - ry132oy32 + fracs[1, ROIindexes[i][jj]] + 16;
@@ -5589,7 +5462,6 @@ namespace CCDLAB
 				double[] smt = new double[mt.Count];
 
 				Parallel.For(0, mt.Count, jj =>
-				//for (int jj = 0; jj < mt.Count; jj++)
 				{
 					smx[jj] = (double)mx[jj];
 					smy[jj] = (double)my[jj];
@@ -5598,13 +5470,10 @@ namespace CCDLAB
 
 				smx = JPMath.VectorSubScalar(smx, JPMath.Mean(smx, true), true);//essential
 				smy = JPMath.VectorSubScalar(smy, JPMath.Mean(smy, true), true);//essential
-				double[] xdrift = JPMath.Interpolate1d(smt, smx, times, "akima", true);
-				double[] ydrift = JPMath.Interpolate1d(smt, smy, times, "akima", true);
-				/*xdrift = JPMath.VectorSubScalar(xdrift, JPMath.Mean(xdrift, true), true);
-				ydrift = JPMath.VectorSubScalar(ydrift, JPMath.Mean(ydrift, true), true);*/
+				double[] xdrift = JPMath.Interpolate1d(smt, smx, times, InterpolationType.Akima, true);
+				double[] ydrift = JPMath.Interpolate1d(smt, smy, times, InterpolationType.Akima, true);
 
 				Parallel.For(0, xdrift.Length, jj =>
-				//for (int jj = 0; jj < xdrift.Length; jj++)
 				{
 					drift[1, jj] += xdrift[jj];
 					drift[2, jj] += ydrift[jj];
@@ -5612,21 +5481,19 @@ namespace CCDLAB
 			}
 
 			Parallel.For(0, times.Length, i =>
-			//for (int i = 0; i < times.Length; i++)
 			{
 				drift[0, i] = times[i];
 				drift[1, i] /= (double)(MARKCOORDS.GetLength(1));
 				drift[2, i] /= (double)(MARKCOORDS.GetLength(1));
 			});
 
-			if (/*MARKCOORDS.GetLength(1) > 1*/PointSrcROIAutoRunChck.Checked && !final_determination)//then auto run through
+			if (PointSrcROIAutoRunChck.Checked && !final_determination)//then auto run through
 			{
 				double meanMAX = 0;
 				//apply drift to each kernel and get the radial plot fit
 				for (int i = 0; i < MARKCOORDS.GetLength(1); i++)
 				{
 					Parallel.For(0, ROIxcents[i].Length, j =>
-					//for (int j = 0; j < ROIxcents[i].Length; j++)
 					{
 						ROIxcents[i][j] = ((ints[0, ROIindexes[i][j]] - rx132ox32 + fracs[0, ROIindexes[i][j]] + 16 - drift[1, ROIindexes[i][j]] - (double)XSTARTS[i] / precB32) * precB32);
 						ROIycents[i][j] = ((ints[1, ROIindexes[i][j]] - ry132oy32 + fracs[1, ROIindexes[i][j]] + 16 - drift[2, ROIindexes[i][j]] - (double)YSTARTS[i] / precB32) * precB32);
@@ -5644,7 +5511,7 @@ namespace CCDLAB
 				if (!endanalysis)
 					goto goagaion;//do the next stack time
 			}
-			if (/*MARKCOORDS.GetLength(1) > 1*/PointSrcROIAutoRunChck.Checked && endanalysis && !final_determination)
+			if (PointSrcROIAutoRunChck.Checked && endanalysis && !final_determination)
 			{
 				/*JPPlot plot = new JPPlot();
 				plot.plotchart1.PlotXYData(stakMAXarray, meanMAXarray, "test", "test", "test", .DataVisualization.System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point, "test");
@@ -5677,32 +5544,31 @@ namespace CCDLAB
 			FITSImage driftfits = new FITSImage(driftslistfile, drift, false, true);
 			driftfits.Header.CopyHeaderFrom(IntsFits.Header);
 			driftfits.Header.AddKey("PSDSTAKT", PointSrcROIStackDriftDrop.SelectedItem.ToString(), "Point Source Drift Stack Time", 14);
-			driftfits.WriteImage(TypeCode.Double, false);
+			driftfits.WriteImage(DiskPrecision.Double, false);
 			UVPLOTDRIFTFILENAME = driftslistfile;
 			UVAPPLYDRIFTCENTROIDSFILENAME = intsname;
 		}
 
-		private void DriftFromPCPSTrackBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDriftFromPCPSTrackBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.TextMsg.Text = "Determining optimum PSF: Analyzing " + Convert.ToDouble(PointSrcROIStackDriftDrop.Items[e.ProgressPercentage]) + "s stack (" + (e.ProgressPercentage + 1) + " of " + PointSrcROIStackDriftDrop.Items.Count + ")";
 			WAITBAR.Refresh();
 		}
 
-		private void DriftFromPCPSTrackBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDriftFromPCPSTrackBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			if (UVDRIFTBATCHFILESINDEX + 1 == UVDRIFTBATCHFILES.Length)
-				PSESeachROIOnlyChck.Checked = false;
+			if (UVDRIFTBATCHFILESINDEX + 1 == UVDRIFTBATCHFILES.Length)//end of images
+			{
+				PSESeachROIOnlyChck.Checked = false;//get rid of ROI REGION
+
+				MARKCOORDS = null;
+				MARKCOORDRECTS = null;
+				ImageWindow.Refresh();
+				SubImageWindow.Refresh();
+			}
 
 			if (WAITBAR.DialogResult != DialogResult.Cancel)
 			{
-				if (PointSrcROIAutoRunChck.Checked)
-				{
-					MARKCOORDS = null;
-					MARKCOORDRECTS = null;
-					ImageWindow.Refresh();
-					SubImageWindow.Refresh();
-				}
-
 				WAITBAR.Text = "Applying...";
 				WAITBAR.TextMsg.Text = "Applying drift to centroid list...";
 				WAITBAR.CancelBtn.Enabled = false;
@@ -5712,9 +5578,6 @@ namespace CCDLAB
 			}
 			else
 			{
-				this.Enabled = true;
-				this.BringToFront();
-
 				DRIFTFROMPCPSTRACK = false;
 				UVDRIFTBATCH = false;
 				UVDRIFTAUTORUN = false;
@@ -5757,7 +5620,7 @@ namespace CCDLAB
 				DriftSmoothNDrop.Enabled = false;
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
 			CreateDriftFromPCMenuItem.ShowDropDown();
 		}
 
@@ -5826,7 +5689,7 @@ namespace CCDLAB
 			}
 
 			UVITMenu.HideDropDown();
-			CreateDriftListMenuItem.HideDropDown();
+			UVITCreateDriftListMenuItem.HideDropDown();
 			CreateDriftFromPCMenuItem.HideDropDown();
 
 			OpenFileDialog dlg;
@@ -5855,7 +5718,7 @@ namespace CCDLAB
 					if (starttime != 0 || endtime != UInt32.MaxValue)
 					{
 						UVITMenu.ShowDropDown();
-						CreateDriftListMenuItem.ShowDropDown();
+						UVITCreateDriftListMenuItem.ShowDropDown();
 						CreateDriftFromPCMenuItem.ShowDropDown();
 						MessageBox.Show("Doesn't make sense to specify Start and/or End time if doing a batch of files.  I'm going to stop.", "Error...");
 						return;
@@ -5888,31 +5751,29 @@ namespace CCDLAB
 				if (UVDRIFTBATCHFILESINDEX == 0)
 				{
 					DATE = DateTime.Now;
-					this.Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = 100;
 					WAITBAR.Text = "File " + (UVDRIFTBATCHFILESINDEX + 1).ToString() + " of " + UVDRIFTBATCHFILES.Length + ". Calculating drift...";
-					DriftFromPCListWrkr.RunWorkerAsync(arg);
+					UVITDriftFromPCListWrkr.RunWorkerAsync(arg);
 					WAITBAR.ShowDialog();
 				}
 				else
 				{
 					WAITBAR.Text = "File " + (UVDRIFTBATCHFILESINDEX + 1).ToString() + " of " + UVDRIFTBATCHFILES.Length + ". Calculating drift...";
-					DriftFromPCListWrkr.RunWorkerAsync(arg);
+					UVITDriftFromPCListWrkr.RunWorkerAsync(arg);
 				}
 			}
 			else
 			{
-				this.Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = 100;
 				WAITBAR.Text = "File 1 of 1. Calculating drift...";
-				DriftFromPCListWrkr.RunWorkerAsync(arg);
+				UVITDriftFromPCListWrkr.RunWorkerAsync(arg);
 				WAITBAR.ShowDialog();
 			}
 		}
 
-		private void DriftFromPCListWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDriftFromPCListWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			object[] arg = (object[])e.Argument;
 			string intslistfile = (string)arg[0];
@@ -5960,8 +5821,8 @@ namespace CCDLAB
 					DriftPCROIOnly.Checked = false;
 				else
 				{
-					string sprec = IMAGESET[FILELISTINDEX].Header.GetKeyValue("IMAGPREC");
-					string offs = IMAGESET[FILELISTINDEX].Header.GetKeyValue("PADOFSET");
+					string sprec = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("IMAGPREC");
+					string offs = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("PADOFSET");
 
 					if (sprec == "" || offs == "")
 						DriftPCROIOnly.Checked = false;
@@ -6057,21 +5918,20 @@ namespace CCDLAB
 			REFimg = JPMath.Hanning(REFimg, true);
 			double[] REFimgvecX = JPMath.Sum(REFimg, 1, true);
 			double[] REFimgvecY = JPMath.Sum(REFimg, 0, true);
-			tdr[0] = (double)(starttime) + UVDRIFTSTACKTIME * 1000 / 2;//xdr, ydr = 0
+			tdr[0] = (double)(starttime) + UVDRIFTSTACKTIME * 1000 / 2;
 
 			int prog = 0;
 
 			Parallel.For(1, Ndrifttimes, (i, loopstate) =>
-			//for (int i = 1; i < Ndrifttimes; i++)
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
-					loopstate.Stop();// continue;
+					loopstate.Stop();
 
-				if (i < Ndrifttimes / Environment.ProcessorCount /*/ omp_get_num_threads()*/)
+				if (i < Ndrifttimes / Environment.ProcessorCount)
 					if (Environment.ProcessorCount * 100 * i / Ndrifttimes > prog)
 					{
 						prog = Environment.ProcessorCount * 100 * i / Ndrifttimes;
-						DriftFromPCListWrkr.ReportProgress(prog);
+						UVITDriftFromPCListWrkr.ReportProgress(prog);
 					}
 
 				double[,] COMimg = new double[szx, szy];
@@ -6130,8 +5990,8 @@ namespace CCDLAB
 				else
 					interpN = 3 + interpN * 2;
 
-				xdr = JPMath.Smooth(xdr, interpN, true, "centered");
-				ydr = JPMath.Smooth(ydr, interpN, true, "centered");
+				xdr = JPMath.Smooth(xdr, interpN, true, SmoothingMethod.Centered);
+				ydr = JPMath.Smooth(ydr, interpN, true, SmoothingMethod.Centered);
 			}
 
 			double[] tdrinterp = new double[stackinds[stackinds.Length - 1] - stackinds[0] + 1];
@@ -6140,8 +6000,8 @@ namespace CCDLAB
 			
 			for (int i = 0; i < tdrinterp.Length; i++)
 				tdrinterp[i] = times[stackinds[0] + i];
-			xdrinterp = JPMath.Interpolate1d(tdr, xdr, tdrinterp, "mono", true);
-			ydrinterp = JPMath.Interpolate1d(tdr, ydr, tdrinterp, "mono", true);
+			xdrinterp = JPMath.Interpolate1d(tdr, xdr, tdrinterp, InterpolationType.Monotone, true);
+			ydrinterp = JPMath.Interpolate1d(tdr, ydr, tdrinterp, InterpolationType.Monotone, true);
 
 			double[,] xyshiftsLIST = new double[3, tdrinterp.Length];
 			for (int i = 0; i < tdrinterp.Length; i++)
@@ -6173,8 +6033,8 @@ namespace CCDLAB
 				File.Delete(delfiles[i]);
 
 			FITSImage driftfits = new FITSImage(driftslistfile, xyshiftsLIST, false, true);
-			driftfits.Header.CopyHeaderFrom(timeslist.Header);// CopyHeader(timeslist);
-			driftfits.WriteImage(TypeCode.Double, true);
+			driftfits.Header.CopyHeaderFrom(timeslist.Header);
+			driftfits.WriteImage(DiskPrecision.Double, true);
 			UVPLOTDRIFTFILENAME = driftslistfile;
 			UVAPPLYDRIFTCENTROIDSFILENAME = intslistfile;
 
@@ -6198,14 +6058,14 @@ namespace CCDLAB
 			}*/
 		}
 
-		private void DriftFromPCListWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDriftFromPCListWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = String.Concat("Completed: ", e.ProgressPercentage, "%");
 			WAITBAR.Refresh();
 		}
 
-		private void DriftFromPCListWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDriftFromPCListWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult != DialogResult.Cancel)
 			{
@@ -6214,10 +6074,7 @@ namespace CCDLAB
 					DialogResult res = MessageBox.Show("Completed making the drift correction list.  Would you like to plot it?", "Finished...", MessageBoxButtons.OKCancel);
 					if (res == DialogResult.Cancel)
 					{
-						WAITBAR.Hide();
 						WAITBAR.Close();
-						this.Enabled = true;
-						this.BringToFront();
 						return;
 					}
 					if (res == DialogResult.OK)
@@ -6228,10 +6085,7 @@ namespace CCDLAB
 					res = MessageBox.Show("Would you like to apply this drift calculation to the centroid list?", "Apply drift...", MessageBoxButtons.OKCancel);
 					if (res == DialogResult.Cancel)
 					{
-						WAITBAR.Hide();
 						WAITBAR.Close();
-						this.Enabled = true;
-						this.BringToFront();
 						return;
 					}
 					if (res == DialogResult.OK)
@@ -6256,10 +6110,7 @@ namespace CCDLAB
 			{
 				UVAPPLYDRIFTNOW = false;
 				UVDRIFTBATCH = false;
-				WAITBAR.Hide();
 				WAITBAR.Close();
-				this.Enabled = true;
-				this.BringToFront();
 			}
 		}
 
@@ -6274,7 +6125,7 @@ namespace CCDLAB
 				driftlistfile = UVPLOTDRIFTFILENAME;
 				WAITBAR.ProgressBar.Value = 100;
 				WAITBAR.Refresh();
-				ApplyDriftListWrkr.RunWorkerAsync(driftlistfile);
+				UVITApplyDriftListWrkr.RunWorkerAsync(driftlistfile);
 			}
 			else
 			{
@@ -6308,532 +6159,512 @@ namespace CCDLAB
 				WAITBAR.Text = "Applying Drift";
 				WAITBAR.TextMsg.Text = "Please wait...";
 				WAITBAR.CancelBtn.Enabled = false;
-				ApplyDriftListWrkr.RunWorkerAsync(driftlistfile);
+				UVITApplyDriftListWrkr.RunWorkerAsync(driftlistfile);
 				WAITBAR.ShowDialog();
 			}
 		}
 
-		private void ApplyDriftListWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITApplyDriftListWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-			//try
+			if (UVAPPLYDRIFTNOW)
+				UVAPPLYDRIFTNOW = false;
+
+			string driftlistfile = (string)e.Argument;
+
+			FITSImage driftsfits = new JPFITS.FITSImage(driftlistfile, null, true, false, false, false);
+			double[,] drifts = FITSImage.ReadImageArrayOnly(driftlistfile, null, true);
+
+			string timelistfile = driftlistfile.Remove(driftlistfile.IndexOf("XYDrift")) + "TimeList.fits";
+			string deDrift = "_deDrift";
+			while (driftlistfile.Contains(deDrift))
 			{
-				if (UVAPPLYDRIFTNOW)
-					UVAPPLYDRIFTNOW = false;
+				timelistfile = timelistfile.Replace("TimeList", "TimeList_deDrift");
+				deDrift += "_deDrift";
+			}
 
-				string driftlistfile = (string)e.Argument;
+			if (!File.Exists(timelistfile))
+			{
+				MessageBox.Show("Time List not found.  Error & exiting...");
+				WAITBAR.CancelBtn.PerformClick();
+				return;
+			}
+			double[] times = FITSImage.ReadImageVectorOnly(timelistfile, null, true);
 
-				FITSImage driftsfits = new JPFITS.FITSImage(driftlistfile, null, true, false, false, false);
-				double[,] drifts = FITSImage.ReadImageArrayOnly(driftlistfile, null, true);
+			string framelistfile = timelistfile.Replace("Time", "Frame");
+			if (!File.Exists(framelistfile))
+			{
+				MessageBox.Show("Frame List not found.  Error & exiting...");
+				WAITBAR.CancelBtn.PerformClick();
+				return;
+			}
+			double[] frames = FITSImage.ReadImageVectorOnly(framelistfile, null, true);
 
-				string timelistfile = driftlistfile.Remove(driftlistfile.IndexOf("XYDrift")) + "TimeList.fits";
-				string deDrift = "_deDrift";
-				while (driftlistfile.Contains(deDrift))
+			string flatlistfile = timelistfile.Replace("Time", "Flat");
+			if (!File.Exists(flatlistfile))
+			{
+				MessageBox.Show("Flat Field List not found.  Error & exiting...");
+				WAITBAR.CancelBtn.PerformClick();
+				return;
+			}
+			double[] flats = FITSImage.ReadImageVectorOnly(flatlistfile, null, true);
+
+			string mdMmlistfile = timelistfile.Replace("TimeList", "XYmdMm_List");
+			if (!File.Exists(mdMmlistfile))
+			{
+				MessageBox.Show("Max Min Corners List not found.  Error & exiting...");
+				WAITBAR.CancelBtn.PerformClick();
+				return;
+			}
+			double[,] mdMms = FITSImage.ReadImageArrayOnly(mdMmlistfile, null, true);
+
+			string BJDlistfile = timelistfile.Replace("TimeList", "BJDList");
+			bool BJDexists = true;
+			if (!File.Exists(BJDlistfile))
+			{
+				BJDexists = false;
+			}
+			double[] BJDS = null;
+			if (BJDexists)
+				BJDS = FITSImage.ReadImageVectorOnly(BJDlistfile, null, true);
+
+			string intslistfile = UVAPPLYDRIFTCENTROIDSFILENAME;
+			double[,] ints = FITSImage.ReadImageArrayOnly(intslistfile, null, true);
+
+			string fraclistfile = intslistfile.Replace("Ints", "Frac");
+			double[,] frac = FITSImage.ReadImageArrayOnly(fraclistfile, null, true);
+			FITSImage fracfits = new FITSImage(fraclistfile, null, true, false, false, false);
+			bool nuvTOfuv = false;
+			if (fracfits.Header.GetKeyValue("DETECTOR") == "NUV")
+				if (fracfits.Header.GetKeyIndex("NUVTOFUV", false) != -1)
+					nuvTOfuv = true;
+
+			//make exposure array
+			bool createexposurearray = ApplyDriftCreateExpArrayChc.Checked;
+			//when working on merged MASTER file {OR PREVIOUSLY DRIFTED FILE}, drift will be so small as to not change the exposure array,
+			//so just update the existing merged expsoure array to be same dimension as the new dedrifted lists and name it as such.
+			//So here, don't create a new expsoure list, just use the existing merged master one and clip it to match the other lists.
+			bool master = intslistfile.Contains("MASTER") || intslistfile.Contains("deDrift");
+			if (master)
+				createexposurearray = false;
+
+			int res = ExposureArrayResolutionDrop.SelectedIndex + 1;
+			double dres = (double)(res);
+			double pixres = 32 / dres;
+			if (L1CentroidPaddingChck.Checked)
+			{
+				if (PCCentroidPaddingDrop.SelectedIndex == 0)
+					UVPCMODEPADOFFSET = 22;
+				if (PCCentroidPaddingDrop.SelectedIndex == 1)
+					UVPCMODEPADOFFSET = 44;
+			}
+			else
+				UVPCMODEPADOFFSET = 0;
+			int offset = UVPCMODEPADOFFSET * res;
+
+			int winxsz, szx, winysz, szy, ox, oy;
+			try
+			{
+				winxsz = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_X_SZ"));
+				szx = (winxsz + 1) * res + offset * 2;
+				winysz = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_Y_SZ"));
+				szy = (winysz + 1) * res + offset * 2;
+				ox = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_XOFF"));
+				oy = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_YOFF"));
+			}
+			catch
+			{
+				winxsz = 511;
+				szx = (winxsz + 1) * res + offset * 2;
+				winysz = 511;
+				szy = (winysz + 1) * res + offset * 2;
+				ox = 0;
+				oy = 0;
+			}
+
+			double nframes = 0;
+			double[,] exposuremap = null;
+			double[,] exposuredrifts = null;
+			double[,] exposurearray = null;
+			if (createexposurearray)
+			{
+				UVITApplyDriftListWrkr.ReportProgress(0);
+
+				//need to check for existing exposure arrays and ...do what with them...
+				//in order to create a final _dedrfit_dedrift_etc one...
+				//what should be done, then, is to check for existing drift series
+				//this assumes that all drift series in the directory are relevent to the current iteration
+
+				//this assumption disrupts re-performing the dift series on an earlier iteration of corrected files from which you wish to start again
+				//so you should only use the drift series that are from an earlier time than the current file time...
+
+				//So, get the drift series in the directory, and sum them (xy, not time vector).  Create the exposure array from that.
+				//However, that summed series is only for the exposure array, NOT for the current drift correction
+				//The current drift correction is only for the current "drifts" series.
+				//So, use a new drifts series, called Exparray drift or something...
+				//The most recent drift series will be the shortest one
+
+				//*********should also check the t0 index if the drifts dont start at same time???...*********
+
+				exposurearray = new double[szx, szy];
+
+				exposuredrifts = new double[driftsfits.Width, driftsfits.Height];
+				double[,] prevdrifts;
+				//this gets all drifts *including current one, so should always be at least one for the j loop below
+				string[] prevdriftslists = Directory.GetFiles(timelistfile.Substring(0, timelistfile.LastIndexOf("\\")), "*.drift");
+				for (int j = 0; j < prevdriftslists.Length; j++)
 				{
-					timelistfile = timelistfile.Replace("TimeList", "TimeList_deDrift");
-					deDrift += "_deDrift";
-				}
+					prevdrifts = FITSImage.ReadImageArrayOnly(prevdriftslists[j], null, true);
 
-				if (!File.Exists(timelistfile))
-				{
-					MessageBox.Show("Time List not found.  Error & exiting...");
-					WAITBAR.CancelBtn.PerformClick();
-					return;
-				}
-				double[] times = FITSImage.ReadImageVectorOnly(timelistfile, null, true);
-
-				string framelistfile = timelistfile.Replace("Time", "Frame");
-				if (!File.Exists(framelistfile))
-				{
-					MessageBox.Show("Frame List not found.  Error & exiting...");
-					WAITBAR.CancelBtn.PerformClick();
-					return;
-				}
-				double[] frames = FITSImage.ReadImageVectorOnly(framelistfile, null, true);
-
-				string flatlistfile = timelistfile.Replace("Time", "Flat");
-				if (!File.Exists(flatlistfile))
-				{
-					MessageBox.Show("Flat Field List not found.  Error & exiting...");
-					WAITBAR.CancelBtn.PerformClick();
-					return;
-				}
-				double[] flats = FITSImage.ReadImageVectorOnly(flatlistfile, null, true);
-
-				string mdMmlistfile = timelistfile.Replace("TimeList", "XYmdMm_List");
-				if (!File.Exists(mdMmlistfile))
-				{
-					MessageBox.Show("Max Min Corners List not found.  Error & exiting...");
-					WAITBAR.CancelBtn.PerformClick();
-					return;
-				}
-				double[,] mdMms = FITSImage.ReadImageArrayOnly(mdMmlistfile, null, true);
-
-				string BJDlistfile = timelistfile.Replace("TimeList", "BJDList");
-				bool BJDexists = true;
-				if (!File.Exists(BJDlistfile))
-				{
-					BJDexists = false;
-					/*MessageBox.Show("BJDList Time List not found.  Error & exiting...");
-					WAITBAR.CancelBtn.PerformClick();
-					return;*/
-				}
-				double[] BJDS = null;
-				if (BJDexists)
-					BJDS = FITSImage.ReadImageVectorOnly(BJDlistfile, null, true);
-
-				string intslistfile = UVAPPLYDRIFTCENTROIDSFILENAME;
-				double[,] ints = FITSImage.ReadImageArrayOnly(intslistfile, null, true);
-
-				string fraclistfile = intslistfile.Replace("Ints", "Frac");
-				double[,] frac = FITSImage.ReadImageArrayOnly(fraclistfile, null, true);
-				FITSImage fracfits = new FITSImage(fraclistfile, null, true, false, false, false);
-				bool nuvTOfuv = false;
-				if (fracfits.Header.GetKeyValue("DETECTOR") == "NUV")
-					if (fracfits.Header.GetKeyIndex("NUVTOFUV", false) != -1)
-						nuvTOfuv = true;
-
-				//make exposure array
-				bool createexposurearray = ApplyDriftCreateExpArrayChc.Checked;
-				//when working on merged MASTER file {OR PREVIOUSLY DRIFTED FILE}, drift will be so small as to not change the exposure array,
-				//so just update the existing merged expsoure array to be same dimension as the new dedrifted lists and name it as such.
-				//So here, don't create a new expsoure list, just use the existing merged master one and clip it to match the other lists.
-				bool master = intslistfile.Contains("MASTER") || intslistfile.Contains("deDrift");
-				if (master)
-					createexposurearray = false;
-
-				int res = ExposureArrayResolutionDrop.SelectedIndex + 1;
-				double dres = (double)(res);
-				double pixres = 32 / dres;
-				if (L1CentroidPaddingChck.Checked)
-				{
-					if (PCCentroidPaddingDrop.SelectedIndex == 0)
-						UVPCMODEPADOFFSET = 22;
-					if (PCCentroidPaddingDrop.SelectedIndex == 1)
-						UVPCMODEPADOFFSET = 44;
-				}
-				else
-					UVPCMODEPADOFFSET = 0;
-				int offset = UVPCMODEPADOFFSET * res;
-
-				int winxsz, szx, winysz, szy, ox, oy;
-				try
-				{
-					winxsz = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_X_SZ"));
-					szx = (winxsz + 1) * res + offset * 2;
-					winysz = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_Y_SZ"));
-					szy = (winysz + 1) * res + offset * 2;
-					ox = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_XOFF"));
-					oy = Convert.ToInt32(driftsfits.Header.GetKeyValue("WIN_YOFF"));
-				}
-				catch
-				{
-					winxsz = 511;
-					szx = (winxsz + 1) * res + offset * 2;
-					winysz = 511;
-					szy = (winysz + 1) * res + offset * 2;
-					ox = 0;
-					oy = 0;
-				}
-
-				double nframes = 0;
-				double[,] exposuremap = null;
-				double[,] exposuredrifts = null;
-				double[,] exposurearray = null;
-				if (createexposurearray)
-				{
-					ApplyDriftListWrkr.ReportProgress(0);
-
-					//need to check for existing exposure arrays and ...do what with them...
-					//in order to create a final _dedrfit_dedrift_etc one...
-					//what should be done, then, is to check for existing drift series
-					//this assumes that all drift series in the directory are relevent to the current iteration
-
-					//this assumption disrupts re-performing the dift series on an earlier iteration of corrected files from which you wish to start again
-					//so you should only use the drift series that are from an earlier time than the current file time...
-
-					//So, get the drift series in the directory, and sum them (xy, not time vector).  Create the exposure array from that.
-					//However, that summed series is only for the exposure array, NOT for the current drift correction
-					//The current drift correction is only for the current "drifts" series.
-					//So, use a new drifts series, called Exparray drift or something...
-					//The most recent drift series will be the shortest one
-
-					//*********should also check the t0 index if the drifts dont start at same time???...*********
-
-					exposurearray = new double[szx, szy];
-
-					exposuredrifts = new double[driftsfits.Width, driftsfits.Height];
-					double[,] prevdrifts;
-					//this gets all drifts *including current one, so should always be at least one for the j loop below
-					string[] prevdriftslists = Directory.GetFiles(timelistfile.Substring(0, timelistfile.LastIndexOf("\\")), "*.drift");
-					for (int j = 0; j < prevdriftslists.Length; j++)
+					Parallel.For(0, driftsfits.Height, i =>
 					{
-						prevdrifts = FITSImage.ReadImageArrayOnly(prevdriftslists[j], null, true);
+						exposuredrifts[0, i] = prevdrifts[0, i];
+						exposuredrifts[1, i] += prevdrifts[1, i];
+						exposuredrifts[2, i] += prevdrifts[2, i];
+					});
+				}
 
-						Parallel.For(0, driftsfits.Height, i =>
-						{
-							exposuredrifts[0, i] = prevdrifts[0, i];
-							exposuredrifts[1, i] += prevdrifts[1, i];
-							exposuredrifts[2, i] += prevdrifts[2, i];
-						});
-					}
-
-					string detector = driftsfits.Header.GetKeyValue("DETECTOR");
-					string FUVexpmapfile = "";
-					string NUVexpmapfile = "";
-					if (res == 1)
+				string detector = driftsfits.Header.GetKeyValue("DETECTOR");
+				string FUVexpmapfile = "";
+				string NUVexpmapfile = "";
+				if (res == 1)
+				{
+					FUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\FUV Exposure Map.fits";
+					NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map.fits";
+					if (nuvTOfuv)
+						NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map_NUVtoFUV.fits";
+				}
+				if (res == 2)
+				{
+					FUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\FUV Exposure Map x2.fits";
+					NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map x2.fits";
+					if (nuvTOfuv)
+						NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map x2_NUVtoFUV.fits";
+				}
+				if (detector == "FUV")
+				{
+					if (!File.Exists(FUVexpmapfile))
 					{
-						FUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\FUV Exposure Map.fits";
-						NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map.fits";
-						if (nuvTOfuv)
-							NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map_NUVtoFUV.fits";
-					}
-					if (res == 2)
-					{
-						FUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\FUV Exposure Map x2.fits";
-						NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map x2.fits";
-						if (nuvTOfuv)
-							NUVexpmapfile = "C:\\UVIT_CalDB\\Exposure Array Map\\NUV Exposure Map x2_NUVtoFUV.fits";
-					}
-					if (detector == "FUV")
-					{
-						if (!File.Exists(FUVexpmapfile))
-						{
-							MessageBox.Show("FUV Exposure Map not found in UVIT_CalDB at " + FUVexpmapfile + ".  Please update your Cal_DB from http://www.ucalgary.ca/uvit/.  Exiting.", "Error...");
-							WAITBAR.CancelBtn.PerformClick();
-							return;
-						}
-						if (winxsz == 511 && winysz == 511)
-						{
-							if (UVPCMODEPADOFFSET == 44)
-								exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 0, 600 * res - 1, 0, 600 * res - 1 }, true);
-							if (UVPCMODEPADOFFSET == 22)
-								exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 22 * res, 600 * res - 1 - 22 * res, 22 * res, 600 * res - 1 - 22 * res }, true);
-							if (UVPCMODEPADOFFSET == 0)
-								exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 44 * res, 600 * res - 1 - 44 * res, 44 * res, 600 * res - 1 - 44 * res }, true);
-						}
-						else
-						{
-							exposuremap = new double[szx, szy];
-							Parallel.For(UVPCMODEPADOFFSET * res, szx - UVPCMODEPADOFFSET * res, x =>
-							{
-								for (int y = UVPCMODEPADOFFSET * res; y < szy - UVPCMODEPADOFFSET * res; y++)
-									exposuremap[x, y] = 1;
-							});
-						}
-					}
-					else if (detector == "NUV")
-					{
-						if (!File.Exists(NUVexpmapfile))
-						{
-							MessageBox.Show("NUV Exposure Map not found in UVIT_CalDB at " + NUVexpmapfile + ".  Please update your Cal_DB from http://www.ucalgary.ca/uvit/.  Exiting.", "Error...");
-							WAITBAR.CancelBtn.PerformClick();
-							return;
-						}
-						if (winxsz == 511 && winysz == 511)
-						{
-							if (UVPCMODEPADOFFSET == 44)
-								exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 0, 600 * res - 1, 0, 600 * res - 1 }, true);
-							if (UVPCMODEPADOFFSET == 22)
-								exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 22 * res, 600 * res - 1 - 22 * res, 22 * res, 600 * res - 1 - 22 * res }, true);
-							if (UVPCMODEPADOFFSET == 0)
-								exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 44 * res, 600 * res - 1 - 44 * res, 44 * res, 600 * res - 1 - 44 * res }, true);
-						}
-						else
-						{
-							exposuremap = new double[szx, szy];
-							Parallel.For(UVPCMODEPADOFFSET * res, szx - UVPCMODEPADOFFSET * res, x =>
-							{
-								for (int y = UVPCMODEPADOFFSET * res; y < szy - UVPCMODEPADOFFSET * res; y++)
-									exposuremap[x, y] = 1;
-							});
-						}
-					}
-					else
-					{
-						MessageBox.Show("Problem determining the correct Exposure Map for the exposure array...", "Error...");
+						MessageBox.Show("FUV Exposure Map not found in UVIT_CalDB at " + FUVexpmapfile + ".  Please update your Cal_DB from joepostma@live.ca.  Exiting.", "Error...");
 						WAITBAR.CancelBtn.PerformClick();
 						return;
 					}
-
-					int xstart, xend, ystart, yend, expxstart, expystart;
-					exposuredrifts[1, 0] *= -1;
-					exposuredrifts[2, 0] *= -1;
-					double oldxdrift = exposuredrifts[1, 0];
-					double oldydrift = exposuredrifts[2, 0];
-					if (exposuredrifts[1, 0] < 0)
+					if (winxsz == 511 && winysz == 511)
 					{
-						xstart = -(int)(exposuredrifts[1, 0] / pixres);
-						xend = szx;
-						expxstart = 0;
+						if (UVPCMODEPADOFFSET == 44)
+							exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 0, 600 * res - 1, 0, 600 * res - 1 }, true);
+						if (UVPCMODEPADOFFSET == 22)
+							exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 22 * res, 600 * res - 1 - 22 * res, 22 * res, 600 * res - 1 - 22 * res }, true);
+						if (UVPCMODEPADOFFSET == 0)
+							exposuremap = FITSImage.ReadImageArrayOnly(FUVexpmapfile, new int[] { 44 * res, 600 * res - 1 - 44 * res, 44 * res, 600 * res - 1 - 44 * res }, true);
 					}
 					else
 					{
-						xstart = 0;
-						xend = szx - (int)(exposuredrifts[1, 0] / pixres);
-						expxstart = (int)(exposuredrifts[1, 0] / pixres);
-					}
-					if (exposuredrifts[2, 0] < 0)
-					{
-						ystart = -(int)(exposuredrifts[2, 0] / pixres);
-						yend = szy;
-						expystart = 0;
-					}
-					else
-					{
-						ystart = 0;
-						yend = szy - (int)(exposuredrifts[2, 0] / pixres);
-						expystart = (int)(exposuredrifts[2, 0] / pixres);
-					}
-					exposuredrifts[1, 0] *= -1;
-					exposuredrifts[2, 0] *= -1;
-
-					int intprog = 0;
-					double increment = 0;
-					double time = -1;
-					for (int i = 0; i < driftsfits.Height; i++)
-					{
-						if (time != exposuredrifts[0, i])//new drift frame time...possibly new drift...also very first frame
+						exposuremap = new double[szx, szy];
+						Parallel.For(UVPCMODEPADOFFSET * res, szx - UVPCMODEPADOFFSET * res, x =>
 						{
-							if (100 * i / driftsfits.Height > intprog)
-							{
-								intprog += 1;
-								ApplyDriftListWrkr.ReportProgress(0, intprog);
-							}
+							for (int y = UVPCMODEPADOFFSET * res; y < szy - UVPCMODEPADOFFSET * res; y++)
+								exposuremap[x, y] = 1;
+						});
+					}
+				}
+				else if (detector == "NUV")
+				{
+					if (!File.Exists(NUVexpmapfile))
+					{
+						MessageBox.Show("NUV Exposure Map not found in UVIT_CalDB at " + NUVexpmapfile + ".  Please update your Cal_DB from joepostma@live.ca.  Exiting.", "Error...");
+						WAITBAR.CancelBtn.PerformClick();
+						return;
+					}
+					if (winxsz == 511 && winysz == 511)
+					{
+						if (UVPCMODEPADOFFSET == 44)
+							exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 0, 600 * res - 1, 0, 600 * res - 1 }, true);
+						if (UVPCMODEPADOFFSET == 22)
+							exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 22 * res, 600 * res - 1 - 22 * res, 22 * res, 600 * res - 1 - 22 * res }, true);
+						if (UVPCMODEPADOFFSET == 0)
+							exposuremap = FITSImage.ReadImageArrayOnly(NUVexpmapfile, new int[] { 44 * res, 600 * res - 1 - 44 * res, 44 * res, 600 * res - 1 - 44 * res }, true);
+					}
+					else
+					{
+						exposuremap = new double[szx, szy];
+						Parallel.For(UVPCMODEPADOFFSET * res, szx - UVPCMODEPADOFFSET * res, x =>
+						{
+							for (int y = UVPCMODEPADOFFSET * res; y < szy - UVPCMODEPADOFFSET * res; y++)
+								exposuremap[x, y] = 1;
+						});
+					}
+				}
+				else
+				{
+					MessageBox.Show("Problem determining the correct Exposure Map for the exposure array...", "Error...");
+					WAITBAR.CancelBtn.PerformClick();
+					return;
+				}
 
-							time = exposuredrifts[0, i];
-							nframes++;
+				int xstart, xend, ystart, yend, expxstart, expystart;
+				exposuredrifts[1, 0] *= -1;
+				exposuredrifts[2, 0] *= -1;
+				double oldxdrift = exposuredrifts[1, 0];
+				double oldydrift = exposuredrifts[2, 0];
+				if (exposuredrifts[1, 0] < 0)
+				{
+					xstart = -(int)(exposuredrifts[1, 0] / pixres);
+					xend = szx;
+					expxstart = 0;
+				}
+				else
+				{
+					xstart = 0;
+					xend = szx - (int)(exposuredrifts[1, 0] / pixres);
+					expxstart = (int)(exposuredrifts[1, 0] / pixres);
+				}
+				if (exposuredrifts[2, 0] < 0)
+				{
+					ystart = -(int)(exposuredrifts[2, 0] / pixres);
+					yend = szy;
+					expystart = 0;
+				}
+				else
+				{
+					ystart = 0;
+					yend = szy - (int)(exposuredrifts[2, 0] / pixres);
+					expystart = (int)(exposuredrifts[2, 0] / pixres);
+				}
+				exposuredrifts[1, 0] *= -1;
+				exposuredrifts[2, 0] *= -1;
 
-							exposuredrifts[1, i] *= -1;
-							exposuredrifts[2, i] *= -1;
+				int intprog = 0;
+				double increment = 0;
+				double time = -1;
+				for (int i = 0; i < driftsfits.Height; i++)
+				{
+					if (time != exposuredrifts[0, i])//new drift frame time...possibly new drift...also very first frame
+					{
+						if (100 * i / driftsfits.Height > intprog)
+						{
+							intprog += 1;
+							UVITApplyDriftListWrkr.ReportProgress(0, intprog);
+						}
 
-							//if it isnt moving then just gather the increments to apply after it does move
-							//and it only needs to be applied after it moves by at least one pixel (or res?)
-							if (Math.Abs(exposuredrifts[1, i] - oldxdrift) < pixres && Math.Abs(exposuredrifts[2, i] - oldydrift) < pixres)//will trigger for first frame so increment goes to 1 for it
-							{
-								increment++;//this starts at zero, so if this is the first frame, we get the first increment = 1
-								exposuredrifts[1, i] *= -1;//reset
-								exposuredrifts[2, i] *= -1;
-								continue;
-							}
+						time = exposuredrifts[0, i];
+						nframes++;
 
-							//then it has moved, so increment out everything from when it wasn't moving at the old positions
-							Parallel.For(xstart, xend, x =>
-							{
-								for (int y = ystart; y < yend; y++)
-									if (exposuremap[x, y] == 1)
-										exposurearray[x - xstart + expxstart, y - ystart + expystart] += increment;
-							});
+						exposuredrifts[1, i] *= -1;
+						exposuredrifts[2, i] *= -1;
 
-							increment = 1;//increment for current frame
-
-							//update moved position stuff...at least one of the drifts is moved 32 or more...update that one or both only
-							if (Math.Abs(exposuredrifts[1, i] - oldxdrift) >= pixres)
-							{
-								oldxdrift = exposuredrifts[1, i];
-								if (exposuredrifts[1, i] < 0)
-								{
-									xstart = -(int)(exposuredrifts[1, i] / pixres);
-									xend = szx;
-									expxstart = 0;
-								}
-								else
-								{
-									xstart = 0;
-									xend = szx - (int)(exposuredrifts[1, i] / pixres);
-									expxstart = (int)(exposuredrifts[1, i] / pixres);
-								}
-							}
-
-							if (Math.Abs(exposuredrifts[2, i] - oldydrift) >= pixres)
-							{
-								oldydrift = exposuredrifts[2, i];
-								if (exposuredrifts[2, i] < 0)
-								{
-									ystart = -(int)(exposuredrifts[2, i] / pixres);
-									yend = szy;
-									expystart = 0;
-								}
-								else
-								{
-									ystart = 0;
-									yend = szy - (int)(exposuredrifts[2, i] / pixres);
-									expystart = (int)(exposuredrifts[2, i] / pixres);
-								}
-							}
-
+						//if it isnt moving then just gather the increments to apply after it does move
+						//and it only needs to be applied after it moves by at least one pixel (or res?)
+						if (Math.Abs(exposuredrifts[1, i] - oldxdrift) < pixres && Math.Abs(exposuredrifts[2, i] - oldydrift) < pixres)//will trigger for first frame so increment goes to 1 for it
+						{
+							increment++;//this starts at zero, so if this is the first frame, we get the first increment = 1
 							exposuredrifts[1, i] *= -1;//reset
 							exposuredrifts[2, i] *= -1;
+							continue;
 						}
+
+						//then it has moved, so increment out everything from when it wasn't moving at the old positions
+						Parallel.For(xstart, xend, x =>
+						{
+							for (int y = ystart; y < yend; y++)
+								if (exposuremap[x, y] == 1)
+									exposurearray[x - xstart + expxstart, y - ystart + expystart] += increment;
+						});
+
+						increment = 1;//increment for current frame
+
+						//update moved position stuff...at least one of the drifts is moved 32 or more...update that one or both only
+						if (Math.Abs(exposuredrifts[1, i] - oldxdrift) >= pixres)
+						{
+							oldxdrift = exposuredrifts[1, i];
+							if (exposuredrifts[1, i] < 0)
+							{
+								xstart = -(int)(exposuredrifts[1, i] / pixres);
+								xend = szx;
+								expxstart = 0;
+							}
+							else
+							{
+								xstart = 0;
+								xend = szx - (int)(exposuredrifts[1, i] / pixres);
+								expxstart = (int)(exposuredrifts[1, i] / pixres);
+							}
+						}
+
+						if (Math.Abs(exposuredrifts[2, i] - oldydrift) >= pixres)
+						{
+							oldydrift = exposuredrifts[2, i];
+							if (exposuredrifts[2, i] < 0)
+							{
+								ystart = -(int)(exposuredrifts[2, i] / pixres);
+								yend = szy;
+								expystart = 0;
+							}
+							else
+							{
+								ystart = 0;
+								yend = szy - (int)(exposuredrifts[2, i] / pixres);
+								expystart = (int)(exposuredrifts[2, i] / pixres);
+							}
+						}
+
+						exposuredrifts[1, i] *= -1;//reset
+						exposuredrifts[2, i] *= -1;
 					}
-					//increment out last gathered increments
-
-					Parallel.For(xstart, xend, x =>
-					{
-						for (int y = ystart; y < yend; y++)
-							if (exposuremap[x, y] == 1)
-								exposurearray[x - xstart + expxstart, y - ystart + expystart] += increment;
-					});
-
-					//lastly normalize the array...
-					exposurearray = JPMath.MatrixDivScalar(exposurearray, nframes, true);
-
-					driftsfits.Header.SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
-					driftsfits.Header.SetKey("EXMAPTIM", (exposuredrifts[0, exposuredrifts.GetLength(1) - 1] - exposuredrifts[0, 0]).ToString(), "Exposure Map Time", true, 15);
 				}
+				//increment out last gathered increments
 
-				ApplyDriftListWrkr.ReportProgress(1);
-
-				//so now use the times from drifts to align on the time from times, and apply onto new ints array and save that array
-				double t0 = drifts[0, 0];
-				int t0index = JPMath.Find(times, t0, "==", true);
-
-				//MessageBox.Show(t0.ToString() + "	" + t0index.ToString());
-				//MessageBox.Show(t0.ToString() + "	" + t0index.ToString() + "   " + times[t0index].ToString());
-
-				//will need dedrifted ints and fracs so they align...
-				double[,] dedriftedXYInts = new double[2, driftsfits.Height];
-				double[,] dedriftedXYFrac = new double[2, driftsfits.Height];
-				double[] dedriftedFlat = new double[driftsfits.Height];
-				double[] dedriftedTime = new double[driftsfits.Height];
-				double[] dedriftedFrame = new double[driftsfits.Height];
-				double[,] dedriftedXYmdMm = new double[2, driftsfits.Height];
-				double[] dedriftedBJD = null;
-				if (BJDexists)
-					dedriftedBJD = new double[driftsfits.Height];
-				double[] dedriftedExposure = null;
-				if (createexposurearray)
-					dedriftedExposure = new double[driftsfits.Height];
-				if (master)
-					dedriftedExposure = FITSImage.ReadImageVectorOnly(timelistfile.Replace("TimeList", "ExpArrayList"), new int[] { 0, 0, 0, driftsfits.Height - 1 }, true);
-
-				//int counter1 = 0;
-				Parallel.For(0, driftsfits.Height, i =>
-				//for (int i = 0; i < driftsfits.Height; i++)
+				Parallel.For(xstart, xend, x =>
 				{
-					dedriftedXYInts[0, i] = ints[0, t0index + i] - drifts[1, i];
-					dedriftedXYInts[1, i] = ints[1, t0index + i] - drifts[2, i];
-
-					dedriftedXYFrac[0, i] = frac[0, t0index + i];
-					dedriftedXYFrac[1, i] = frac[1, t0index + i];
-
-					dedriftedFlat[i] = flats[t0index + i];
-					dedriftedTime[i] = times[t0index + i];
-					dedriftedFrame[i] = frames[t0index + i];
-
-					dedriftedXYmdMm[0, i] = mdMms[0, t0index + i];
-					dedriftedXYmdMm[1, i] = mdMms[1, t0index + i];
-
-					if (BJDexists)
-						dedriftedBJD[i] = BJDS[t0index + i];
-
-					if (createexposurearray)
-					{
-						int xpos = (int)(dedriftedXYInts[0, i] / pixres) + offset - ox * res;
-						int ypos = (int)(dedriftedXYInts[1, i] / pixres) + offset - oy * res;
-						if (xpos < 0 || ypos < 0 || xpos >= szx || ypos >= szy)
-							dedriftedExposure[i] = 0;
-						else
-							dedriftedExposure[i] = exposurearray[xpos, ypos];//applied like the flat...take the inverse at image creation time
-					}
+					for (int y = ystart; y < yend; y++)
+						if (exposuremap[x, y] == 1)
+							exposurearray[x - xstart + expxstart, y - ystart + expystart] += increment;
 				});
 
-				ApplyDriftListWrkr.ReportProgress(2);
+				//lastly normalize the array...
+				exposurearray = JPMath.MatrixDivScalar(exposurearray, nframes, true);
 
-				//then save the dedrifted lists
-				if (BJDexists)
-					driftsfits.Header.SetKey("BJD0", dedriftedBJD[0].ToString("#.0000000"), "BJD of start of imaging", true, 14);//now it will get added to all other copyheaders's
-
-				int ind = intslistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = intslistfile.LastIndexOf(".");
-				string dedriftedXYIntsFile = intslistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedXYIntsFits = new FITSImage(dedriftedXYIntsFile, dedriftedXYInts, false, true);
-				dedriftedXYIntsFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedXYIntsFits.WriteImage(TypeCode.Int16, true);
-
-				ind = fraclistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = fraclistfile.LastIndexOf(".");
-				string dedriftedXYFracFile = fraclistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedXYFracFits = new FITSImage(dedriftedXYFracFile, dedriftedXYFrac, false, true);
-				dedriftedXYFracFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedXYFracFits.WriteImage(TypeCode.Int16, true);
-
-				ind = flatlistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = flatlistfile.LastIndexOf(".");
-				string dedriftedFlatFile = flatlistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedFlatFits = new FITSImage(dedriftedFlatFile, dedriftedFlat, false, true);
-				dedriftedFlatFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedFlatFits.WriteImage(TypeCode.Double, true);
-
-				ind = timelistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = timelistfile.LastIndexOf(".");
-				string dedriftedTimeFile = timelistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedTimeFits = new FITSImage(dedriftedTimeFile, dedriftedTime, false, true);
-				dedriftedTimeFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedTimeFits.WriteImage(TypeCode.UInt32, true);
-
-				ind = framelistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = framelistfile.LastIndexOf(".");
-				string dedriftedFrameFile = framelistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedFrameFits = new FITSImage(dedriftedFrameFile, dedriftedFrame, false, true);
-				dedriftedFrameFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedFrameFits.WriteImage(TypeCode.UInt32, true);
-
-				ind = mdMmlistfile.LastIndexOf("_deDrift");
-				if (ind == -1)
-					ind = mdMmlistfile.LastIndexOf(".");
-				string dedriftedXYmdMmFile = mdMmlistfile.Insert(ind, "_deDrift");
-				FITSImage dedriftedXYmdMmFits = new FITSImage(dedriftedXYmdMmFile, dedriftedXYmdMm, false, true);
-				dedriftedXYmdMmFits.Header.CopyHeaderFrom(driftsfits.Header);
-				dedriftedXYmdMmFits.WriteImage(TypeCode.Int16, true);
-
-				if (BJDexists)
-				{
-					ind = BJDlistfile.LastIndexOf("_deDrift");
-					if (ind == -1)
-						ind = BJDlistfile.LastIndexOf(".");
-					string dedriftedBJDFile = BJDlistfile.Insert(ind, "_deDrift");
-					FITSImage dedriftedBJDFits = new FITSImage(dedriftedBJDFile, dedriftedBJD, false, true);
-					dedriftedBJDFits.Header.CopyHeaderFrom(driftsfits.Header);
-					dedriftedBJDFits.WriteImage(TypeCode.Double, true);
-				}
-
-				if (createexposurearray || master)
-				{
-					string dedriftedExpFile = dedriftedTimeFile.Replace("TimeList", "ExpArrayList");
-					FITSImage dedriftedExpFits = new FITSImage(dedriftedExpFile, dedriftedExposure, false, true);
-					dedriftedExpFits.Header.CopyHeaderFrom(driftsfits.Header);
-					dedriftedExpFits.WriteImage(TypeCode.Double, true);
-
-					//if (createexposurearray)
-					{
-						dedriftedExpFile = dedriftedExpFile.Replace("ExpArrayList", "ExpArrayImg");
-						if (master)
-							exposurearray = JPFITS.FITSImage.ReadImageArrayOnly(dedriftedExpFile.Replace("_deDrift.fits", ".fits"), null, true);
-						FITSImage exp = new FITSImage(dedriftedExpFile, exposurearray, false, true);
-						exp.Header.CopyHeaderFrom(driftsfits.Header);
-						exp.WriteImage(TypeCode.Double, true);
-					}
-				}
-
-				UVCREATEIMAGEFILENAME = dedriftedXYIntsFile;
-
-				if (UVDRIFTAUTORUN)
-				{
-					ApplyDriftListWrkr.ReportProgress(3);
-				}
+				driftsfits.Header.SetKey("EXMAPRES", res.ToString(), "Exposure Map Resolution", true, 15);
+				driftsfits.Header.SetKey("EXMAPTIM", (exposuredrifts[0, exposuredrifts.GetLength(1) - 1] - exposuredrifts[0, 0]).ToString(), "Exposure Map Time", true, 15);
 			}
-			/*catch (Exception e)
+
+			UVITApplyDriftListWrkr.ReportProgress(1);
+
+			//so now use the times from drifts to align on the time from times, and apply onto new ints array and save that array
+			double t0 = drifts[0, 0];
+			int t0index = JPMath.Find(times, t0, "==", true);
+
+			//will need dedrifted ints and fracs so they align...
+			double[,] dedriftedXYInts = new double[2, driftsfits.Height];
+			double[,] dedriftedXYFrac = new double[2, driftsfits.Height];
+			double[] dedriftedFlat = new double[driftsfits.Height];
+			double[] dedriftedTime = new double[driftsfits.Height];
+			double[] dedriftedFrame = new double[driftsfits.Height];
+			double[,] dedriftedXYmdMm = new double[2, driftsfits.Height];
+			double[] dedriftedBJD = null;
+			if (BJDexists)
+				dedriftedBJD = new double[driftsfits.Height];
+			double[] dedriftedExposure = null;
+			if (createexposurearray)
+				dedriftedExposure = new double[driftsfits.Height];
+			if (master)
+				dedriftedExposure = FITSImage.ReadImageVectorOnly(timelistfile.Replace("TimeList", "ExpArrayList"), new int[] { 0, 0, 0, driftsfits.Height - 1 }, true);
+
+			Parallel.For(0, driftsfits.Height, i =>
 			{
-				MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-			}*/
+				dedriftedXYInts[0, i] = ints[0, t0index + i] - drifts[1, i];
+				dedriftedXYInts[1, i] = ints[1, t0index + i] - drifts[2, i];
+
+				dedriftedXYFrac[0, i] = frac[0, t0index + i];
+				dedriftedXYFrac[1, i] = frac[1, t0index + i];
+
+				dedriftedFlat[i] = flats[t0index + i];
+				dedriftedTime[i] = times[t0index + i];
+				dedriftedFrame[i] = frames[t0index + i];
+
+				dedriftedXYmdMm[0, i] = mdMms[0, t0index + i];
+				dedriftedXYmdMm[1, i] = mdMms[1, t0index + i];
+
+				if (BJDexists)
+					dedriftedBJD[i] = BJDS[t0index + i];
+
+				if (createexposurearray)
+				{
+					int xpos = (int)(dedriftedXYInts[0, i] / pixres) + offset - ox * res;
+					int ypos = (int)(dedriftedXYInts[1, i] / pixres) + offset - oy * res;
+					if (xpos < 0 || ypos < 0 || xpos >= szx || ypos >= szy)
+						dedriftedExposure[i] = 0;
+					else
+						dedriftedExposure[i] = exposurearray[xpos, ypos];//applied like the flat...take the inverse at image creation time
+				}
+			});
+
+			UVITApplyDriftListWrkr.ReportProgress(2);
+
+			//then save the dedrifted lists
+			if (BJDexists)
+				driftsfits.Header.SetKey("BJD0", dedriftedBJD[0].ToString("#.0000000"), "BJD of start of imaging", true, 14);//now it will get added to all other copyheaders's
+
+			int ind = intslistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = intslistfile.LastIndexOf(".");
+			string dedriftedXYIntsFile = intslistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedXYIntsFits = new FITSImage(dedriftedXYIntsFile, dedriftedXYInts, false, true);
+			dedriftedXYIntsFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedXYIntsFits.WriteImage(DiskPrecision.Int16, true);
+
+			ind = fraclistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = fraclistfile.LastIndexOf(".");
+			string dedriftedXYFracFile = fraclistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedXYFracFits = new FITSImage(dedriftedXYFracFile, dedriftedXYFrac, false, true);
+			dedriftedXYFracFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedXYFracFits.WriteImage(DiskPrecision.Int16, true);
+
+			ind = flatlistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = flatlistfile.LastIndexOf(".");
+			string dedriftedFlatFile = flatlistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedFlatFits = new FITSImage(dedriftedFlatFile, dedriftedFlat, false, true);
+			dedriftedFlatFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedFlatFits.WriteImage(DiskPrecision.Double, true);
+
+			ind = timelistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = timelistfile.LastIndexOf(".");
+			string dedriftedTimeFile = timelistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedTimeFits = new FITSImage(dedriftedTimeFile, dedriftedTime, false, true);
+			dedriftedTimeFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedTimeFits.WriteImage(DiskPrecision.UInt32, true);
+
+			ind = framelistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = framelistfile.LastIndexOf(".");
+			string dedriftedFrameFile = framelistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedFrameFits = new FITSImage(dedriftedFrameFile, dedriftedFrame, false, true);
+			dedriftedFrameFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedFrameFits.WriteImage(DiskPrecision.UInt32, true);
+
+			ind = mdMmlistfile.LastIndexOf("_deDrift");
+			if (ind == -1)
+				ind = mdMmlistfile.LastIndexOf(".");
+			string dedriftedXYmdMmFile = mdMmlistfile.Insert(ind, "_deDrift");
+			FITSImage dedriftedXYmdMmFits = new FITSImage(dedriftedXYmdMmFile, dedriftedXYmdMm, false, true);
+			dedriftedXYmdMmFits.Header.CopyHeaderFrom(driftsfits.Header);
+			dedriftedXYmdMmFits.WriteImage(DiskPrecision.Int16, true);
+
+			if (BJDexists)
+			{
+				ind = BJDlistfile.LastIndexOf("_deDrift");
+				if (ind == -1)
+					ind = BJDlistfile.LastIndexOf(".");
+				string dedriftedBJDFile = BJDlistfile.Insert(ind, "_deDrift");
+				FITSImage dedriftedBJDFits = new FITSImage(dedriftedBJDFile, dedriftedBJD, false, true);
+				dedriftedBJDFits.Header.CopyHeaderFrom(driftsfits.Header);
+				dedriftedBJDFits.WriteImage(DiskPrecision.Double, true);
+			}
+
+			if (createexposurearray || master)
+			{
+				string dedriftedExpFile = dedriftedTimeFile.Replace("TimeList", "ExpArrayList");
+				FITSImage dedriftedExpFits = new FITSImage(dedriftedExpFile, dedriftedExposure, false, true);
+				dedriftedExpFits.Header.CopyHeaderFrom(driftsfits.Header);
+				dedriftedExpFits.WriteImage(DiskPrecision.Double, true);
+
+				dedriftedExpFile = dedriftedExpFile.Replace("ExpArrayList", "ExpArrayImg");
+				if (master)
+					exposurearray = JPFITS.FITSImage.ReadImageArrayOnly(dedriftedExpFile.Replace("_deDrift.fits", ".fits"), null, true);
+				FITSImage exp = new FITSImage(dedriftedExpFile, exposurearray, false, true);
+				exp.Header.CopyHeaderFrom(driftsfits.Header);
+				exp.WriteImage(DiskPrecision.Double, true);
+			}
+
+			UVCREATEIMAGEFILENAME = dedriftedXYIntsFile;
+
+			if (UVDRIFTAUTORUN)
+				UVITApplyDriftListWrkr.ReportProgress(3);
 		}
 
-		private void ApplyDriftListWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITApplyDriftListWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			if (e.ProgressPercentage == 0)
 			{
@@ -6866,41 +6697,28 @@ namespace CCDLAB
 			}
 		}
 
-		private void ApplyDriftListWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITApplyDriftListWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
-			{
-				this.Enabled = true;
-				this.BringToFront();
 				return;
-			}
 
 			if (!UVDRIFTAUTORUN)
 			{
-				WAITBAR.Hide();
 				WAITBAR.Close();
-				this.BringToFront();
 				DialogResult res = MessageBox.Show("Completed applying the drift correction. Would you like to create the image using current image settings?", "Finished...", MessageBoxButtons.YesNo);
+
 				if (res == DialogResult.No)
-				{
-					this.Enabled = true;
-					this.BringToFront();
 					return;
-				}
 				if (res == DialogResult.Yes)
 				{
 					UVCREATEIMAGENOW = true;
-					ConvertListToImgMenu_DropDownOpened(sender, e);
-					ConvertListToImgMenu.HideDropDown();
-					ConvertListToImgMenu_Click(sender, e);
+					UVITConvertListToImgMenu_Click(sender, e);
 				}
 			}
 			else
 			{
 				UVCREATEIMAGENOW = true;
-				ConvertListToImgMenu_DropDownOpened(sender, e);
-				ConvertListToImgMenu.HideDropDown();
-				ConvertListToImgMenu_Click(sender, e);
+				UVITConvertListToImgMenu_Click(sender, e);
 			}
 		}
 
@@ -6950,9 +6768,9 @@ namespace CCDLAB
 
 			string title = "Orbit: " + framefits.Header.GetKeyValue("ORB_NUM") + "; Source: " + framefits.Header.GetKeyValue("SOURCEID") + "; Detector:" + framefits.Header.GetKeyValue("DETECTOR");
 
-			JPPlot jpplot = new JPPlot();
+			Plotter jpplot = new Plotter("CPF", true, true);
 			jpplot.Text = title;
-			jpplot.PlotLine(plotframes, plotcounts, "Frame Number", "Counts in Frame", title, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point, "CountsperFrame");
+			jpplot.ChartGraph.PlotXYData(plotframes, plotcounts, title, "Frame Number", "Counts in Frame", JPChart.SeriesType.Point, "CountsperFrame");
 		}
 
 		private void perTimeBinMenuItem_Click(System.Object sender, EventArgs e)
@@ -7035,9 +6853,9 @@ namespace CCDLAB
 
 			string title = "Orbit: " + timefits.Header.GetKeyValue("ORB_NUM") + "; Source: " + timefits.Header.GetKeyValue("SOURCEID") + "; Detector:" + timefits.Header.GetKeyValue("DETECTOR");
 
-			JPPlot jpplot = new JPPlot();
+			Plotter jpplot = new Plotter("CPB", true, true);
 			jpplot.Text = title;
-			jpplot.PlotLine(bintimes, bincounts, "Bin Time (seconds)", "Counts in Bin", title, System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point, "CountsperBin");
+			jpplot.ChartGraph.PlotXYData(bintimes, bincounts, title, "Bin Time (seconds)", "Counts in Bin", JPChart.SeriesType.Point, "CountsperBin");
 
 		}
 
@@ -7055,8 +6873,8 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "AutoDeBiasINTDriftEnab", TryAutoDeBiasINTDrift.Enabled);
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 		}
 
 		private void PointSrcINTDriftChck_Click(System.Object sender, EventArgs e)
@@ -7073,15 +6891,15 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "AutoDeBiasINTDriftEnab", TryAutoDeBiasINTDrift.Enabled);
 
 			UVITMenu.ShowDropDown();
-			CreateDriftListMenuItem.ShowDropDown();
-			CreateDriftFromINTMenuItem.ShowDropDown();
+			UVITCreateDriftListMenuItem.ShowDropDown();
+			UVITCreateDriftFromINTMenuItem.ShowDropDown();
 		}
 
-		private void CreateDriftFromINTMenuItem_Click(System.Object sender, EventArgs e)
+		private void UVITCreateDriftFromINTMenuItem_Click(System.Object sender, EventArgs e)
 		{
 			UVITMenu.DropDown.Close();
-			CreateDriftListMenuItem.DropDown.Close();
-			CreateDriftFromINTMenuItem.DropDown.Close();
+			UVITCreateDriftListMenuItem.DropDown.Close();
+			UVITCreateDriftFromINTMenuItem.DropDown.Close();
 			PointSrcINTDriftChck.DropDown.Close();
 
 			if (!UVITMANREG_CONTINUE)
@@ -7152,14 +6970,11 @@ namespace CCDLAB
 				}
 				Array.Sort(UVITMANREGFILELIST);
 
-				//REG.SetReg("CCDLAB", "FolderBrowserPath", curdir);
-
 				if (CrossCorrINTDriftChck.Checked)
 				{
 					object[] arg = new object[2];
 					arg[0] = (object)UVITMANREGFILELIST;
 					arg[1] = (object)CrossCorrINTDriftChck.Checked;
-					this.Enabled = false;
 					WAITBAR = new WaitBar();
 					WAITBAR.ProgressBar.Maximum = 100;
 					WAITBAR.DialogResult = DialogResult.OK;
@@ -7167,8 +6982,8 @@ namespace CCDLAB
 						WAITBAR.Text = "Calculating drift for directory " + (UVITMANREGDIRLISTINDEX + 1).ToString() + " of " + UVITMANREGDIRLIST.Length.ToString();
 					else
 						WAITBAR.Text = "Calculating drift...";
-					DriftFromINTWrkr.RunWorkerAsync(arg);
-					WAITBAR.Show();
+					UVITDriftFromINTWrkr.RunWorkerAsync(arg);
+					WAITBAR.ShowDialog();
 					return;
 				}
 
@@ -7177,7 +6992,6 @@ namespace CCDLAB
 					EqualHWChck.Checked = true;
 					if (HalfWidthXUpD.Value < 5)
 						HalfWidthXUpD.Value = 5;
-					ManRegTrkHWUpD.Value = HalfWidthXUpD.Value;
 					DOUVITMANREG = true;
 					UVITMANREGFILELIST_TIMES = new double[UVITMANREGFILELIST.Length];
 					FileListDrop.Items.Clear();
@@ -7188,37 +7002,38 @@ namespace CCDLAB
 					ImageBatchRedxnPnl.Enabled = true;
 					ContrastWideRad.PerformClick();
 					UVITMenu.HideDropDown();
-					CreateDriftListMenuItem.HideDropDown();
-					CreateDriftFromINTMenuItem.HideDropDown();
+					UVITCreateDriftListMenuItem.HideDropDown();
+					UVITCreateDriftFromINTMenuItem.HideDropDown();
 
 					bool[,] ROI = new bool[512, 512];
 					for (int x = 0; x < 512; x++)
 						for (int y = 0; y < 512; y++)
 							if ((x - 255) * (x - 255) + (y - 255) * (y - 255) < 235 * 235)
 								ROI[x, y] = true;
-					PSES = new JPFITS.PointSourceExtractor[] { new JPFITS.PointSourceExtractor() };
-					PSESINDEX = 0;
-					PSESRECTS = new Rectangle[1][];
-					PSES[PSESINDEX].Extract_Sources(IMAGESET[0].Image, 0, 150, 65000, 175, Double.MaxValue, false, 2, 10, true, "", ROI, false);
-					if (PSES[PSESINDEX].N_Sources > 35)
-						PSES[PSESINDEX].ClipToNBrightest(35);
-					if (PSES[PSESINDEX].N_Sources > 0)
+
+					PSESET.Clear();
+					PSESET.Add(new JPFITS.PointSourceExtractor());
+					PSESETINDEX = 0;
+					PSESET[PSESETINDEX].Extract_Sources(IMAGESET[0].Image, 0, 150, 65000, 175, Double.MaxValue, false, 2, 10, true, "", ROI, false);
+					if (PSESET[PSESETINDEX].N_Sources > 35)
+						PSESET[PSESETINDEX].ClipToNBrightest(35);
+					if (PSESET[PSESETINDEX].N_Sources > 0)
 					{
-						MAKEPSERECTS();
-						ShowPSEChck.Checked = true;
+						PSESPLOTALL = false;
+						PSESPLOTNONE = false;
 						ImageWindow.Refresh();
 						SubImageWindow.Refresh();
 					}
 
 					DialogResult res = DialogResult.Abort;
-					if (PSES[PSESINDEX].N_Sources <= 2)
+					if (PSESET[PSESETINDEX].N_Sources <= 2)
 					{
 						res = DialogResult.No;
 						PointSrcINTDriftNoPlotConfChck.Checked = false;
 					}
-					else if (PSES[PSESINDEX].N_Sources > 2 && !PointSrcINTDriftNoPSEConfChck.Checked)
-						res = MessageBox.Show("Use " + PSES[PSESINDEX].N_Sources + " auto-found sources for tracking?", "Track?", MessageBoxButtons.YesNoCancel);
-					else if (PSES[PSESINDEX].N_Sources > 2 && PointSrcINTDriftNoPSEConfChck.Checked)
+					else if (PSESET[PSESETINDEX].N_Sources > 2 && !PointSrcINTDriftNoPSEConfChck.Checked)
+						res = MessageBox.Show("Use " + PSESET[PSESETINDEX].N_Sources + " auto-found sources for tracking?", "Track?", MessageBoxButtons.YesNoCancel);
+					else if (PSESET[PSESETINDEX].N_Sources > 2 && PointSrcINTDriftNoPSEConfChck.Checked)
 						res = DialogResult.Yes;
 
 					if (res == DialogResult.No)
@@ -7236,11 +7051,11 @@ namespace CCDLAB
 					if (res == DialogResult.Yes)
 					{
 						UVITMANREG_CONTINUE = true;
-						MANREGCOORDS = new int[PSES[PSESINDEX].N_Sources, 2];
-						for (int i = 0; i < PSES[PSESINDEX].N_Sources; i++)
+						MANREGCOORDS = new int[PSESET[PSESETINDEX].N_Sources, 2];
+						for (int i = 0; i < PSESET[PSESETINDEX].N_Sources; i++)
 						{
-							MANREGCOORDS[i, 0] = (int)PSES[PSESINDEX].Centroids_X[i];
-							MANREGCOORDS[i, 1] = (int)PSES[PSESINDEX].Centroids_Y[i];
+							MANREGCOORDS[i, 0] = (int)PSESET[PSESETINDEX].Centroids_X[i];
+							MANREGCOORDS[i, 1] = (int)PSESET[PSESETINDEX].Centroids_Y[i];
 						}
 						HalfWidthXUpD.Value = 5;
 						HalfWidthYUpD.Value = 5;
@@ -7261,9 +7076,8 @@ namespace CCDLAB
 				DO_UVITDRIFTFILES = true;
 
 				SPAREFITSImageSet = new FITSImageSet();
-				SPAREFITSImageSet.Load(UVITMANREGFILELIST, null, false, true, true, "Loading VIS folder");
+				SPAREFITSImageSet.Load(UVITMANREGFILELIST, null, false, true, "Loading VIS folder");
 
-				this.Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = 100;
 				if (UVITMANREGDIRLIST.Length > 0)
@@ -7275,207 +7089,197 @@ namespace CCDLAB
 			}
 		}
 
-		private void DriftFromINTWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDriftFromINTWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-			//try
+			object[] arg = (object[])e.Argument;
+			string[] filelist = (string[])arg[0];
+			bool byxcorr = Convert.ToBoolean(arg[1]);
+
+			FITSImage reffits = new FITSImage(filelist[0], null, true, false, false, false);
+			FITSImage RELfits;
+			double[,] refimg = FITSImage.ReadImageArrayOnly(filelist[0], null, true);
+			double lasttime = Convert.ToDouble(reffits.Header.GetKeyValue("FRMTIME")) * 1000;
+			double Nstack = Convert.ToDouble(reffits.Header.GetKeyValue("NO_FRMS"));
+			double[,] RELimg;
+			double[,] xyshiftslist = new double[3, filelist.Length];
+			double framereadtime, xshift, yshift;
+
+			if (byxcorr)
 			{
-				object[] arg = (object[])e.Argument;
-				string[] filelist = (string[])arg[0];
-				bool byxcorr = Convert.ToBoolean(arg[1]);
-
-				FITSImage reffits = new FITSImage(filelist[0], null, true, false, false, false);
-				FITSImage RELfits;
-				double[,] refimg = FITSImage.ReadImageArrayOnly(filelist[0], null, true);
-				double lasttime = Convert.ToDouble(reffits.Header.GetKeyValue("FRMTIME")) * 1000;
-				double Nstack = Convert.ToDouble(reffits.Header.GetKeyValue("NO_FRMS"));
-				double[,] RELimg;
-				//array<double> shifts;
-				double[,] xyshiftslist = new double[3, filelist.Length];
-				double framereadtime, xshift, yshift;
-
-				if (byxcorr)
+				bool deBias = TryAutoDeBiasINTDrift.Checked;
+				if (deBias)
 				{
-					bool deBias = TryAutoDeBiasINTDrift.Checked;
-					if (deBias)
-					{
-						refimg = JPMath.DeGradient(refimg, 0, true);
-						refimg = JPMath.DeGradient(refimg, 1, true);
-					}
-
-					refimg = JPMath.Hanning(refimg, true);
-					double[] Href = JPMath.Sum(refimg, 1, true);
-					double[] Vref = JPMath.Sum(refimg, 0, true);
-					Href = JPMath.VectorSubScalar(Href, JPMath.Mean(Href, true), true);
-					Vref = JPMath.VectorSubScalar(Vref, JPMath.Mean(Vref, true), true);
-
-					double currtime, t0, meanxshift = 0, meanyshift = 0;
-					int intprog = 0;
-					for (int i = 1; i < filelist.Length; i++)
-					{
-
-						if (WAITBAR.DialogResult == DialogResult.Cancel)
-							return;
-						if (100 * i / filelist.Length > intprog)
-						{
-							intprog = 100 * i / filelist.Length;
-							DriftFromINTWrkr.ReportProgress(intprog);
-						}
-
-						RELfits = new FITSImage(filelist[i], null, true, false, false, true);
-						RELimg = FITSImage.ReadImageArrayOnly(filelist[i], null, true);
-
-						JPMath.XCorrImageLagShifts(Href, Vref, RELimg, deBias, deBias, true, out xshift, out yshift, true);
-
-						currtime = Convert.ToDouble(RELfits.Header.GetKeyValue("FRMTIME")) * 1000;
-						framereadtime = (currtime - lasttime) / Nstack;
-						t0 = lasttime + framereadtime - Nstack * framereadtime / 2;
-
-						xyshiftslist[0, i - 1] = t0;
-						xyshiftslist[1, i] = Math.Round(xshift * 32);
-						xyshiftslist[2, i] = Math.Round(yshift * 32);
-
-						meanxshift += xyshiftslist[1, i];//for average drift
-						meanyshift += xyshiftslist[2, i];//for average drift
-
-						if (i == filelist.Length - 1)
-							xyshiftslist[0, i] = currtime + framereadtime - Nstack * framereadtime / 2;
-
-						lasttime = currtime;
-					}
-
-					//zero-out drift series to average drift
-					meanxshift /= (double)(filelist.Length);
-					meanyshift /= (double)(filelist.Length);
-
-					Parallel.For(0, filelist.Length, i =>
-					{
-						xyshiftslist[1, i] -= meanxshift;
-						xyshiftslist[2, i] -= meanyshift;
-					});
+					refimg = JPMath.DeGradient(refimg, 0, true);
+					refimg = JPMath.DeGradient(refimg, 1, true);
 				}
 
-				if (!byxcorr)//then by point source tracking
+				refimg = JPMath.Hanning(refimg, true);
+				double[] Href = JPMath.Sum(refimg, 1, true);
+				double[] Vref = JPMath.Sum(refimg, 0, true);
+				Href = JPMath.VectorSubScalar(Href, JPMath.Median(Href), false);
+				Vref = JPMath.VectorSubScalar(Vref, JPMath.Median(Vref), false);
+
+				double currtime, t0, meanxshift = 0, meanyshift = 0;
+				int intprog = 0;
+				for (int i = 1; i < filelist.Length; i++)
 				{
-					double meanxshift = 0, meanyshift = 0;
-					int NSrc = MANREGCOORDS.GetLength(0);
-					framereadtime = (UVITMANREGFILELIST_TIMES[1] - UVITMANREGFILELIST_TIMES[0]) / Nstack;
-					xyshiftslist[0, 0] = UVITMANREGFILELIST_TIMES[0] + framereadtime - Nstack * framereadtime / 2;
-
-					double[] xdriftinstance = new double[NSrc];
-					double[] ydriftinstance = new double[NSrc];
-					double min, max, range = 0;
-
-					for (int i = 1; i < filelist.Length; i++)
+					if (WAITBAR.DialogResult == DialogResult.Cancel)
+						return;
+					if (100 * i / filelist.Length > intprog)
 					{
-						double x_drift = 0;
-						double y_drift = 0;
-						for (int j = 0; j < NSrc; j++)
-						{
-							xdriftinstance[j] = MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0];
-							ydriftinstance[j] = MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0];
-						}
-
-						x_drift = JPMath.Mean_RobustClipped(xdriftinstance, 3);
-						y_drift = JPMath.Mean_RobustClipped(ydriftinstance, 3);
-
-						framereadtime = (UVITMANREGFILELIST_TIMES[i] - UVITMANREGFILELIST_TIMES[i - 1]) / Nstack;
-						xyshiftslist[0, i] = UVITMANREGFILELIST_TIMES[i] + framereadtime - Nstack * framereadtime / 2;
-						xyshiftslist[1, i] = (x_drift * 32);
-						xyshiftslist[2, i] = (y_drift * 32);
-
-						meanxshift += xyshiftslist[1, i];//for average drift
-						meanyshift += xyshiftslist[2, i];//for average drift
-
-						int index = 0;
-						JPMath.MinMax(xdriftinstance, out min, out max, false);
-						double currrange = max - min;
-						if (currrange > range)
-						{
-							range = currrange;
-							double mean = JPMath.Mean(xdriftinstance, true);
-							JPMath.Max(JPMath.Abs(JPMath.VectorSubScalar(xdriftinstance, mean, true), false), out index, false);
-							UVITINTDRIFT_MAXDEV_INDEX = index;
-						}
-						JPMath.MinMax(ydriftinstance, out min, out max, false);
-						currrange = max - min;
-						if (currrange > range)
-						{
-							range = currrange;
-							double mean = JPMath.Mean(ydriftinstance, true);
-							JPMath.Max(JPMath.Abs(JPMath.VectorSubScalar(ydriftinstance, mean, true), false), out index, false);
-							UVITINTDRIFT_MAXDEV_INDEX = index;
-						}
+						intprog = 100 * i / filelist.Length;
+						UVITDriftFromINTWrkr.ReportProgress(intprog);
 					}
 
-					//zero-out drift series to average drift
-					meanxshift /= (double)(filelist.Length);
-					meanyshift /= (double)(filelist.Length);
+					RELfits = new FITSImage(filelist[i], null, true, false, false, true);
+					RELimg = FITSImage.ReadImageArrayOnly(filelist[i], null, true);
 
-					Parallel.For(0, filelist.Length, i =>
-					{
-						xyshiftslist[1, i] -= meanxshift;
-						xyshiftslist[2, i] -= meanyshift;
-					});
+					JPMath.XCorrImageLagShifts(Href, Vref, RELimg, deBias, deBias, true, out xshift, out yshift, true);
+
+					currtime = Convert.ToDouble(RELfits.Header.GetKeyValue("FRMTIME")) * 1000;
+					framereadtime = (currtime - lasttime) / Nstack;
+					t0 = lasttime + framereadtime - Nstack * framereadtime / 2;
+
+					xyshiftslist[0, i - 1] = t0;
+					xyshiftslist[1, i] = Math.Round(xshift * 32);
+					xyshiftslist[2, i] = Math.Round(yshift * 32);
+
+					meanxshift += xyshiftslist[1, i];//for average drift
+					meanyshift += xyshiftslist[2, i];//for average drift
+
+					if (i == filelist.Length - 1)
+						xyshiftslist[0, i] = currtime + framereadtime - Nstack * framereadtime / 2;
+
+					lasttime = currtime;
 				}
 
-				if (SmoothINTDriftChck.Checked)
+				//zero-out drift series to average drift
+				meanxshift /= (double)(filelist.Length);
+				meanyshift /= (double)(filelist.Length);
+
+				Parallel.For(0, filelist.Length, i =>
 				{
-					double[] x = new double[filelist.Length];
-					double[] y = new double[filelist.Length];
-					for (int i = 0; i < filelist.Length; i++)
-					{
-						x[i] = xyshiftslist[1, i];
-						y[i] = xyshiftslist[2, i];
-					}
-
-					x = JPMath.Smooth(x, Convert.ToInt32(SmoothINTDriftTimeDrop.SelectedItem), false, "centered");
-					y = JPMath.Smooth(y, Convert.ToInt32(SmoothINTDriftTimeDrop.SelectedItem), false, "centered");
-
-					for (int i = 0; i < filelist.Length; i++)
-					{
-						xyshiftslist[1, i] = x[i];
-						xyshiftslist[2, i] = y[i];
-					}
-				}
-
-				int ind = filelist[0].LastIndexOf("l2");
-				string driftslistfile = filelist[0];
-				if (ind > 0)
-					driftslistfile = filelist[0].Remove(ind + 2);
-				driftslistfile = driftslistfile.Replace(".fits", "");
-				if (byxcorr)
-					driftslistfile = driftslistfile + "_XYDrift_List_XCorr.drift";
-				else
-					driftslistfile = driftslistfile + "_XYDrift_List_SrcTrk.drift";
-				FITSImage driftfits = new FITSImage(driftslistfile, xyshiftslist, false, true);
-				driftfits.Header.CopyHeaderFrom(reffits.Header);
-				driftfits.WriteImage(TypeCode.Double, true);
-				UVPLOTDRIFTFILENAME = driftslistfile;
+					xyshiftslist[1, i] -= meanxshift;
+					xyshiftslist[2, i] -= meanyshift;
+				});
 			}
-			/*catch (Exception e)
+
+			if (!byxcorr)//then by point source tracking
 			{
-				MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-			}*/
+				double meanxshift = 0, meanyshift = 0;
+				int NSrc = MANREGCOORDS.GetLength(0);
+				framereadtime = (UVITMANREGFILELIST_TIMES[1] - UVITMANREGFILELIST_TIMES[0]) / Nstack;
+				xyshiftslist[0, 0] = UVITMANREGFILELIST_TIMES[0] + framereadtime - Nstack * framereadtime / 2;
+
+				double[] xdriftinstance = new double[NSrc];
+				double[] ydriftinstance = new double[NSrc];
+				double min, max, range = 0;
+
+				for (int i = 1; i < filelist.Length; i++)
+				{
+					double x_drift = 0;
+					double y_drift = 0;
+					for (int j = 0; j < NSrc; j++)
+					{
+						xdriftinstance[j] = MANREGCENTROIDS[j, 0, i] - MANREGCENTROIDS[j, 0, 0];
+						ydriftinstance[j] = MANREGCENTROIDS[j, 1, i] - MANREGCENTROIDS[j, 1, 0];
+					}
+
+					x_drift = JPMath.Mean_RobustClipped(xdriftinstance, 3);
+					y_drift = JPMath.Mean_RobustClipped(ydriftinstance, 3);
+
+					framereadtime = (UVITMANREGFILELIST_TIMES[i] - UVITMANREGFILELIST_TIMES[i - 1]) / Nstack;
+					xyshiftslist[0, i] = UVITMANREGFILELIST_TIMES[i] + framereadtime - Nstack * framereadtime / 2;
+					xyshiftslist[1, i] = (x_drift * 32);
+					xyshiftslist[2, i] = (y_drift * 32);
+
+					meanxshift += xyshiftslist[1, i];//for average drift
+					meanyshift += xyshiftslist[2, i];//for average drift
+
+					int index = 0;
+					JPMath.MinMax(xdriftinstance, out min, out max, false);
+					double currrange = max - min;
+					if (currrange > range)
+					{
+						range = currrange;
+						double mean = JPMath.Mean(xdriftinstance, true);
+						JPMath.Max(JPMath.Abs(JPMath.VectorSubScalar(xdriftinstance, mean, true), false), out index, false);
+						UVITINTDRIFT_MAXDEV_INDEX = index;
+					}
+					JPMath.MinMax(ydriftinstance, out min, out max, false);
+					currrange = max - min;
+					if (currrange > range)
+					{
+						range = currrange;
+						double mean = JPMath.Mean(ydriftinstance, true);
+						JPMath.Max(JPMath.Abs(JPMath.VectorSubScalar(ydriftinstance, mean, true), false), out index, false);
+						UVITINTDRIFT_MAXDEV_INDEX = index;
+					}
+				}
+
+				//zero-out drift series to average drift
+				meanxshift /= (double)(filelist.Length);
+				meanyshift /= (double)(filelist.Length);
+
+				Parallel.For(0, filelist.Length, i =>
+				{
+					xyshiftslist[1, i] -= meanxshift;
+					xyshiftslist[2, i] -= meanyshift;
+				});
+			}
+
+			if (SmoothINTDriftChck.Checked)
+			{
+				double[] x = new double[filelist.Length];
+				double[] y = new double[filelist.Length];
+				for (int i = 0; i < filelist.Length; i++)
+				{
+					x[i] = xyshiftslist[1, i];
+					y[i] = xyshiftslist[2, i];
+				}
+
+				x = JPMath.Smooth(x, Convert.ToInt32(SmoothINTDriftTimeDrop.SelectedItem), false, SmoothingMethod.Centered);
+				y = JPMath.Smooth(y, Convert.ToInt32(SmoothINTDriftTimeDrop.SelectedItem), false, SmoothingMethod.Centered);
+
+				for (int i = 0; i < filelist.Length; i++)
+				{
+					xyshiftslist[1, i] = x[i];
+					xyshiftslist[2, i] = y[i];
+				}
+			}
+
+			int ind = filelist[0].LastIndexOf("l2");
+			string driftslistfile = filelist[0];
+			if (ind > 0)
+				driftslistfile = filelist[0].Remove(ind + 2);
+			driftslistfile = driftslistfile.Replace(".fits", "");
+			if (byxcorr)
+				driftslistfile = driftslistfile + "_XYDrift_List_XCorr.drift";
+			else
+				driftslistfile = driftslistfile + "_XYDrift_List_SrcTrk.drift";
+			FITSImage driftfits = new FITSImage(driftslistfile, xyshiftslist, false, true);
+			driftfits.Header.CopyHeaderFrom(reffits.Header);
+			driftfits.WriteImage(DiskPrecision.Double, true);
+			UVPLOTDRIFTFILENAME = driftslistfile;
 		}
 
-		private void DriftFromINTWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDriftFromINTWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = String.Concat("Completed: ", e.ProgressPercentage, "%");
 			WAITBAR.Refresh();
 		}
 
-		private void DriftFromINTWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDriftFromINTWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			DialogResult waitbar_res = WAITBAR.DialogResult;
 
-			WAITBAR.Hide();
 			WAITBAR.Close();
-			this.Enabled = true;
-			this.BringToFront();
+
 			UVITMANREG_CONTINUE = false;
 			DO_UVITDRIFTFILES = false;
-			SPAREFITSImageSet.Clear();
+			if (SPAREFITSImageSet != null)
+				SPAREFITSImageSet.Clear();
 
 			if (waitbar_res == DialogResult.Cancel)
 			{
@@ -7493,17 +7297,19 @@ namespace CCDLAB
 
 				if (UVITMANREGDIR_MULTI)
 				{
-					UVPLOTDRIFTLISTNOW = true;
-					PlotDriftListMenuItem.PerformClick();
-
 					DialogResult dres;
 					if (!PointSrcINTDriftNoPlotConfChck.Checked)
+					{
+						UVPLOTDRIFTLISTNOW = true;
+						PlotDriftListMenuItem.PerformClick();
 						dres = MessageBox.Show("Is the Drift Series OK? (Yes = conintue; No = redo; Cancel = exit)", "Drift Series Check...", MessageBoxButtons.YesNoCancel);
+					}
 					else
 						dres = DialogResult.Yes;
 
 					if (dres == DialogResult.Cancel)
 					{
+						UVPLOTDRIFTLISTNOW = false;
 						File.Delete(UVPLOTDRIFTFILENAME);
 						UVITINTMODEDRIFTPOLYPOINTS = null;
 						ImageWindow.Refresh();
@@ -7512,36 +7318,42 @@ namespace CCDLAB
 
 					if (dres == DialogResult.No)
 					{
+						UVPLOTDRIFTLISTNOW = false;
 						File.Delete(UVPLOTDRIFTFILENAME);
 						XDRIFT_PLOT.Close();
 						YDRIFT_PLOT.Close();
-						CreateDriftFromINTMenuItem_Click(sender, new EventArgs());
+						UVITCreateDriftFromINTMenuItem_Click(sender, new EventArgs());
 						return;
 					}
 
 					if (dres == DialogResult.Yes && UVITMANREGDIRLISTINDEX < UVITMANREGDIRLIST.Length - 1)
 					{
+						UVPLOTDRIFTLISTNOW = false;
 						UVITINTMODEDRIFTPOLYPOINTS = null;
 						ImageWindow.Refresh();
 
 						UVITMANREGDIRLISTINDEX++;
-						XDRIFT_PLOT.Close();
-						YDRIFT_PLOT.Close();
-						CreateDriftFromINTMenuItem_Click(sender, new EventArgs());
+						if (XDRIFT_PLOT != null)
+							XDRIFT_PLOT.Close();
+						if (YDRIFT_PLOT != null)
+							YDRIFT_PLOT.Close();
+						UVITCreateDriftFromINTMenuItem_Click(sender, new EventArgs());
 					}
 					else//finished
 					{
-						XDRIFT_PLOT.Close();
-						YDRIFT_PLOT.Close();
+						UVPLOTDRIFTLISTNOW = false;
+						if (XDRIFT_PLOT != null)
+							XDRIFT_PLOT.Close();
+						if (YDRIFT_PLOT != null)
+							YDRIFT_PLOT.Close();
 						UVITMANREGDIRLISTINDEX = 0;//complete
 						UVITINTMODEDRIFTPOLYPOINTS = null;
 						DOUVITMANREG = false;
 						UVREGISTRATION = false;
-						PSESRECTS = null;
-						PSES = null;
+						PSESET.Clear();
 						ImageWindow.Refresh();
 
-						if (!L1AutoApplyVISDrift.Checked)
+						if (!UVITL1AutoApplyVISDriftChck.Checked)
 							if (MessageBox.Show("Proceed to Application of Drift Series?", "Proceed?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 								return;
 						AUTOVISDRIFTAPPLY = true;
@@ -7939,21 +7751,21 @@ namespace CCDLAB
 			dir = IntsFile.Substring(0, ind);
 			REG.SetReg("CCDLAB", "L2EventListPath", dir);
 
-			this.Enabled = false;
+			//this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = FileNames.Length;
 			WAITBAR.Text = "Transforming centroid list(s)...";
-			RotationUVCentroidWrkr.RunWorkerAsync(FileNames);
+			UVITRotationCentroidWrkr.RunWorkerAsync(FileNames);
 			WAITBAR.ShowDialog();
 		}
 
-		private void RotationUVCentroidWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITRotationCentroidWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string[] IntsFiles = (string[])e.Argument;
 
 			ParallelOptions opts = new ParallelOptions();
 			if (L1MachineExtremeChck.Checked)
-				opts.MaxDegreeOfParallelism = (int)((double)Environment.ProcessorCount / Math.PI);
+				opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
 			else
 				opts.MaxDegreeOfParallelism = 1;
 			int count = 0;
@@ -7961,201 +7773,198 @@ namespace CCDLAB
 
 			Parallel.For(0, IntsFiles.Length, opts, (wrkri, loopstate) =>
 			{
-				//try
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					loopstate.Stop();
+
+				lock (lockobj)
 				{
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						loopstate.Stop();// break;
+					count++;
+					UVITRotationCentroidWrkr.ReportProgress(count);
+				}
 
-					lock (lockobj)
+				string IntsFile = IntsFiles[wrkri];
+				string FracFile = IntsFile.Replace("Ints", "Frac");
+				JPFITS.FITSImage IntsFits = new JPFITS.FITSImage(IntsFile, null, true, true, false, true);
+				JPFITS.FITSImage FracFits = new JPFITS.FITSImage(FracFile, null, true, true, false, true);
+				int NPts = FracFits.Height;
+				double x, y, xprime, yprime;
+				int fracx, intsx, fracy, intsy;
+				Random r = new Random();
+
+				if (LinearRotationChck.Checked)
+				{
+					double xshift, yshift, rotation, xcenter, ycenter;
+					xshift = Convert.ToDouble(UserXShiftTxt.Text);
+					yshift = Convert.ToDouble(UserYShiftTxt.Text);
+					xcenter = Convert.ToDouble(UserRotationXCenterTxt.Text);
+					ycenter = Convert.ToDouble(UserRotationYCenterTxt.Text);
+					rotation = -1 * Convert.ToDouble(UserRotationTxt.Text) * Math.PI / 180;//degrees to radians
+
+					bool horzflip = FlipHorizontalMenuItem.Checked;
+					bool vertflip = FlipVerticalMenuItem.Checked;
+
+					for (int j = 0; j < NPts; j++)
 					{
-						count++;
-						RotationUVCentroidWrkr.ReportProgress(count);
-					}
-
-					string IntsFile = IntsFiles[wrkri];
-					string FracFile = IntsFile.Replace("Ints", "Frac");
-					JPFITS.FITSImage IntsFits = new JPFITS.FITSImage(IntsFile, null, true, true, false, true);
-					JPFITS.FITSImage FracFits = new JPFITS.FITSImage(FracFile, null, true, true, false, true);
-					int NPts = FracFits.Height;
-					double x, y, xprime, yprime;
-					int fracx, intsx, fracy, intsy;
-					Random r = new Random();
-
-					if (LinearRotationChck.Checked)
-					{
-						double xshift, yshift, rotation, xcenter, ycenter;
-						xshift = Convert.ToDouble(UserXShiftTxt.Text);
-						yshift = Convert.ToDouble(UserYShiftTxt.Text);
-						xcenter = Convert.ToDouble(UserRotationXCenterTxt.Text);
-						ycenter = Convert.ToDouble(UserRotationYCenterTxt.Text);
-						rotation = -1 * Convert.ToDouble(UserRotationTxt.Text) * Math.PI / 180;//degrees to radians
-
-						bool horzflip = FlipHorizontalMenuItem.Checked;
-						bool vertflip = FlipVerticalMenuItem.Checked;
-
-						for (int j = 0; j < NPts; j++)
-						{
-							x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
-							y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
-
-							if (horzflip)
-								x = 511 * 32 - x;
-							if (vertflip)
-								y = 511 * 32 - y;
-
-							xprime = (x - xcenter * 32) * Math.Cos(rotation) - (y - ycenter * 32) * Math.Sin(rotation) + xcenter * 32 + xshift * 32;
-							yprime = (x - xcenter * 32) * Math.Sin(rotation) + (y - ycenter * 32) * Math.Cos(rotation) + ycenter * 32 + yshift * 32;
-
-							//now need to split out integer and decimal parts back into their own lists...
-							intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
-							fracx -= 16;//reset frac to be from -16
-							intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
-							fracy -= 16;//reset frac to be from -16
-							IntsFits[0, j] = intsx;
-							IntsFits[1, j] = intsy;
-							FracFits[0, j] = fracx;
-							FracFits[1, j] = fracy;
-						}
+						x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
+						y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
 
 						if (horzflip)
-						{
-							IntsFits.Header.AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
-							FracFits.Header.AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
-						}
+							x = 511 * 32 - x;
 						if (vertflip)
-						{
-							IntsFits.Header.AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
-							FracFits.Header.AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
-						}
-						if (xshift != 0)
-						{
-							IntsFits.Header.AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
-							FracFits.Header.AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
-						}
-						if (yshift != 0)
-						{
-							IntsFits.Header.AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
-							FracFits.Header.AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
-						}
-						if (rotation != 0)
-						{
-							IntsFits.Header.AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
-							FracFits.Header.AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
-						}
+							y = 511 * 32 - y;
 
-						if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
-						{
-							WCS_DEROT.CopyTo(IntsFits.Header);
-							WCS_DEROT.CopyTo(FracFits.Header);
+						xprime = (x - xcenter * 32) * Math.Cos(rotation) - (y - ycenter * 32) * Math.Sin(rotation) + xcenter * 32 + xshift * 32;
+						yprime = (x - xcenter * 32) * Math.Sin(rotation) + (y - ycenter * 32) * Math.Cos(rotation) + ycenter * 32 + yshift * 32;
 
-							//rotate and shift the exposure array image so that it matches the WCS derotated aspect
-							string dedrift = "_deDrift";
-							while (IntsFile.Contains(dedrift + "_deDrift"))
-								dedrift += "_deDrift";
-							string exparrayimagefile = IntsFile.Remove(IntsFile.IndexOf("XYInts")) + "ExpArrayImg";
-							exparrayimagefile += dedrift + ".fits";
-							FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, true);
-							double[,] exparr = expfitsimg.Image;
-							exparr = JPMath.RotateShiftArray(exparr, -rotation, Double.MaxValue, Double.MaxValue, "bilinear", 0, 0, true);
-							expfitsimg.SetImage(exparr, false, true);
-							expfitsimg.WriteImage(TypeCode.Double, true);
-						}
-
-						IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_FSRL");
-						IntsFits.WriteImage(IntsFile, TypeCode.Int16, true);
-						FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_FSRL");
-						FracFits.WriteImage(FracFile, TypeCode.Int16, true);
+						//now need to split out integer and decimal parts back into their own lists...
+						intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
+						fracx -= 16;//reset frac to be from -16
+						intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
+						fracy -= 16;//reset frac to be from -16
+						IntsFits[0, j] = intsx;
+						IntsFits[1, j] = intsy;
+						FracFits[0, j] = fracx;
+						FracFits[1, j] = fracy;
 					}
 
-					if (GeneralTransformChck.Checked)
+					if (horzflip)
 					{
-						double xshift, yshift, xcenter, ycenter, TCA, TCB, TCC, TCD;
-						xshift = Convert.ToDouble(TransformShiftXTxt.Text);
-						yshift = Convert.ToDouble(TransformShiftYTxt.Text);
-						xcenter = Convert.ToDouble(TransformCenterXTxt.Text);
-						ycenter = Convert.ToDouble(TransformCenterYTxt.Text);
-						TCA = Convert.ToDouble(TransformCoefATxt.Text);
-						TCB = Convert.ToDouble(TransformCoefBTxt.Text);
-						TCC = Convert.ToDouble(TransformCoefCTxt.Text);
-						TCD = Convert.ToDouble(TransformCoefDTxt.Text);
-
-						for (int j = 0; j < NPts; j++)
-						{
-							x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
-							y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
-
-							xprime = (x - xcenter * 32) * TCA + (y - ycenter * 32) * TCB + xcenter * 32 + xshift * 32;
-							yprime = (x - xcenter * 32) * TCC + (y - ycenter * 32) * TCD + ycenter * 32 + yshift * 32;
-
-							//now need to split out integer and decimal parts back into their own lists...
-							intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
-							fracx -= 16;//reset frac to be from -16
-							intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
-							fracy -= 16;//reset frac to be from -16
-							IntsFits[0, j] = intsx;
-							IntsFits[1, j] = intsy;
-							FracFits[0, j] = fracx;
-							FracFits[1, j] = fracy;
-						}
-
-						//now give the shifted/rotated list a new name and save
-						IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_FSRG");
-						IntsFits.WriteImage(IntsFile, TypeCode.Int16, true);
-						FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_FSRG");
-						FracFits.WriteImage(FracFile, TypeCode.Int16, true);
+						IntsFits.Header.AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+						FracFits.Header.AddKey("HORZFLIP", "true", "Image Flipped Horizontally", -1);
+					}
+					if (vertflip)
+					{
+						IntsFits.Header.AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+						FracFits.Header.AddKey("VERTFLIP", "true", "Image Flipped Vertically", -1);
+					}
+					if (xshift != 0)
+					{
+						IntsFits.Header.AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+						FracFits.Header.AddKey("XSHIFT", xshift.ToString(), "Centroids X-Shift", -1);
+					}
+					if (yshift != 0)
+					{
+						IntsFits.Header.AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+						FracFits.Header.AddKey("YSHIFT", yshift.ToString(), "Centroids Y-Shift", -1);
+					}
+					if (rotation != 0)
+					{
+						IntsFits.Header.AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
+						FracFits.Header.AddKey("ROTATN", (-rotation).ToString(), "Centroids Rotation Angle", -1);
 					}
 
-					UVCONVERTLISTTOIMAGEBATCHFILES[wrkri] = IntsFile;
+					if (UVIT_DEROTATE_WCS)//then use WCS coordinates from header to automatically re-do the WCS solution
+					{
+						WCS_DEROT.CopyTo(IntsFits.Header, WCSOptionsVerboseChck.Checked);
+						WCS_DEROT.CopyTo(FracFits.Header, WCSOptionsVerboseChck.Checked);
+
+						//rotate and shift the exposure array image so that it matches the WCS derotated aspect
+						string dedrift = "_deDrift";
+						while (IntsFile.Contains(dedrift + "_deDrift"))
+							dedrift += "_deDrift";
+						string exparrayimagefile = IntsFile.Remove(IntsFile.IndexOf("XYInts")) + "ExpArrayImg";
+						exparrayimagefile += dedrift + ".fits";
+						FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, true);
+						double[,] exparr = expfitsimg.Image;
+						exparr = JPMath.RotateShiftArray(exparr, -rotation, 597, 597, "lanc_3", 0, 0, true);
+						expfitsimg.SetImage(exparr, false, true);
+						expfitsimg.WriteImage(DiskPrecision.Double, true);
+					}
+
+					IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_FSRL");
+					IntsFits.WriteImage(IntsFile, DiskPrecision.Int16, true);
+					FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_FSRL");
+					FracFits.WriteImage(FracFile, DiskPrecision.Int16, true);
 				}
-				/*catch (Exception e)
+
+				if (GeneralTransformChck.Checked)
 				{
-					MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-				}*/
+					double xshift, yshift, xcenter, ycenter, TCA, TCB, TCC, TCD;
+					xshift = Convert.ToDouble(TransformShiftXTxt.Text);
+					yshift = Convert.ToDouble(TransformShiftYTxt.Text);
+					xcenter = Convert.ToDouble(TransformCenterXTxt.Text);
+					ycenter = Convert.ToDouble(TransformCenterYTxt.Text);
+					TCA = Convert.ToDouble(TransformCoefATxt.Text);
+					TCB = Convert.ToDouble(TransformCoefBTxt.Text);
+					TCC = Convert.ToDouble(TransformCoefCTxt.Text);
+					TCD = Convert.ToDouble(TransformCoefDTxt.Text);
+
+					for (int j = 0; j < NPts; j++)
+					{
+						x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
+						y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
+
+						xprime = (x - xcenter * 32) * TCA + (y - ycenter * 32) * TCB + xcenter * 32 + xshift * 32;
+						yprime = (x - xcenter * 32) * TCC + (y - ycenter * 32) * TCD + ycenter * 32 + yshift * 32;
+
+						//now need to split out integer and decimal parts back into their own lists...
+						intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
+						fracx -= 16;//reset frac to be from -16
+						intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
+						fracy -= 16;//reset frac to be from -16
+						IntsFits[0, j] = intsx;
+						IntsFits[1, j] = intsy;
+						FracFits[0, j] = fracx;
+						FracFits[1, j] = fracy;
+					}
+
+					//now give the shifted/rotated list a new name and save
+					IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_FSRG");
+					IntsFits.WriteImage(IntsFile, DiskPrecision.Int16, true);
+					FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_FSRG");
+					FracFits.WriteImage(FracFile, DiskPrecision.Int16, true);
+				}
+
+				UVCONVERTLISTTOIMAGEBATCHFILES[wrkri] = IntsFile;
 			});
 		}
 
-		private void RotationUVCentroidWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITRotationCentroidWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.TextMsg.Text = "Transforming file " + (e.ProgressPercentage).ToString() + " of " + WAITBAR.ProgressBar.Maximum.ToString();
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.Refresh();
 		}
 
-		private void RotationUVCentroidWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITRotationCentroidWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
-			{
-				this.Enabled = true;
-				return;
-			}
+			return;
 
 			if (!UVIT_DEROTATE_WCS && MessageBox.Show("Completed shifting/rotating the centroid list(s).  Would you like to convert to image(s)?", "Images?", MessageBoxButtons.YesNo) == DialogResult.No)
 			{
-				WAITBAR.Hide();
 				WAITBAR.Close();
-				this.Enabled = true;
 				return;
 			}
 
 			//now create the images...automatic if UVIT_DEROTATE_WCS
-			ConvertListToImgMenu_DropDownOpened(sender, e);
-			ConvertListToImgMenu.HideDropDown();
 			UVCONVERTLISTTOIMAGEBATCH = true;
 			AUTOLOADIMAGESFILES = new string[UVCONVERTLISTTOIMAGEBATCHFILES.Length];
 
 			WAITBAR.ProgressBar.Value = 0;
 			WAITBAR.ProgressBar.Maximum = UVCONVERTLISTTOIMAGEBATCHFILES.Length;
 			WAITBAR.Text = "Creating image(s)...";
-			ConvertUVCentroidListToImgWrkr.RunWorkerAsync(UVCONVERTLISTTOIMAGEBATCHFILES);
+			UVITConvertCentroidListToImgWrkr.RunWorkerAsync(UVCONVERTLISTTOIMAGEBATCHFILES);
 		}
 
-		private void DeRotateViaWCS_Click(System.Object sender, EventArgs e)
+		private void UVITDeRotateViaWCSBtn_Click(System.Object sender, EventArgs e)
 		{
-			if (MessageBox.Show("CURRENT image OK to base derotation upon?", "CURRENT IMAGE AS REFERENCE?", MessageBoxButtons.YesNo) == DialogResult.No)
+			UVITMenu.HideDropDown();
+
+			DialogResult res = DialogResult.Cancel;
+
+			if (AutoDeRotateOnWCSChck.Checked && AutoDeRotateSilentChck.Checked)
+				res = DialogResult.OK;
+			else
+				res = MessageBox.Show("CURRENT image OK to base derotation upon?", "CURRENT IMAGE AS REFERENCE?", MessageBoxButtons.OKCancel);
+
+			if (res == DialogResult.Cancel)
 			{
 				UVIT_DEROTATE_FILES = null;
 				return;
 			}
+			PSEDrop.Items.Clear();
+			PSEDrop.Enabled = false;
 
 			//need to get the most recent/longest filename XYInts files for each image
 			UVIT_DEROTATE_FILES = new string[IMAGESET.Count];
@@ -8169,11 +7978,11 @@ namespace CCDLAB
 			}
 
 			//make the reference file the first, so that when it goes to ConvertUVCentroidListToImgWrkr the first image get re-PSE'd given the CPIX transform below and the new PSE is then used to create the new derotated WCS and for the following images
-			if (FILELISTINDEX != 0)
+			if (IMAGESETINDEX != 0)
 			{
 				string temp = UVIT_DEROTATE_FILES[0];
-				UVIT_DEROTATE_FILES[0] = UVIT_DEROTATE_FILES[FILELISTINDEX];
-				UVIT_DEROTATE_FILES[FILELISTINDEX] = temp;
+				UVIT_DEROTATE_FILES[0] = UVIT_DEROTATE_FILES[IMAGESETINDEX];
+				UVIT_DEROTATE_FILES[IMAGESETINDEX] = temp;
 			}
 
 			UVIT_DEROTATE_WCS = true;
@@ -8184,7 +7993,7 @@ namespace CCDLAB
 			UserYShiftTxt.Text = "0";
 			UserRotationXCenterTxt.Text = "255";
 			UserRotationYCenterTxt.Text = "255";
-			UserRotationTxt.Text = Convert.ToString(-(IMAGESET[FILELISTINDEX].WCS.GetCROTAn(1) + IMAGESET[FILELISTINDEX].WCS.GetCROTAn(2)) / 2);
+			UserRotationTxt.Text = Convert.ToString(-(IMAGESET[IMAGESETINDEX].WCS.GetCROTAn(1) + IMAGESET[IMAGESETINDEX].WCS.GetCROTAn(2)) / 2);
 			UVCONVERTLISTTOIMAGEBATCHFILES = new string[UVIT_DEROTATE_FILES.Length];//pre-make
 
 			/////////////////////////////////
@@ -8194,33 +8003,35 @@ namespace CCDLAB
 			double xcenter = Convert.ToDouble(UserRotationXCenterTxt.Text);
 			double ycenter = Convert.ToDouble(UserRotationYCenterTxt.Text);
 			double rotation = -1 * Convert.ToDouble(UserRotationTxt.Text) * Math.PI / 180;//degrees to radians
-			WCS_DEROT = new JPFITS.WorldCoordinateSolution(IMAGESET[FILELISTINDEX].Header);
+			WCS_DEROT = new JPFITS.WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 			double prec = 1;//check for the image precision...
-			string strprec = IMAGESET[FILELISTINDEX].Header.GetKeyValue("IMAGPREC");
+			string strprec = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("IMAGPREC");
 			if (strprec != "")
 				prec = Convert.ToDouble(strprec);
 			double offset = 0;
-			string stroffset = IMAGESET[FILELISTINDEX].Header.GetKeyValue("PADOFSET");
+			string stroffset = IMAGESET[IMAGESETINDEX].Header.GetKeyValue("PADOFSET");
 			if (stroffset != "")
 				offset = Convert.ToDouble(stroffset);
-			for (int j = 0; j < WCS_DEROT.GetCPIXPixels(1).Length; j++)
+			double[] x = WCS_DEROT.GetCPIXPixels(1, true);
+			double[] y = WCS_DEROT.GetCPIXPixels(2, true);
+			double[] xp = new double[x.Length];
+			double[] yp = new double[x.Length];
+			for (int j = 0; j < WCS_DEROT.GetCPIXPixels(1, false).Length; j++)
 			{
-				double x = ((double[])WCS_DEROT.GetCPIXPixels(1))[j];
-				double y = ((double[])WCS_DEROT.GetCPIXPixels(2))[j];
-				double xprime = (x / prec * 32 - (xcenter + offset) * 32) * Math.Cos(rotation) - (y / prec * 32 - (ycenter + offset) * 32) * Math.Sin(rotation) + (xcenter + offset) * 32 + xshift * 32;
-				double yprime = (x / prec * 32 - (xcenter + offset) * 32) * Math.Sin(rotation) + (y / prec * 32 - (ycenter + offset) * 32) * Math.Cos(rotation) + (ycenter + offset) * 32 + yshift * 32;
+				double xprime = (x[j] / prec * 32 - (xcenter + offset) * 32) * Math.Cos(rotation) - (y[j] / prec * 32 - (ycenter + offset) * 32) * Math.Sin(rotation) + (xcenter + offset) * 32 + xshift * 32;
+				double yprime = (x[j] / prec * 32 - (xcenter + offset) * 32) * Math.Sin(rotation) + (y[j] / prec * 32 - (ycenter + offset) * 32) * Math.Cos(rotation) + (ycenter + offset) * 32 + yshift * 32;
 				xprime /= (32 / prec);
 				yprime /= (32 / prec);
-				((double[])WCS_DEROT.GetCPIXPixels(1))[j] = xprime;
-				((double[])WCS_DEROT.GetCPIXPixels(2))[j] = yprime;
+				xp[j] = xprime;
+				yp[j] = yprime;
 			}
+			WCS_DEROT.SetCPIXPixels(xp, yp, true);
 			/////////////////////////////////
 
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = UVIT_DEROTATE_FILES.Length;
 			WAITBAR.Text = "de-Rotating centroid list(s)...";
-			RotationUVCentroidWrkr.RunWorkerAsync(UVIT_DEROTATE_FILES);
+			UVITRotationCentroidWrkr.RunWorkerAsync(UVIT_DEROTATE_FILES);
 			WAITBAR.ShowDialog();
 		}
 
@@ -8270,16 +8081,16 @@ namespace CCDLAB
 			arg[0] = (object)driftlistfile;
 			arg[1] = (object)fdlg.SelectedPath;
 			arg[2] = (object)savepath;
-			this.Enabled = false;
+
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = 100;
 			WAITBAR.DialogResult = DialogResult.OK;
 			WAITBAR.Text = "Applying Drift Correction...";
-			INTAtoINTAapplyDriftWrkr.RunWorkerAsync(arg);
-			WAITBAR.Show();
+			UVITINTAtoINTAapplyDriftWrkr.RunWorkerAsync(arg);
+			WAITBAR.ShowDialog();
 		}
 
-		private void INTAtoINTAapplyDriftWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITINTAtoINTAapplyDriftWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			object[] arg = (object[])e.Argument;
 			string driftlistfile = (string)arg[0];
@@ -8293,29 +8104,26 @@ namespace CCDLAB
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 					return;
-				INTAtoINTAapplyDriftWrkr.ReportProgress(100 * i / filelist.Length);
+				UVITINTAtoINTAapplyDriftWrkr.ReportProgress(100 * i / filelist.Length);
 
 				FITSImage fits = new FITSImage(filelist[i], null, true, true, false, true);
 				fits.SetImage(JPMath.ShiftArrayInt(fits.Image, -(int)(drifts[1, i]) / 32, -(int)(drifts[2, i]) / 32, true), false, true);//or round instead of int?
 				string name = savepath + "\\" + fits.FileName;
 				name = name.Replace(".fits", "_deDrift.fits");
-				fits.WriteImage(name, TypeCode.Int16, true);
+				fits.WriteImage(name, DiskPrecision.Int16, true);
 			}
 		}
 
-		private void INTAtoINTAapplyDriftWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITINTAtoINTAapplyDriftWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = String.Concat("Completed: ", e.ProgressPercentage, "%");
-			WAITBAR.Refresh();//find all Update() and replace with Refresh()
+			WAITBAR.Refresh();
 		}
 
-		private void INTAtoINTAapplyDriftWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITINTAtoINTAapplyDriftWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			WAITBAR.Hide();
 			WAITBAR.Close();
-			this.Enabled = true;
-			this.BringToFront();
 
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
 				return;
@@ -8323,7 +8131,7 @@ namespace CCDLAB
 			MessageBox.Show("Completed drift-correcting the INT-mode images.");
 		}
 
-		private void GeneralUVRegistrationMenuItem_Click(System.Object sender, EventArgs e)
+		private void UVITGeneralRegistrationMenuItem_Click(System.Object sender, EventArgs e)
 		{
 			if (!UVREGISTRATION)
 			{
@@ -8332,7 +8140,7 @@ namespace CCDLAB
 				ProgressBar.Maximum = 2;
 
 				UVITMenu.HideDropDown();
-				GeneralUVRegistrationMenuItem.HideDropDown();
+				UVITGeneralRegistrationMenuItem.HideDropDown();
 
 				string[] xyintsfiles;
 
@@ -8378,7 +8186,7 @@ namespace CCDLAB
 						MessageBox.Show("No files found...", "Error...");
 						return;
 					}
-					/*int */
+
 					c = 0;
 					for (int i = 0; i < xyintsfiles.Length; i++)
 					{
@@ -8421,6 +8229,27 @@ namespace CCDLAB
 					return;
 				}
 
+				FITSHeader header = new FITSHeader(xyintsfiles[0]);
+				int xsz = Convert.ToInt32(header.GetKeyValue("WIN_X_SZ"));
+				int ysz = Convert.ToInt32(header.GetKeyValue("WIN_Y_SZ"));
+				for (int i = 1; i < xyintsfiles.Length; i++)
+				{
+					header = new FITSHeader(xyintsfiles[i]);
+					if (xsz != Convert.ToInt32(header.GetKeyValue("WIN_X_SZ")) || ysz != Convert.ToInt32(header.GetKeyValue("WIN_Y_SZ")))
+					{
+						MessageBox.Show("Error: All selected files are not the same size. Can only register images of the same dimensions.", "Error...");
+						return;
+					}
+				}
+
+				if (manuallySortFilesToolStripMenuItem.Checked)
+				{
+					UVSortRegisterFilesForm sortform = new UVSortRegisterFilesForm(xyintsfiles);
+					if (sortform.ShowDialog() == DialogResult.Cancel)
+						return;
+					xyintsfiles = sortform.SortedFileList;
+				}
+
 				if (MessageBox.Show("Please select point sources (LEFT-CLICK) which stay within the field of view for the duration of the image set!  RIGHT-CLICK when done.", "Centroid List Registration...", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
 					return;
 
@@ -8431,10 +8260,9 @@ namespace CCDLAB
 				if (UVGeneralRegistrationResolutionDrop.SelectedIndex == 0)
 					ListToImage1PixMenuItem.PerformClick();
 				UVITMenu.HideDropDown();
-				ConvertListToImgMenu.HideDropDown();
+				UVITConvertListToImgMenu.HideDropDown();
 
-				IWLCK = false;//allow cursor box to move
-							  //ImageWindow.Cursor.Hide();
+				ROIFIXEDCURSOR = false;//allow cursor box to move
 				EqualHWChck.Checked = true;
 				HalfWidthXUpD.Value = UVLISTTOIMAGEPREC * 10 / 2;
 				FNDCOORDS_X = new int[1];//this is for plotting the local max point in the ROI
@@ -8486,7 +8314,7 @@ namespace CCDLAB
 				ProgressBar.Value = 1;
 				ProgressBar.Refresh();
 
-				ConvertListToImgMenu_Click(sender, e);
+				UVITConvertListToImgMenu_Click(sender, e);
 
 				return;
 			}
@@ -8499,7 +8327,7 @@ namespace CCDLAB
 				ImageWindow.Refresh();
 				ListToImage8PixMenuItem.PerformClick();
 				UVITMenu.HideDropDown();
-				ConvertListToImgMenu.HideDropDown();
+				UVITConvertListToImgMenu.HideDropDown();
 				ProgressBar.Value = 0;
 				return;
 			}
@@ -8528,7 +8356,7 @@ namespace CCDLAB
 
 					ListToImage8PixMenuItem.PerformClick();
 					UVITMenu.HideDropDown();
-					ConvertListToImgMenu.HideDropDown();
+					UVITConvertListToImgMenu.HideDropDown();
 
 					ProgressBar.Value = 0;
 
@@ -8540,7 +8368,6 @@ namespace CCDLAB
 
 				//else it is yes
 				ShowFoundCoordsChck.Checked = false;//this is for plotting the local max point in the ROI...the selected MANREGCOORS are still plotted
-													//ShowCursorBox.Checked = false;
 				ImageWindow.Cursor = Cursors.Hand;
 				Cursor.Show();
 
@@ -8567,7 +8394,7 @@ namespace CCDLAB
 					ProgressBar.Refresh();
 				}
 
-				ConvertListToImgMenu_Click(sender, e);
+				UVITConvertListToImgMenu_Click(sender, e);
 				return;
 			}
 
@@ -8598,272 +8425,315 @@ namespace CCDLAB
 				UVCONVERTLISTTOIMAGEBATCHFILES = new string[UVREGISTRATIONFILES.Length];
 				AUTOLOADIMAGESFILES = new string[UVREGISTRATIONFILES.Length];
 
-				this.Enabled = false;
 				WAITBAR = new WaitBar();
 				WAITBAR.ProgressBar.Maximum = UVREGISTRATIONFILES.Length;
 				WAITBAR.Text = "Registration...";
 				WAITBAR.ProgressBar.Value = 1;
 				WAITBAR.TextMsg.Text = "Wait a sec while I make a copy of the reference file...";
-				RegistrationUVCentroidWrkr.RunWorkerAsync();
-				WAITBAR.Show();
+				UVITRegistrationCentroidWrkr.RunWorkerAsync();
+				WAITBAR.ShowDialog();
 			}
 		}
 
-		private void RegistrationUVCentroidWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITRegistrationCentroidWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
-			//try
+			//update first reference files
+			string intsFile = UVREGISTRATIONFILES[0];
+			string fracFile = UVREGISTRATIONFILES[0].Replace("Ints", "Frac");
+			File.Copy(intsFile, intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD"), true);
+			File.SetLastWriteTime(intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD"), DateTime.Now);
+			UVCONVERTLISTTOIMAGEBATCHFILES[0] = intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD");
+			File.Copy(fracFile, fracFile.Insert(fracFile.LastIndexOf("."), "_RGSTRD"), true);
+			File.SetLastWriteTime(fracFile.Insert(fracFile.LastIndexOf("."), "_RGSTRD"), DateTime.Now);				
+
+			string drift = "_deDrift";
+			while (intsFile.Contains(drift + "_deDrift"))
+				drift += "_deDrift";
+			string exparraagefile = intsFile.Remove(intsFile.IndexOf("XYInts")) + "ExpArrayImg";
+			exparraagefile += drift + ".fits";
+			File.SetLastWriteTime(exparraagefile, DateTime.Now);
+
+			//set up arrays
+			double[] xref = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
+			double[] yref = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
+			for (int j = 0; j < UVREGISTRATION_CENTROIDS.GetLength(1); j++)
 			{
-				//update first reference files
-				string intsFile = UVREGISTRATIONFILES[0];
-				string fracFile = UVREGISTRATIONFILES[0].Replace("Ints", "Frac");
-				File.Copy(intsFile, intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD"), true);
-				File.SetLastWriteTime(intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD"), DateTime.Now);
-				UVCONVERTLISTTOIMAGEBATCHFILES[0] = intsFile.Insert(intsFile.LastIndexOf("."), "_RGSTRD");
-				File.Copy(fracFile, fracFile.Insert(fracFile.LastIndexOf("."), "_RGSTRD"), true);
-				File.SetLastWriteTime(fracFile.Insert(fracFile.LastIndexOf("."), "_RGSTRD"), DateTime.Now);				
+				xref[j] = UVREGISTRATION_CENTROIDS[0, j, 0];
+				yref[j] = UVREGISTRATION_CENTROIDS[0, j, 1];
+			}
 
-				string drift = "_deDrift";
-				while (intsFile.Contains(drift + "_deDrift"))
-					drift += "_deDrift";
-				string exparraagefile = intsFile.Remove(intsFile.IndexOf("XYInts")) + "ExpArrayImg";
-				exparraagefile += drift + ".fits";
-				File.SetLastWriteTime(exparraagefile, DateTime.Now);
+			ParallelOptions opts = new ParallelOptions();
+			if (L1MachineExtremeChck.Checked)
+				opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
+			else
+				opts.MaxDegreeOfParallelism = 1;
+			object lockob = new object();
+			int count = 1;
 
-				//set up arrays
-				double[] xref = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
-				double[] yref = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
-				for (int j = 0; j < UVREGISTRATION_CENTROIDS.GetLength(1); j++)
+			Parallel.For(1, UVREGISTRATIONFILES.Length, opts, (i, loopstate) =>
+			{
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					loopstate.Stop();
+
+				lock (lockob)
 				{
-					xref[j] = UVREGISTRATION_CENTROIDS[0, j, 0];
-					yref[j] = UVREGISTRATION_CENTROIDS[0, j, 1];
+					count++;
+					UVITRegistrationCentroidWrkr.ReportProgress(count);
 				}
 
-				ParallelOptions opts = new ParallelOptions();
-				if (L1MachineExtremeChck.Checked)
-					opts.MaxDegreeOfParallelism = (int)((double)Environment.ProcessorCount / Math.PI);
-				else
-					opts.MaxDegreeOfParallelism = 1;
-				object lockob = new object();
-				int count = 1;
+				string IntsFile = UVREGISTRATIONFILES[i];
+				string FracFile = IntsFile.Replace("Ints", "Frac");
+				JPFITS.FITSImage IntsFits = new JPFITS.FITSImage(IntsFile, null, true, true, false, false);
+				JPFITS.FITSImage FracFits = new JPFITS.FITSImage(FracFile, null, true, true, false, false);
+				int NPts = FracFits.Height;
+				double x, y, xprime, yprime, xshift = 0, yshift = 0, rotation = 0, xcenter = 0, ycenter = 0;
+				int fracx, intsx, fracy, intsy;
+				Random r = new Random();
+				double[] xtran = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
+				double[] ytran = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
+				double[] P0;
+				double[] Plb;
+				double[] Pub;
+				double[] Psc;
 
-				Parallel.For(1, UVREGISTRATIONFILES.Length, opts, (i, loopstate) =>
-				//for (int i = 1; i < UVREGISTRATIONFILES.Length; i++)
+				for (int j = 0; j < UVREGISTRATION_CENTROIDS.GetLength(1); j++)
 				{
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						loopstate.Stop();// break;
+					xtran[j] = UVREGISTRATION_CENTROIDS[i, j, 0];
+					ytran[j] = UVREGISTRATION_CENTROIDS[i, j, 1];
+				}
 
-					lock (lockob)
+				if (xref.Length == 1)//just single points for shifting
+				{
+					xshift = -(xtran[0] - xref[0]) * 32 / (double)(UVLISTTOIMAGEPREC);
+					yshift = -(ytran[0] - yref[0]) * 32 / (double)(UVLISTTOIMAGEPREC);
+
+					for (int j = 0; j < NPts; j++)
 					{
-						count++;
-						RegistrationUVCentroidWrkr.ReportProgress(count);
+						x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
+						y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
+
+						xprime = x + xshift;
+						yprime = y + yshift;
+
+						//now need to split out integer and decimal parts back into their own lists...
+						intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
+						fracx -= 16;//reset frac to be from -16
+						intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
+						fracy -= 16;//reset frac to be from -16
+						IntsFits[0, j] = intsx;
+						IntsFits[1, j] = intsy;
+						FracFits[0, j] = fracx;
+						FracFits[1, j] = fracy;
 					}
+				}
 
-					string IntsFile = UVREGISTRATIONFILES[i];
-					string FracFile = IntsFile.Replace("Ints", "Frac");
-					JPFITS.FITSImage IntsFits = new JPFITS.FITSImage(IntsFile, null, true, true, false, false);
-					JPFITS.FITSImage FracFits = new JPFITS.FITSImage(FracFile, null, true, true, false, false);
-					int NPts = FracFits.Height;
-					double x, y, xprime, yprime, xshift = 0, yshift = 0, rotation = 0, xcenter = 0, ycenter = 0;
-					int fracx, intsx, fracy, intsy;
-					Random r = new Random();
-					double[] xtran = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
-					double[] ytran = new double[UVREGISTRATION_CENTROIDS.GetLength(1)];
-					double[] P0;
-					double[] Plb;
-					double[] Pub;
-					double[] Psc;
+				if (xref.Length > 1)//then have 2-D points for rotation tranformation
+				{
+					//MessageBox.Show("1: " + UVREGISTRATION_THETAS[i] + " " + rotation);
 
-					for (int j = 0; j < UVREGISTRATION_CENTROIDS.GetLength(1); j++)
+					P0 = new double[] { 1, UVREGISTRATION_PHIS[i], UVREGISTRATION_XCENTERS[i], UVREGISTRATION_YCENTERS[i], UVREGISTRATION_XSHIFTS[i], UVREGISTRATION_YSHIFTS[i] };
+					Plb = new double[] { 1, UVREGISTRATION_PHIS[i] - Math.PI / 90, UVREGISTRATION_XCENTERS[i] - 2, UVREGISTRATION_YCENTERS[i] - 2, UVREGISTRATION_XSHIFTS[i] - 2, UVREGISTRATION_YSHIFTS[i] - 2 };
+					Pub = new double[] { 1, UVREGISTRATION_PHIS[i] + Math.PI / 90, UVREGISTRATION_XCENTERS[i] + 2, UVREGISTRATION_YCENTERS[i] + 2, UVREGISTRATION_XSHIFTS[i] + 2, UVREGISTRATION_YSHIFTS[i] + 2 };
+					Psc = new double[] { 1, 1, 1000, 1000, 50, 50 };
+					JPMath.Fit_GeneralTransform2d(xref, yref, xtran, ytran, ref P0, Plb, Pub, Psc);
+					rotation = P0[1];
+					xcenter = P0[2];
+					ycenter = P0[3];
+					xshift = P0[4];
+					yshift = P0[5];
+
+					//MessageBox.Show("2: " + UVREGISTRATION_PHIS[i]*180/3.14159 + " " + rotation*180/3.14159 + " " + UVREGISTRATION_XSHIFTS[i] + " " + xshift + " " + UVREGISTRATION_YSHIFTS[i] + " " + yshift);
+
+					bool general_transformation = false;//can only do rotation above if only 2 points
+					if (xref.Length > 2)
+						general_transformation = true;
+
+					if (general_transformation)//now do general transformation using the linear transformation results as initial guess
 					{
-						xtran[j] = UVREGISTRATION_CENTROIDS[i, j, 0];
-						ytran[j] = UVREGISTRATION_CENTROIDS[i, j, 1];
-					}
-
-					if (xref.Length == 1)//just single points for shifting
-					{
-						xshift = -(xtran[0] - xref[0]) * 32 / (double)(UVLISTTOIMAGEPREC);
-						yshift = -(ytran[0] - yref[0]) * 32 / (double)(UVLISTTOIMAGEPREC);
-
-						//MessageBox.Show("1: " + xshift + " " + yshift);
-
-						for (int j = 0; j < NPts; j++)
-						{
-							x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
-							y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
-
-							xprime = x + xshift;
-							yprime = y + yshift;
-
-							//now need to split out integer and decimal parts back into their own lists...
-							intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
-							fracx -= 16;//reset frac to be from -16
-							intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
-							fracy -= 16;//reset frac to be from -16
-							IntsFits[0, j] = intsx;
-							IntsFits[1, j] = intsy;
-							FracFits[0, j] = fracx;
-							FracFits[1, j] = fracy;
-						}
-					}
-
-					if (xref.Length > 1)//then have 2-D points for rotation tranformation
-					{
-						//MessageBox.Show("1: " + UVREGISTRATION_THETAS[i] + " " + rotation);
-
-						P0 = new double[] { 1, UVREGISTRATION_PHIS[i], UVREGISTRATION_XCENTERS[i], UVREGISTRATION_YCENTERS[i], UVREGISTRATION_XSHIFTS[i], UVREGISTRATION_YSHIFTS[i] };
-						Plb = new double[] { 1, UVREGISTRATION_PHIS[i] - Math.PI / 8, UVREGISTRATION_XCENTERS[i] - 20, UVREGISTRATION_YCENTERS[i] - 20, UVREGISTRATION_XSHIFTS[i] - 20, UVREGISTRATION_YSHIFTS[i] - 20 };
-						Pub = new double[] { 1, UVREGISTRATION_PHIS[i] + Math.PI / 8, UVREGISTRATION_XCENTERS[i] + 20, UVREGISTRATION_YCENTERS[i] + 20, UVREGISTRATION_XSHIFTS[i] + 20, UVREGISTRATION_YSHIFTS[i] + 20 };
-						Psc = new double[] { 1, 1, 1000, 1000, 50, 50 };
+						P0 = new double[] { Math.Cos(rotation), -Math.Sin(rotation), Math.Sin(rotation), Math.Cos(rotation), xcenter, ycenter, xshift, yshift };
+						Plb = new double[] { -1.1, -1.1, -1.1, -1.1, xcenter - 2, ycenter - 2, xshift - 2, yshift - 2 };
+						Pub = new double[] { 1.1, 1.1, 1.1, 1.1, xcenter + 2, ycenter + 2, xshift + 2, yshift + 2 };
+						Psc = new double[] { 1, 1, 1, 1, 1000, 1000, 50, 50 };
 						JPMath.Fit_GeneralTransform2d(xref, yref, xtran, ytran, ref P0, Plb, Pub, Psc);
-						rotation = P0[1];
-						xcenter = P0[2];
-						ycenter = P0[3];
-						xshift = P0[4];
-						yshift = P0[5];
-
-						//MessageBox.Show("2: " + UVREGISTRATION_PHIS[i]*180/3.14159 + " " + rotation*180/3.14159 + " " + UVREGISTRATION_XSHIFTS[i] + " " + xshift + " " + UVREGISTRATION_YSHIFTS[i] + " " + yshift);
-
-						bool general_transformation = false;//can only do rotation above if only 2 points
-						if (xref.Length > 2)
-							general_transformation = true;
-
-						if (general_transformation)//now do general transformation using the linear transformation results as initial guess
-						{
-							P0 = new double[] { Math.Cos(rotation), -Math.Sin(rotation), Math.Sin(rotation), Math.Cos(rotation), xcenter, ycenter, xshift, yshift };
-							Plb = new double[] { -1.1, -1.1, -1.1, -1.1, xcenter - 20, ycenter - 20, xshift - 20, yshift - 20 };
-							Pub = new double[] { 1.1, 1.1, 1.1, 1.1, xcenter + 20, ycenter + 20, xshift + 20, yshift + 20 };
-							Psc = new double[] { 1, 1, 1, 1, 1000, 1000, 50, 50 };
-							JPMath.Fit_GeneralTransform2d(xref, yref, xtran, ytran, ref P0, Plb, Pub, Psc);
-							xcenter = P0[4];
-							ycenter = P0[5];
-							xshift = P0[6];
-							yshift = P0[7];
-						}
-
-						//MessageBox.Show("2: " + UVREGISTRATION_THETAS[i] * 180 / 3.14159 + " " + rotation * 180 / 3.14159 + " " + UVREGISTRATION_XSHIFTS[i] + " " + xshift + " " + UVREGISTRATION_YSHIFTS[i] + " " + yshift);
-
-						xcenter *= (32 / (double)(UVLISTTOIMAGEPREC));
-						ycenter *= (32 / (double)(UVLISTTOIMAGEPREC));
-						xshift *= (32 / (double)(UVLISTTOIMAGEPREC));
-						yshift *= (32 / (double)(UVLISTTOIMAGEPREC));
-
-						for (int j = 0; j < NPts; j++)
-						{
-							x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
-							y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
-
-							if (!general_transformation)
-							{
-								xprime = (x - xcenter) * Math.Cos(rotation) - (y - ycenter) * Math.Sin(rotation) + xcenter + xshift;
-								yprime = (x - xcenter) * Math.Sin(rotation) + (y - ycenter) * Math.Cos(rotation) + ycenter + yshift;
-							}
-							else
-							{
-								xprime = (x - xcenter) * P0[0] + (y - ycenter) * P0[1] + xcenter + xshift;
-								yprime = (x - xcenter) * P0[2] + (y - ycenter) * P0[3] + ycenter + yshift;
-							}
-
-							//now need to split out integer and decimal parts back into their own lists...
-							intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
-							fracx -= 16;//reset frac to be from -16
-							intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
-							fracy -= 16;//reset frac to be from -16
-							IntsFits[0, j] = intsx;
-							IntsFits[1, j] = intsy;
-							FracFits[0, j] = fracx;
-							FracFits[1, j] = fracy;
-						}
+						xcenter = P0[4];
+						ycenter = P0[5];
+						xshift = P0[6];
+						yshift = P0[7];
 					}
 
-					IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_RGSTRD");
-					IntsFits.WriteImage(IntsFile, TypeCode.Int16, false);
-					FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_RGSTRD");
-					FracFits.WriteImage(FracFile, TypeCode.Int16, false);
+					//MessageBox.Show("2: " + UVREGISTRATION_THETAS[i] * 180 / 3.14159 + " " + rotation * 180 / 3.14159 + " " + UVREGISTRATION_XSHIFTS[i] + " " + xshift + " " + UVREGISTRATION_YSHIFTS[i] + " " + yshift);
 
-					UVCONVERTLISTTOIMAGEBATCHFILES[i] = IntsFile;
+					xcenter *= (32 / (double)(UVLISTTOIMAGEPREC));
+					ycenter *= (32 / (double)(UVLISTTOIMAGEPREC));
+					xshift *= (32 / (double)(UVLISTTOIMAGEPREC));
+					yshift *= (32 / (double)(UVLISTTOIMAGEPREC));
 
-					//rotate and shift the exposure array image so that it can be stacked later with merge
-					//can rotate about center...then shift...all in JPMath
-					//get the correct exposure map image
-					string dedrift = "_deDrift";
-					while (IntsFile.Contains(dedrift + "_deDrift"))
-						dedrift += "_deDrift";
-					string exparrayimagefile = IntsFile.Remove(IntsFile.IndexOf("XYInts")) + "ExpArrayImg";
-					exparrayimagefile += dedrift + ".fits";
+					for (int j = 0; j < NPts; j++)
+					{
+						x = (IntsFits[0, j] + FracFits[0, j] + 16) + r.NextDouble();//must add 16 to fractionals
+						y = (IntsFits[1, j] + FracFits[1, j] + 16) + r.NextDouble();//and put the centroid somewhere within the 1/32 bin
 
-					FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, false);
-					double[,] exparr = expfitsimg.Image;
+						if (!general_transformation)
+						{
+							xprime = (x - xcenter) * Math.Cos(rotation) - (y - ycenter) * Math.Sin(rotation) + xcenter + xshift;
+							yprime = (x - xcenter) * Math.Sin(rotation) + (y - ycenter) * Math.Cos(rotation) + ycenter + yshift;
+						}
+						else
+						{
+							xprime = (x - xcenter) * P0[0] + (y - ycenter) * P0[1] + xcenter + xshift;
+							yprime = (x - xcenter) * P0[2] + (y - ycenter) * P0[3] + ycenter + yshift;
+						}
 
-					int res = 2;
-					if (expfitsimg.Header.GetKeyIndex("EXMAPRES", false) != -1)
-						res = Convert.ToInt32(expfitsimg.Header.GetKeyValue("EXMAPRES"));
-					xshift *= ((double)(res) / 32);
-					yshift *= ((double)(res) / 32);
-					xcenter *= ((double)(res) / 32);
-					ycenter *= ((double)(res) / 32);
-					int pad = 44 * res;
+						//now need to split out integer and decimal parts back into their own lists...
+						intsx = Math.DivRem((int)((xprime)), 32, out fracx) * 32;
+						fracx -= 16;//reset frac to be from -16
+						intsy = Math.DivRem((int)((yprime)), 32, out fracy) * 32;
+						fracy -= 16;//reset frac to be from -16
+						IntsFits[0, j] = intsx;
+						IntsFits[1, j] = intsy;
+						FracFits[0, j] = fracx;
+						FracFits[1, j] = fracy;
+					}
+				}
 
-					if (Math.Abs(rotation) > 0.000001 / 180 * Math.PI || xshift != 0 || yshift != 0)
-						exparr = JPMath.RotateShiftArray(exparr, -rotation, xcenter + pad, ycenter + pad, "bilinear", (int)Math.Round(xshift), (int)Math.Round(yshift), false);
-					expfitsimg.SetImage(exparr, false, false);
-					expfitsimg.WriteImage(TypeCode.Double, false);
+				IntsFile = IntsFile.Insert(IntsFile.LastIndexOf("."), "_RGSTRD");
+				IntsFits.WriteImage(IntsFile, DiskPrecision.Int16, false);
+				FracFile = FracFile.Insert(FracFile.LastIndexOf("."), "_RGSTRD");
+				FracFits.WriteImage(FracFile, DiskPrecision.Int16, false);
 
-					//The reason why you need to also shift the exposure array image and THEN create the new exposure list is because, at the edges, there would be differential
-					//exposure times for each orbit relative to the combined orbits, just as with drift in a single orbit, for the merged images.
-					//The exposure array images should be shifted and rotated as needed.
-					//Then when the orbits are merged, the registered versions of the exposure array images should be combined too to get the master exposure list.
-					//For example, if for one orbit an edge region was exposed for 0.9 of the total exposure time, this same region may not have been observed at all for all other orbits.
-					//Therefore, the centroids there were not oberved for 0.9 of the entire exposure time, but 0.9 weighted for that orbits exposure time relative to the combined exposure time.
-					//Even if a region in one orbit was fully exposed, it might not be exposed at all in later orbits.
-					//Such a region's centroids have full weight for their own orbit, but for the combined orbits they should likewise be scaled to the total exposure time
-				});
-			}
-			/*catch (Exception e)
-			{
-				MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-			}*/
+				UVCONVERTLISTTOIMAGEBATCHFILES[i] = IntsFile;
+
+				//rotate and shift the exposure array image so that it can be stacked later with merge
+				//can rotate about center...then shift...all in JPMath
+				//get the correct exposure map image
+				string dedrift = "_deDrift";
+				while (IntsFile.Contains(dedrift + "_deDrift"))
+					dedrift += "_deDrift";
+				string exparrayimagefile = IntsFile.Remove(IntsFile.IndexOf("XYInts")) + "ExpArrayImg";
+				exparrayimagefile += dedrift + ".fits";
+
+				FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, false);
+				double[,] exparr = expfitsimg.Image;
+
+				int res = 2;
+				if (expfitsimg.Header.GetKeyIndex("EXMAPRES", false) != -1)
+					res = Convert.ToInt32(expfitsimg.Header.GetKeyValue("EXMAPRES"));
+				xshift *= ((double)(res) / 32);
+				yshift *= ((double)(res) / 32);
+				xcenter *= ((double)(res) / 32);
+				ycenter *= ((double)(res) / 32);
+				int pad = 44 * res;
+
+				if (Math.Abs(rotation) > 0.0000001 / 180 * Math.PI || xshift != 0 || yshift != 0)
+					exparr = JPMath.RotateShiftArray(exparr, -rotation, xcenter + pad, ycenter + pad, "lanc_3", xshift, yshift, true);
+				expfitsimg.SetImage(exparr, false, false);
+				expfitsimg.WriteImage(DiskPrecision.Double, false);
+
+				//The reason why you need to also shift the exposure array image and THEN create the new exposure list is because, at the edges, there would be differential
+				//exposure times for each orbit relative to the combined orbits, just as with drift in a single orbit, for the merged images.
+				//The exposure array images should be shifted and rotated as needed.
+				//Then when the orbits are merged, the registered versions of the exposure array images should be combined too to get the master exposure list.
+				//For example, if for one orbit an edge region was exposed for 0.9 of the total exposure time, this same region may not have been observed at all for all other orbits.
+				//Therefore, the centroids there were not oberved for 0.9 of the entire exposure time, but 0.9 weighted for that orbits exposure time relative to the combined exposure time.
+				//Even if a region in one orbit was fully exposed, it might not be exposed at all in later orbits.
+				//Such a region's centroids have full weight for their own orbit, but for the combined orbits they should likewise be scaled to the total exposure time
+			});
 
 			WAITBAR.DialogResult = DialogResult.OK;
 		}
 
-		private void RegistrationUVCentroidWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITRegistrationCentroidWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Registering file " + e.ProgressPercentage.ToString() + " of " + WAITBAR.ProgressBar.Maximum.ToString();
-			WAITBAR.Refresh();//find all Update() and replace with Refresh()
+			WAITBAR.Refresh();
 		}
 
-		private void RegistrationUVCentroidWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITRegistrationCentroidWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			DialogResult res = WAITBAR.DialogResult;
-			this.Enabled = true;
 
 			ListToImage8PixMenuItem.PerformClick();
 			UVITMenu.HideDropDown();
-			ConvertListToImgMenu.HideDropDown();
+			UVITConvertListToImgMenu.HideDropDown();
 
-			WAITBAR.Hide();
 			WAITBAR.Close();
 
 			if (res == DialogResult.Cancel)
 				return;
 
-			/*if (MessageBox.Show("Completed registration of the centroid lists.  Would you like to convert them to images?","Images?",MessageBoxButtons.YesNo) == DialogResult.No)
-				return;*/
-
-			//for (int i = 0; i < UVCONVERTLISTTOIMAGEBATCHFILES.Length; i++)
-			//	MessageBox.Show(UVCONVERTLISTTOIMAGEBATCHFILES[i]);
-
 			UVCONVERTLISTTOIMAGEBATCH = true;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = UVCONVERTLISTTOIMAGEBATCHFILES.Length;
 			WAITBAR.Text = "Creating images...";
-			this.Enabled = false;
-			ConvertUVCentroidListToImgWrkr.RunWorkerAsync(UVCONVERTLISTTOIMAGEBATCHFILES);
-			WAITBAR.Show();
+			UVITConvertCentroidListToImgWrkr.RunWorkerAsync(UVCONVERTLISTTOIMAGEBATCHFILES);
+			WAITBAR.ShowDialog();
 		}
 
-		private void UVLoadAllMerged_Click(System.Object sender, EventArgs e)
+		private void UVITLoadMostRecentImagesMenuBtn_Click(object sender, EventArgs e)
+		{
+			FolderBrowserDialog fbd = new FolderBrowserDialog();
+			fbd.SelectedPath = (string)REG.GetReg("CCDLAB", "L2EventListPath");
+			if (new DirectoryInfo(fbd.SelectedPath).Name == "VIS")
+				fbd.SelectedPath = Path.GetDirectoryName(fbd.SelectedPath);
+			fbd.Description = "Select the folder to scan for the most recent INTEGERS Lists (_XYInts_List)";
+			if (fbd.ShowDialog() == DialogResult.Cancel)
+				return;
+			REG.SetReg("CCDLAB", "L2EventListPath", fbd.SelectedPath);
+			REG.SetReg("CCDLAB", "OpenFilesPath", fbd.SelectedPath);
+
+			//only want the most recent xyintsfiles so must go through and sort this out
+			//each XYInts file will be in its own directory, and this is where its dupes will be
+			//we want only the most recent (longest file name length) dupe from each directory
+			//only do so on deDrift, so if there are directories that couldn't be deDrift, don't use those files
+
+			string[] recentimages = Directory.GetFiles(fbd.SelectedPath, "*IMAGE*.fits", SearchOption.AllDirectories);
+			Array.Sort(recentimages);
+			for (int i = 0; i < recentimages.Length; i++)
+			{
+				string dir = Path.GetDirectoryName(Path.GetDirectoryName(recentimages[i]));
+				if (Directory.GetFiles(dir, "*MASTER*IMAGE*.fits").Length != 0)//then use only master files, ignore unmerged files
+					recentimages[i] = "";
+			}
+			int c = 0;
+			for (int i = 0; i < recentimages.Length; i++)
+				if (recentimages[i] != "")
+				{
+					recentimages[c] = recentimages[i];
+					c++;
+				}
+			Array.Resize(ref recentimages, c);
+			
+			if (recentimages.Length == 0)
+			{
+				MessageBox.Show("No files found...", "Error...");
+				return;
+			}
+
+			c = 0;
+			for (int i = 0; i < recentimages.Length; i++)
+			{
+				string curdir = Path.GetDirectoryName(recentimages[i]);
+				string[] dirimgfiles = Directory.GetFiles(curdir, "*IMAGE*.fits");
+				int ind = 0;
+				for (int j = 1; j < dirimgfiles.Length; j++)
+					if (dirimgfiles[j].Length > dirimgfiles[ind].Length)
+						ind = j;
+
+				recentimages[c] = dirimgfiles[ind];
+				c++;
+				i += dirimgfiles.Length - 1;
+			}
+			Array.Resize(ref recentimages, c);
+
+			AUTOLOADIMAGESFILES = new string[recentimages.Length];
+			Array.Copy(recentimages, AUTOLOADIMAGESFILES, recentimages.Length);
+			AUTOLOADIMAGES = true;
+			IMAGESET = new FITSImageSet();
+			FMLoad_Click(sender, e);
+		}
+
+		private void UVITRecentMerged_Click(System.Object sender, EventArgs e)
 		{
 			FolderBrowserDialog fbd = new FolderBrowserDialog();
 			fbd.SelectedPath = (string)REG.GetReg("CCDLAB", "L2EventListPath"); ;
@@ -8901,14 +8771,13 @@ namespace CCDLAB
 			AUTOLOADIMAGES = true;
 			IMAGESET = new FITSImageSet();
 			FMLoad_Click(sender, e);
-			//FMLoad.PerformClick();
 		}
 
-		private void CombineUVCentroidListsMenuItem_Click(System.Object sender, EventArgs e)
+		private void UVITMergeCentroidListsMenuItem_Click(System.Object sender, EventArgs e)
 		{
 			UVITMenu.DropDown.Close();
 			ShiftAndRotateMenuItem.DropDown.Close();
-			UVCombineCentroidListsMenuItem.DropDown.Close();
+			UVITMergeCentroidListsMenuItem.DropDown.Close();
 
 			string[] xyintsfiles;
 
@@ -8930,25 +8799,11 @@ namespace CCDLAB
 					//else, multiple channel/filter directories exist and must be processed in sequence, as per the below
 					if (Directory.GetParent(fbd.SelectedPath).Name == "NUV" || Directory.GetParent(fbd.SelectedPath).Name == "FUV")//must be either of these ones if a single channel/filter has been selected
 						UVMERGEDIRS = new string[] { fbd.SelectedPath };
-					else if (/*Directory.Exists(fbd.SelectedPath + "\\NUV") || Directory.Exists(fbd.SelectedPath + "\\FUV") ||*/ new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")
+					else if (new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")
 					{
 						//some parent has been selected and need to process the channel/filter subfolders one at a time
 						if (new DirectoryInfo(fbd.SelectedPath).Name == "NUV" || new DirectoryInfo(fbd.SelectedPath).Name == "FUV")//then process the channel subdir filter folders
-							UVMERGEDIRS = Directory.GetDirectories(fbd.SelectedPath);//these must be the single channel filter folders
-						//else//else must be the parent to both NUV and FUV
-						//{
-						//	string[] Fuvdirs = new string[0];
-						//	string[] Nuvdirs = new string[0];
-						//	if (Directory.Exists(fbd.SelectedPath + "\\FUV"))
-						//		Fuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\FUV");
-						//	if (Directory.Exists(fbd.SelectedPath + "\\NUV"))
-						//		Nuvdirs = Directory.GetDirectories(fbd.SelectedPath + "\\NUV");
-						//	UVMERGEDIRS = new string[Fuvdirs.Length + Nuvdirs.Length];
-						//	for (int i = 0; i < Fuvdirs.Length; i++)
-						//		UVMERGEDIRS[i] = Fuvdirs[i];
-						//	for (int i = Fuvdirs.Length; i < Fuvdirs.Length + Nuvdirs.Length; i++)
-						//		UVMERGEDIRS[i] = Nuvdirs[i - Fuvdirs.Length];
-						//}
+							UVMERGEDIRS = Directory.GetDirectories(fbd.SelectedPath);//these must be the single channel filter folders						
 					}
 					else if (Directory.GetDirectories(fbd.SelectedPath, "NUV", SearchOption.AllDirectories).Length > 0 || Directory.GetDirectories(fbd.SelectedPath, "FUV", SearchOption.AllDirectories).Length > 0)//parents or when processing multiple obs-ids
 					{
@@ -9061,7 +8916,7 @@ namespace CCDLAB
 					UVMERGEDIRS = null;
 					AUTOLOADIMAGESFILES = null;
 					MessageBox.Show("No files found...", "Error...");
-					CombineUVCentroidListsMenuItem_Click(sender, e);
+					UVITMergeCentroidListsMenuItem_Click(sender, e);
 					return;
 				}
 
@@ -9105,10 +8960,6 @@ namespace CCDLAB
 			if (xyintsfiles.Length == 1)
 			{
 				MessageBox.Show("Need to select more than 1 file for merging...", "Error...");
-
-				//SystemProcess.Start("Explorer.exe", DirectoryInfo(xyintsfiles[0]).Parent.FullName);
-
-				//CombineUVCentroidListsMenuItem_Click(sender, e);
 				return;
 			}
 
@@ -9116,11 +8967,10 @@ namespace CCDLAB
 			if (FITSImageSet.GetCommonDirectory(xyintsfiles) != Directory.GetParent(Directory.GetParent(xyintsfiles[0]).FullName).FullName)
 			{
 				MessageBox.Show("These do not seem to be indentical channel/filter images for merging...\r\n\r\n" + FITSImageSet.GetCommonDirectory(xyintsfiles) + "\r\n\r\n" + Directory.GetParent(Directory.GetParent(xyintsfiles[0]).FullName).FullName, "Error...");
-				CombineUVCentroidListsMenuItem_Click(sender, e);
+				UVITMergeCentroidListsMenuItem_Click(sender, e);
 				return;
 			}
 
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = xyintsfiles.Length;
 			if (UVMERGEDIRS != null)
@@ -9128,17 +8978,16 @@ namespace CCDLAB
 			else
 				WAITBAR.Text = "Merging Channel-Filter Directory: " + new DirectoryInfo(FITSImageSet.GetCommonDirectory(xyintsfiles)).Name;
 			WAITBAR.ProgressBar.Value = 0;
-			MergeCentroidListsWrkr.RunWorkerAsync(xyintsfiles);
+			UVITMergeCentroidListsWrkr.RunWorkerAsync(xyintsfiles);
 			WAITBAR.ShowDialog();
 		}
 
-		private void MergeCentroidListsWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITMergeCentroidListsWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string[] filenames = (string[])e.Argument;
 			string dir = filenames[0].Substring(0, filenames[0].LastIndexOf("\\"));
 			dir = dir.Substring(0, dir.LastIndexOf("\\"));
 
-			//array<FITSImage^> expmergeset = new array<FITSImage^>(filenames.Length);
 			double[][,] expmergesetarrays = new double[filenames.Length][,];
 
 			//for tracking relative exposure times
@@ -9219,12 +9068,12 @@ namespace CCDLAB
 			Parallel.For(0, filenames.Length, (i, loopstate) =>
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
-					loopstate.Stop();// break;
+					loopstate.Stop();
 
 				lock (lockob)
 				{
 					count++;
-					MergeCentroidListsWrkr.ReportProgress(count);
+					UVITMergeCentroidListsWrkr.ReportProgress(count);
 				}
 
 				string intfile = filenames[i];
@@ -9362,57 +9211,56 @@ namespace CCDLAB
 			intsfits.Header.AddKey("TIMEMULT", filenames.Length.ToString(), "Multiplier for merged list int. time", -1);
 			intsfits.Header.SetKey("PARTREDC", Math.Round(parityredctn, 5).ToString(), "Fractional int-time reduxn due to parity err", true, 14);
 			intsfits.Header.SetKey("FRAMREDC", Math.Round(missframesredctn, 5).ToString(), "Fractional int - time reduxn due to lost frames", true, 14);
-			intsfits.WriteImage(TypeCode.Int16, true);
+			intsfits.WriteImage(DiskPrecision.Int16, true);
 
 			JPFITS.FITSImage fracfits = new JPFITS.FITSImage(fracfile, mergedXYFracList, false, true);
-			fracfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			fracfits.WriteImage(TypeCode.Int16, true);
+			fracfits.Header.CopyHeaderFrom(intsfits.Header);
+			fracfits.WriteImage(DiskPrecision.Int16, true);
 
 			JPFITS.FITSImage timefits = new JPFITS.FITSImage(timefile, newTimeList, false, true);
-			timefits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			timefits.WriteImage(TypeCode.UInt32, true);
+			timefits.Header.CopyHeaderFrom(intsfits.Header);
+			timefits.WriteImage(DiskPrecision.UInt32, true);
 
 			JPFITS.FITSImage framefits = new JPFITS.FITSImage(framefile, newFrameList, false, true);//now has to be int32 because it won't roll over
-			framefits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			framefits.WriteImage(TypeCode.UInt32, true);
+			framefits.Header.CopyHeaderFrom(intsfits.Header);
+			framefits.WriteImage(DiskPrecision.UInt32, true);
 
 			JPFITS.FITSImage flatfits = new JPFITS.FITSImage(flatfile, mergedFlatList, false, true);
-			flatfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			flatfits.WriteImage(TypeCode.Double, true);
+			flatfits.Header.CopyHeaderFrom(intsfits.Header);
+			flatfits.WriteImage(DiskPrecision.Double, true);
 
 			FITSImage expfits = new FITSImage(expfile.Replace("ExpArrayList", "ExpArrayImg"), expmergesetarraysSUM, false, true);
-			expfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			expfits.WriteImage(expfile.Replace("ExpArrayList", "ExpArrayImg"), TypeCode.Double, true);
+			expfits.Header.CopyHeaderFrom(intsfits.Header);
+			expfits.WriteImage(expfile.Replace("ExpArrayList", "ExpArrayImg"), DiskPrecision.Double, true);
 
 			expfits = new JPFITS.FITSImage(expfile, mergedExpList, false, true);
-			expfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			expfits.WriteImage(TypeCode.Double, true);
+			expfits.Header.CopyHeaderFrom(intsfits.Header);
+			expfits.WriteImage(DiskPrecision.Double, true);
 
 			JPFITS.FITSImage bjdfits = new JPFITS.FITSImage(BJDfile, mergedBJDList, false, true);
-			bjdfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			bjdfits.WriteImage(TypeCode.Double, true);
+			bjdfits.Header.CopyHeaderFrom(intsfits.Header);
+			bjdfits.WriteImage(DiskPrecision.Double, true);
 
 			JPFITS.FITSImage mdMmfits = new JPFITS.FITSImage(mdMmfile, mergedmdMmList, false, true);
-			mdMmfits.Header.CopyHeaderFrom(intsfits.Header);// CopyHeader(intsfits);
-			mdMmfits.WriteImage(TypeCode.Int16, true);
+			mdMmfits.Header.CopyHeaderFrom(intsfits.Header);
+			mdMmfits.WriteImage(DiskPrecision.Int16, true);
 
 			e.Result = intsfile;
 		}
 
-		private void MergeCentroidListsWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITMergeCentroidListsWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Merging file " + (e.ProgressPercentage).ToString() + " of " + WAITBAR.ProgressBar.Maximum.ToString();
 			WAITBAR.Refresh();
 		}
 
-		private void MergeCentroidListsWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITMergeCentroidListsWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
 			{
 				UVMERGEDIRS_INDEX = -1;
 				UVMERGEDIRS = null;
-				this.Enabled = true;
 				return;
 			}
 
@@ -9430,7 +9278,7 @@ namespace CCDLAB
 				AUTOLOADIMAGESFILES = new string[] { (string)e.Result };
 				WAITBAR.ProgressBar.Maximum = AUTOLOADIMAGESFILES.Length;
 				WAITBAR.Text = "Creating image(s)...";
-				ConvertUVCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
+				UVITConvertCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
 				return;
 			}
 			else
@@ -9438,9 +9286,8 @@ namespace CCDLAB
 				AUTOLOADIMAGESFILES[UVMERGEDIRS_INDEX] = (string)e.Result;
 				if (UVMERGEDIRS_INDEX + 1 < UVMERGEDIRS.Length)//then continue
 				{
-					WAITBAR.Hide();
 					WAITBAR.Close();
-					CombineUVCentroidListsMenuItem_Click(sender, e);
+					UVITMergeCentroidListsMenuItem_Click(sender, e);
 					return;
 				}
 				if (UVMERGEDIRS_INDEX + 1 == UVMERGEDIRS.Length)//then finished
@@ -9452,7 +9299,7 @@ namespace CCDLAB
 					UVCONVERTLISTTOIMAGEBATCH = true;
 					WAITBAR.ProgressBar.Maximum = AUTOLOADIMAGESFILES.Length;
 					WAITBAR.Text = "Creating image(s)...";
-					ConvertUVCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
+					UVITConvertCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
 					return;
 				}
 			}
@@ -9531,7 +9378,7 @@ namespace CCDLAB
 					inds[i] = i;
 			}
 			else
-				inds = new int[] { FILELISTINDEX };
+				inds = new int[] { IMAGESETINDEX };
 
 			double bg = 0, signal;
 			double[] npts;
@@ -9762,7 +9609,7 @@ namespace CCDLAB
 
 		private void ExtractROICentroidListMenuItem_Click(System.Object sender, EventArgs e)
 		{
-			if (ExtractROICentroidListPSEChck.Checked && PSES == null)
+			if (ExtractROICentroidListPSEChck.Checked && PSESET.Count == 0)
 			{
 				MessageBox.Show("No PSE found to use for extracting sources...try again.", "Error");
 				return;
@@ -9786,11 +9633,10 @@ namespace CCDLAB
 
 			WAITBAR = new WaitBar();
 			if (ExtractROICentroidListPSEChck.Checked)
-				WAITBAR.ProgressBar.Maximum = PSES[PSESINDEX].N_Sources;
+				WAITBAR.ProgressBar.Maximum = PSESET[PSESETINDEX].N_Sources;
 			else
 				WAITBAR.ProgressBar.Maximum = 1;
 			WAITBAR.Text = "Extracting Centroid List(s)...";
-			this.Enabled = false;
 			ExtractROICentroidsWrkr.RunWorkerAsync();
 			WAITBAR.ShowDialog();
 		}
@@ -9856,7 +9702,7 @@ namespace CCDLAB
 
 			int nsources = 1;
 			if (ExtractROICentroidListPSEChck.Checked)
-				nsources = PSES[PSESINDEX].N_Sources;
+				nsources = PSESET[PSESETINDEX].N_Sources;
 
 			for (int ei = 0; ei < nsources; ei++)
 			{
@@ -9876,10 +9722,10 @@ namespace CCDLAB
 				}
 				else
 				{
-					XSTART = ((int)(Math.Round(PSES[PSESINDEX].Centroids_X[ei])) - (int)PSES[PSESINDEX].KernelRadius - offset * (int)(prec)) * 32 / (int)prec;
-					YSTART = ((int)(Math.Round(PSES[PSESINDEX].Centroids_Y[ei])) - (int)PSES[PSESINDEX].KernelRadius - offset * (int)(prec)) * 32 / (int)prec;
-					XEND = ((int)(Math.Round(PSES[PSESINDEX].Centroids_X[ei])) + (int)PSES[PSESINDEX].KernelRadius + 1 - offset * (int)(prec)) * 32 / (int)prec;
-					YEND = ((int)(Math.Round(PSES[PSESINDEX].Centroids_Y[ei])) + (int)PSES[PSESINDEX].KernelRadius + 1 - offset * (int)(prec)) * 32 / (int)prec;
+					XSTART = ((int)(Math.Round(PSESET[PSESETINDEX].Centroids_X[ei])) - (int)PSESET[PSESETINDEX].KernelRadius - offset * (int)(prec)) * 32 / (int)prec;
+					YSTART = ((int)(Math.Round(PSESET[PSESETINDEX].Centroids_Y[ei])) - (int)PSESET[PSESETINDEX].KernelRadius - offset * (int)(prec)) * 32 / (int)prec;
+					XEND = ((int)(Math.Round(PSESET[PSESETINDEX].Centroids_X[ei])) + (int)PSESET[PSESETINDEX].KernelRadius + 1 - offset * (int)(prec)) * 32 / (int)prec;
+					YEND = ((int)(Math.Round(PSESET[PSESETINDEX].Centroids_Y[ei])) + (int)PSESET[PSESETINDEX].KernelRadius + 1 - offset * (int)(prec)) * 32 / (int)prec;
 				}
 
 				int c = 0;
@@ -9933,49 +9779,49 @@ namespace CCDLAB
 				ROItimeFits.Header.CopyHeaderFrom(FrameFits.Header);
 				ROItimeFits.Header.SetKey("EXTXRNG", ((double)(XSTART) / 32.0).ToString() + ":" + ((double)(XEND) / 32.0 - 1).ToString(), "Extraction X-Range", true, -1);
 				ROItimeFits.Header.SetKey("EXTYRNG", ((double)(YSTART) / 32.0).ToString() + ":" + ((double)(YEND) / 32.0 - 1).ToString(), "Extraction Y-Range", true, -1);
-				ROItimeFits.WriteImage(TypeCode.UInt32, false);
+				ROItimeFits.WriteImage(DiskPrecision.UInt32, false);
 
 				string framename = framesname.Substring(0, framesname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIframeFits = new JPFITS.FITSImage(framename, ROIframelist, false, false);
 				ROIframeFits.FilePath += "\\ROIExtractedLists\\";
 				ROIframeFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIframeFits.WriteImage(TypeCode.UInt32, false);
+				ROIframeFits.WriteImage(DiskPrecision.UInt32, false);
 
 				string intname = intsname.Substring(0, intsname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIintsFits = new JPFITS.FITSImage(intname, ROIintslist, false, false);
 				ROIintsFits.FilePath += "\\ROIExtractedLists\\";
 				ROIintsFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIintsFits.WriteImage(TypeCode.Int16, false);
+				ROIintsFits.WriteImage(DiskPrecision.Int16, false);
 
 				string fracname = fracsname.Substring(0, fracsname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIfracFits = new JPFITS.FITSImage(fracname, ROIfraclist, false, false);
 				ROIfracFits.FilePath += "\\ROIExtractedLists\\";
 				ROIfracFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIfracFits.WriteImage(TypeCode.Int16, false);
+				ROIfracFits.WriteImage(DiskPrecision.Int16, false);
 
 				string flatname = flatsname.Substring(0, flatsname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIflatFits = new JPFITS.FITSImage(flatname, ROIflatlist, false, false);
 				ROIflatFits.FilePath += "\\ROIExtractedLists\\";
 				ROIflatFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIflatFits.WriteImage(TypeCode.Double, false);
+				ROIflatFits.WriteImage(DiskPrecision.Double, false);
 
 				string expname = expsname.Substring(0, expsname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIexpFits = new JPFITS.FITSImage(expname, ROIexplist, false, false);
 				ROIexpFits.FilePath += "\\ROIExtractedLists\\";
 				ROIexpFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIexpFits.WriteImage(TypeCode.Double, false);
+				ROIexpFits.WriteImage(DiskPrecision.Double, false);
 
 				string BJDname = BJDSname.Substring(0, BJDSname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROIBJDSFits = new JPFITS.FITSImage(BJDname, ROIBJDlist, false, false);
 				ROIBJDSFits.FilePath += "\\ROIExtractedLists\\";
 				ROIBJDSFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROIBJDSFits.WriteImage(TypeCode.Double, false);
+				ROIBJDSFits.WriteImage(DiskPrecision.Double, false);
 
 				string mdMmname = mdMmsname.Substring(0, mdMmsname.IndexOf(".fits")) + appnd;
 				JPFITS.FITSImage ROImdMmFits = new JPFITS.FITSImage(mdMmname, ROImdMmlist, false, false);
 				ROImdMmFits.FilePath += "\\ROIExtractedLists\\";
 				ROImdMmFits.Header.CopyHeaderFrom(ROItimeFits.Header);
-				ROImdMmFits.WriteImage(TypeCode.Int16, false);
+				ROImdMmFits.WriteImage(DiskPrecision.Int16, false);
 			}
 		}
 
@@ -9983,7 +9829,6 @@ namespace CCDLAB
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Extracted " + WAITBAR.ProgressBar.Value + " of " + WAITBAR.ProgressBar.Maximum + " (" + (100 * WAITBAR.ProgressBar.Value / WAITBAR.ProgressBar.Maximum + 1) + "%)";
-			//WAITBAR.Refresh();
 		}
 
 		private void ExtractROICentroidsWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
@@ -9996,8 +9841,6 @@ namespace CCDLAB
 			else
 				if (MessageBox.Show("Delete partially completed extracted lists of sources?", "Delete?", MessageBoxButtons.YesNo) == DialogResult.Yes)
 				Directory.Delete(IMAGESET[FileListDrop.SelectedIndex].FilePath + "\\ROIExtractedLists\\", true);
-
-			this.Enabled = true;
 		}
 
 		private void ConsolidateNUVApplyToFUV_Click(System.Object sender, EventArgs e)
@@ -10138,8 +9981,6 @@ namespace CCDLAB
 					FUVDIREXISTS = Directory.Exists(FUVdir);
 					NUVDIREXISTS = Directory.Exists(NUVdir);
 
-					//MessageBox.Show(FUVdir + "\r\n\r\n" + NUVdir + "\r\n\r\n" + NUVDIREXISTS.ToString());
-
 					if (Directory.Exists(FUVdir) && !DONUVDRIFTNOW)
 						TimeListNames = Directory.GetFiles(FUVdir, "*TimeList.fits", SearchOption.AllDirectories);
 					else
@@ -10168,7 +10009,6 @@ namespace CCDLAB
 				}
 			}
 
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = 100;
 			WAITBAR.Text = "DeDrift " + TimeListNames.Length + " " + channel1 + " from " + driftFileNames.Length + " " + driftchannel + " Drift Series...";
@@ -10176,11 +10016,11 @@ namespace CCDLAB
 			object[] arg = new object[2];
 			arg[0] = driftFileNames;
 			arg[1] = TimeListNames;
-			DriftNUVtoFUVBGWrkr.RunWorkerAsync(arg);
+			UVITDriftNUVtoFUVBGWrkr.RunWorkerAsync(arg);
 			WAITBAR.ShowDialog();
 		}
 
-		private void DriftNUVtoFUVBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITDriftNUVtoFUVBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			object[] arg = (object[])e.Argument;
 			string[] driftFileNames = (string[])arg[0];
@@ -10210,7 +10050,7 @@ namespace CCDLAB
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 					return;
-				DriftNUVtoFUVBGWrkr.ReportProgress((i + 1) * 100 / FilePaths.Length, "Consolidating " + driftserieschannel + " drift series...");
+				UVITDriftNUVtoFUVBGWrkr.ReportProgress((i + 1) * 100 / FilePaths.Length, "Consolidating " + driftserieschannel + " drift series...");
 
 				string[] pathdriftseries = Directory.GetFiles(FilePaths[i], "*.drift");
 				int[] pathdriftserieslengths = new int[pathdriftseries.Length];//filename length gives the drift series order
@@ -10241,7 +10081,6 @@ namespace CCDLAB
 					JPFITS.FITSImage pathconsolidatedseries_lowerorder = new FITSImage(pathdriftseries[j], null, true, true, false, true);//lower order is longer length
 
 					Parallel.For(1, 3, m =>
-					//for (int m = 1; m < 3; m++)
 					{
 						for (int k = 0; k < pathconsolidatedseries.Height; k++)
 							pathconsolidatedseries[m, k] += pathconsolidatedseries_lowerorder[m, k];
@@ -10279,7 +10118,7 @@ namespace CCDLAB
 				pathcompactseriesFILE = pathcompactseriesFILE.Insert(pathcompactseriesFILE.IndexOf("_XYDrift_List") + 13, "__COMPACT_");
 				pathcompactseriesFILE = pathcompactseriesFILE.Remove(pathcompactseriesFILE.IndexOf("COMPACT") + 8, 7);
 				JPFITS.FITSImage pathcompactseriesFITS = new FITSImage(pathcompactseriesFILE, pathcompactseries, false, true);
-				pathcompactseriesFITS.WriteImage(TypeCode.Double, true);
+				pathcompactseriesFITS.WriteImage(DiskPrecision.Double, true);
 				pathcompactseriesFILES[i] = pathcompactseriesFILE;
 			}
 
@@ -10316,11 +10155,10 @@ namespace CCDLAB
 			double[] Pvistofuv = new double[] { 0, 0, 0, 0 };//???
 			if (driftserieschannel == "NUV")
 			{
-				DriftNUVtoFUVBGWrkr.ReportProgress(0, "Transforming NUV drift series to FUV frame...");
+				UVITDriftNUVtoFUVBGWrkr.ReportProgress(0, "Transforming NUV drift series to FUV frame...");
 				if (!nuvTOfuv)
 				{
 					Parallel.For(0, c, i=>
-					//for (int i = 0; i < c; i++)
 					{
 						double dx = pathcompactseriesconsolidated[1, i];
 						double dy = pathcompactseriesconsolidated[2, i];
@@ -10328,18 +10166,6 @@ namespace CCDLAB
 						pathcompactseriesconsolidated[1, i] = Pnuvtofuv[0] * dx + Pnuvtofuv[1] * dy;//NUV to FUV
 						pathcompactseriesconsolidated[2, i] = Pnuvtofuv[2] * dx + Pnuvtofuv[3] * dy;
 					});
-				}
-				else//no change, NUV drift already in FUV coordinate frame
-				{
-					/*
-					for (int i = 0; i < c; i++)
-					{
-						dx = pathcompactseriesconsolidated[1, i];
-						dy = pathcompactseriesconsolidated[2, i];
-
-						pathcompactseriesconsolidated[1, i] = pathcompactseriesconsolidated[1, i];
-						pathcompactseriesconsolidated[2, i] = pathcompactseriesconsolidated[2, i];
-					}*/
 				}
 			}
 
@@ -10352,11 +10178,10 @@ namespace CCDLAB
 				if (applyserieschannel == "NUV" && fits.Header.GetKeyIndex("NUVTOFUV", false) != -1)
 					nuvTOfuv = true;
 
-				DriftNUVtoFUVBGWrkr.ReportProgress(0, "Transforming VIS drift series to " + applyserieschannel + " frame...");
+				UVITDriftNUVtoFUVBGWrkr.ReportProgress(0, "Transforming VIS drift series to " + applyserieschannel + " frame...");
 				if (applyserieschannel == "FUV" || nuvTOfuv)
 				{
 					Parallel.For(0, c, i =>
-					//for (int i = 0; i < c; i++)
 					{
 						double dx = pathcompactseriesconsolidated[1, i];
 						double dy = pathcompactseriesconsolidated[2, i];
@@ -10366,15 +10191,11 @@ namespace CCDLAB
 
 						pathcompactseriesconsolidated[1, i] = Pnuvtofuv[0] * dxp + Pnuvtofuv[1] * dyp;//NUV to FUV
 						pathcompactseriesconsolidated[2, i] = Pnuvtofuv[2] * dxp + Pnuvtofuv[3] * dyp;
-
-						/*pathcompactseriesconsolidated[1,i] = Pvistofuv[0]*dx + Pvistofuv[1]*dy;//VIS to FUV
-						pathcompactseriesconsolidated[2,i] = Pvistofuv[2]*dx + Pvistofuv[3]*dy;*/
 					});
 				}
 				else if (applyserieschannel == "NUV" && !nuvTOfuv)
 				{
 					Parallel.For(0, c, i =>
-					//for (int i = 0; i < c; i++)
 					{
 						double dx = pathcompactseriesconsolidated[1, i];
 						double dy = pathcompactseriesconsolidated[2, i];
@@ -10413,43 +10234,33 @@ namespace CCDLAB
 			}
 
 			//Now interpolate-spline the consolidated series and create FUVTimeList interpolation values
-			DriftNUVtoFUVBGWrkr.ReportProgress(50, "Interpolating " + driftserieschannel + " drift series to " + applyserieschannel + "...");
+			UVITDriftNUVtoFUVBGWrkr.ReportProgress(50, "Interpolating " + driftserieschannel + " drift series to " + applyserieschannel + "...");
 			double[] t = new double[pathcompactseriesconsolidated.GetLength(1)];
 			double[] xd = new double[pathcompactseriesconsolidated.GetLength(1)];
 			double[] yd = new double[pathcompactseriesconsolidated.GetLength(1)];
 
 			Parallel.For(0, t.Length, i =>
-			//for (int i = 0; i < t.Length; i++)
 			{
 				t[i] = pathcompactseriesconsolidated[0, i];
 				xd[i] = pathcompactseriesconsolidated[1, i];
 				yd[i] = pathcompactseriesconsolidated[2, i];
 			});
 
-			double[] xdi = JPMath.Interpolate1d(t, xd, FUVTimeList, "akima", true);
-			double[] ydi = JPMath.Interpolate1d(t, yd, FUVTimeList, "akima", true);
-			DriftNUVtoFUVBGWrkr.ReportProgress(100, "Interpolating " + driftserieschannel + " drift series to " + applyserieschannel + "...");
+			double[] xdi = JPMath.Interpolate1d(t, xd, FUVTimeList, InterpolationType.Akima, true);
+			double[] ydi = JPMath.Interpolate1d(t, yd, FUVTimeList, InterpolationType.Akima, true);
+			UVITDriftNUVtoFUVBGWrkr.ReportProgress(100, "Interpolating " + driftserieschannel + " drift series to " + applyserieschannel + "...");
 			double[,] FUVinterpdriftseries = new double[2, FUVTimeList.Length];
 
 			Parallel.For(0, FUVTimeList.Length, i =>
-			//for (int i = 0; i < FUVTimeList.Length; i++)
 			{
 				FUVinterpdriftseries[0, i] = xdi[i];
 				FUVinterpdriftseries[1, i] = ydi[i];
 			});
 
-			/*JPFITS.FITSImage consolidated = new FITSImage("c:\\consolidated.fits", pathcompactseriesconsolidated, false);
-			consolidated.WriteImage(TypeCode.Double);
-			FITSImage fuvt = new FITSImage("c:\\fuvtimes.fits", FUVTimeList, false);
-			fuvt.WriteImage(TypeCode.Double);
-			FITSImage fuvinterp = new FITSImage("c:\\fuvinterpxyd.fits", FUVinterpdriftseries, false);
-			fuvinterp.WriteImage(TypeCode.Double);*/
-
 			//Now, for EACH FUVTimeList, see if there is any time overlap of valid interpolation, and make its drift series to save for each one
 			//so, need to compare the FUV TimeList with the NUVdriftseries time list to see where valid overlapping FUV times are; FUV times that are not valid can be set = -1
 			//use the NUVstartendtimes to check for good FUV times...
 			Parallel.For(0, FUVTimeList.Length, i =>
-			//for (int i = 0; i < FUVTimeList.Length; i++)
 			{
 				bool brk = false;
 				for (int j = 0; j < pathcompactseriesFILES.Length; j++)
@@ -10460,7 +10271,7 @@ namespace CCDLAB
 					}
 
 				if (brk)
-					return;// continue;apparently return is what you use for Parallel.For loops to continue...
+					return;
 				FUVTimeList[i] = -1;
 			});
 
@@ -10533,22 +10344,21 @@ namespace CCDLAB
 
 			ParallelOptions opts = new ParallelOptions();
 			if (L1MachineExtremeChck.Checked)
-				opts.MaxDegreeOfParallelism = (int)((double)Environment.ProcessorCount / Math.PI);
+				opts.MaxDegreeOfParallelism = Environment.ProcessorCount;
 			else
 				opts.MaxDegreeOfParallelism = 1;
 			object lockob = new object();
 			int count = 0;
 
 			Parallel.For(0, TimeListNames.Length, opts, (i, loopstate) =>
-			//for (int i = 0; i < TimeListNames.Length; i++)
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
-					loopstate.Stop();// continue;
+					loopstate.Stop();
 
 				lock (lockob)
 				{
 					count++;
-					DriftNUVtoFUVBGWrkr.ReportProgress(count * 100 / TimeListNames.Length, "Drift-correcting " + applyserieschannel + " centroids...");
+					UVITDriftNUVtoFUVBGWrkr.ReportProgress(count * 100 / TimeListNames.Length, "Drift-correcting " + applyserieschannel + " centroids...");
 				}
 
 				string fuvtimelistName = TimeListNames[i];
@@ -10673,6 +10483,43 @@ namespace CCDLAB
 					fuvxyintslistdedrift = fuvxyintslistdedriftTEMP;
 					fuvxyfraclistdedrift = fuvxyfraclistdedriftTEMP;
 					fuvdriftlist = fuvdriftlistTEMP;
+				}
+
+				FITSHeader header = new FITSHeader(fuvxyintslistName);
+				if (header.GetKeyValue("FILTERID").Contains("Grating"))
+				{
+					double[] transcoeff = new double[0];
+
+					if (header.GetKeyValue("DETECTOR") == "NUV")
+						transcoeff = new double[4] { Math.Cos(-33.1 * Math.PI / 180), -Math.Sin(-33.1 * Math.PI / 180), Math.Sin(-33.1 * Math.PI / 180), Math.Cos(-33.1 * Math.PI / 180) };
+
+					if (header.GetKeyValue("DETECTOR") == "FUV")
+						if (header.GetKeyValue("FILTERID").Contains("Grating1"))
+							transcoeff = new double[4] { Math.Cos(1.3 * Math.PI / 180), -Math.Sin(1.3 * Math.PI / 180), Math.Sin(1.3 * Math.PI / 180), Math.Cos(1.3 * Math.PI / 180) };
+						else if (header.GetKeyValue("FILTERID").Contains("Grating2"))
+							transcoeff = new double[4] { Math.Cos(-87.5 * Math.PI / 180), -Math.Sin(-87.5 * Math.PI / 180), Math.Sin(-87.5 * Math.PI / 180), Math.Cos(-87.5 * Math.PI / 180) };
+
+					Random r = new Random();
+					double x, y, xp, yp, center = 255 * 32;
+					int intsx, fracx, intsy, fracy;
+					for (int j = 0; j < fuvtimelistdedrift.Length; j++)
+					{
+						x = (double)(fuvxyintslistdedrift[0, j] + fuvxyfraclistdedrift[0, j] + 16) + r.NextDouble();
+						y = (double)(fuvxyintslistdedrift[1, j] + fuvxyfraclistdedrift[1, j] + 16) + r.NextDouble();
+
+						xp = (x - center) * transcoeff[0] + (y - center) * transcoeff[1] + center;
+						yp = (x - center) * transcoeff[2] + (y - center) * transcoeff[3] + center;
+
+						//now need to split out integer and decimal parts back into their own lists...
+						intsx = Math.DivRem((int)((xp)), 32, out fracx) * 32;
+						fracx -= 16;//reset frac to be from -16
+						intsy = Math.DivRem((int)((yp)), 32, out fracy) * 32;
+						fracy -= 16;//reset frac to be from -16
+						fuvxyintslistdedrift[0, j] = intsx;
+						fuvxyintslistdedrift[1, j] = intsy;
+						fuvxyfraclistdedrift[0, j] = fracx;
+						fuvxyfraclistdedrift[1, j] = fracy;
+					}
 				}
 
 				//update BJD0
@@ -10856,13 +10703,13 @@ namespace CCDLAB
 					//write it
 					string dedriftedExpFile = fuvtimelistName.Replace("TimeList", "ExpArrayList_deDrift");
 					FITSImage dedriftedExpFits = new FITSImage(dedriftedExpFile, dedriftedExposure, false, false);
-					dedriftedExpFits.Header.CopyHeaderFrom(fuvtimelistFITS.Header);//  CopyHeader(fuvtimelistFITS);
-					dedriftedExpFits.WriteImage(TypeCode.Double, false);
+					dedriftedExpFits.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+					dedriftedExpFits.WriteImage(DiskPrecision.Double, false);
 
 					dedriftedExpFile = fuvtimelistName.Replace("TimeList", "ExpArrayImg_deDrift");
 					FITSImage exp = new FITSImage(dedriftedExpFile, exposurearray, false, false);
-					exp.Header.CopyHeaderFrom(fuvtimelistFITS.Header);//  CopyHeader(fuvtimelistFITS);
-					exp.WriteImage(TypeCode.Double, false);
+					exp.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+					exp.WriteImage(DiskPrecision.Double, false);
 				}
 
 				for (int k = 0; k < fuvdriftlist.GetLength(1); k++)
@@ -10886,29 +10733,29 @@ namespace CCDLAB
 
 				FITSImage FITS;
 				FITS = new FITSImage(fuvtimelistNamededrift, fuvtimelistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.UInt32, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.UInt32, false);
 				FITS = new FITSImage(fuvframelistNamededrift, fuvframelistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.UInt32, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.UInt32, false);
 				FITS = new FITSImage(fuvflatlistNamededrift, fuvflatlistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Double, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Double, false);
 				FITS = new FITSImage(fuvBJDlistNamededrift, fuvBJDlistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Double, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Double, false);
 				FITS = new FITSImage(fuvmdmmlistNamededrift, fuvmdmmlistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Int16, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Int16, false);
 				FITS = new FITSImage(fuvxyfraclistNamededrift, fuvxyfraclistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Int16, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Int16, false);
 				FITS = new FITSImage(fuvxyintslistNamededrift, fuvxyintslistdedrift, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Int16, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Int16, false);
 				FITS = new FITSImage(fuvdriftlistname, fuvdriftlist, false, false);
-				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);// CopyHeader(fuvtimelistFITS);
-				FITS.WriteImage(TypeCode.Double, false);
+				FITS.Header.CopyHeaderFrom(fuvtimelistFITS.Header);
+				FITS.WriteImage(DiskPrecision.Double, false);
 
 				//dedrifted lists now written
 				lock (lockob)
@@ -10930,37 +10777,30 @@ namespace CCDLAB
 			e.Result = xyintslist;
 		}
 
-		private void DriftNUVtoFUVBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITDriftNUVtoFUVBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = (string)e.UserState;
 			WAITBAR.Refresh();
 		}
 
-		private void DriftNUVtoFUVBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITDriftNUVtoFUVBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			if (WAITBAR.DialogResult == DialogResult.Cancel)
-			{
-				this.Enabled = true;
 				return;
-			}
 
 			//now create the images
-			ConvertListToImgMenu_DropDownOpened(sender, e);
-			ConvertListToImgMenu.HideDropDown();
 			UVCONVERTLISTTOIMAGEBATCH = true;
 			AUTOLOADIMAGESFILES = (string[])e.Result;
 			if (AUTOLOADIMAGESFILES[0] == "none")
 			{
 				MessageBox.Show("No overlap between the drift series and the channel timelist(s)...no image created.", "Warning");
-				WAITBAR.Hide();
 				WAITBAR.Close();
-				this.Enabled = true;
 				return;
 			}
 			WAITBAR.ProgressBar.Maximum = AUTOLOADIMAGESFILES.Length;
 			WAITBAR.Text = "Creating image(s)...";
-			ConvertUVCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
+			UVITConvertCentroidListToImgWrkr.RunWorkerAsync(AUTOLOADIMAGESFILES);
 		}
 
 		string UVITFilter_FWAngle_to_Index(string channel, double angle)
@@ -11108,17 +10948,15 @@ namespace CCDLAB
 				return;
 
 			DATE = DateTime.Now;
-
-			this.Enabled = false;
 			WAITBAR = new WaitBar();
 			WAITBAR.ProgressBar.Maximum = 100;
 			WAITBAR.Text = "Cleaning VIS Images";
 			WAITBAR.ProgressBar.Value = 0;
-			CleanVISBGWrkr.RunWorkerAsync(fbd.SelectedPath);
+			UVITCleanVISBGWrkr.RunWorkerAsync(fbd.SelectedPath);
 			WAITBAR.ShowDialog();
 		}
 
-		private void CleanVISBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITCleanVISBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string maindir = (string)e.Argument;
 			string[] VISfiles = Directory.GetFiles(maindir, "*_VIS_*.fits", SearchOption.AllDirectories);
@@ -11131,22 +10969,21 @@ namespace CCDLAB
 			int intprog = 0;
 
 			Parallel.For(0, VISfiles.Length, (i, loopstate) =>
-			//for (int i = 0; i < VISfiles.Length; i++)
 			{
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
-					loopstate.Stop();// break;
+					loopstate.Stop();
 
 				if (i < VISfiles.Length / Environment.ProcessorCount)
 					if (Environment.ProcessorCount * i * 100 / VISfiles.Length > intprog)
 					{
 						intprog++;
-						CleanVISBGWrkr.ReportProgress(intprog, VISfiles.Length);
+						UVITCleanVISBGWrkr.ReportProgress(intprog, VISfiles.Length);
 					}
 
 				FITSImage VISfits = new FITSImage(VISfiles[i], null, true, true, false, true);
 
 				if (CLEAN_UVITVISIMG(VISfits, threshold, N, !doparallel))
-					VISfits.WriteImage(TypeCode.Int32, true);
+					VISfits.WriteImage(DiskPrecision.Int32, true);
 			});
 		}
 
@@ -11162,7 +10999,6 @@ namespace CCDLAB
 				opts.MaxDegreeOfParallelism = 1;
 
 			Parallel.For(1, 511, opts, y =>
-			//for (int y = 1; y < 511; y++)
 			{
 				//check if there are too many values in the line some range above the median
 				int c = 0;
@@ -11184,20 +11020,17 @@ namespace CCDLAB
 			return cleaned;
 		}
 
-		private void CleanVISBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITCleanVISBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Value = e.ProgressPercentage;
 			WAITBAR.TextMsg.Text = "Cleaned " + e.ProgressPercentage + "% of " + Convert.ToInt32(e.UserState).ToString() + " files...";
 			WAITBAR.Refresh();
 		}
 
-		private void CleanVISBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITCleanVISBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			bool cancel = WAITBAR.DialogResult == DialogResult.Cancel;
-
-			WAITBAR.Hide();
 			WAITBAR.Close();
-			this.Enabled = true;
 
 			if (!cancel)
 			{
@@ -11319,11 +11152,9 @@ namespace CCDLAB
 			for (int fi = 0; fi < files.Length; fi++)
 			{
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(files[fi], "DETECTOR_DATA");
-				//arr = bt.GetTableByteArray();
 				arr = bt.BINTABLEByteArray;
 				naxis1 = bt.Naxis1;
 				naxis2 = bt.Naxis2;
-				//arr = FITSBinTable.GetExtensionAsByteArray(files[fi], "DETECTOR_DATA", naxis1, naxis2);
 				uint tickcount = 0, frametime = 0, bzero = 2147483648;
 				long lastframeseqnum = 0, frameseqnum = 0;
 				double TIME = 0;
@@ -11385,7 +11216,7 @@ namespace CCDLAB
 			}
 		}
 
-		private void UVFinalizeScienceBtn_DoubleClick(System.Object sender, EventArgs e)
+		private void UVITFinalizeScienceBtn_DoubleClick(System.Object sender, EventArgs e)
 		{
 			if (IMAGESET.Count == 0)
 				return;
@@ -11393,13 +11224,13 @@ namespace CCDLAB
 			WAITBAR = new WaitBar();
 			WAITBAR.Text = "Finalize Science Products...";
 			WAITBAR.ProgressBar.Maximum = 2 * IMAGESET.Count;
-			if (UVFinalizeIncludeTablesChck.Checked)
+			if (UVITFinalizeIncludeTablesChck.Checked)
 				WAITBAR.ProgressBar.Maximum = 6 * IMAGESET.Count;
-			UVFinalizeBGWrkr.RunWorkerAsync();
+			UVITFinalizeBGWrkr.RunWorkerAsync();
 			WAITBAR.ShowDialog();
 		}
 
-		private void UVFinalizeBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void UVITFinalizeBGWrkr_DoWork(System.Object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			string[] imagefiles = IMAGESET.FullFileNames;
 			if (imagefiles.Length > 1 && !IMAGESET[0].FileName.Contains("MASTER"))
@@ -11468,32 +11299,30 @@ namespace CCDLAB
 
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 					return;
-				if (UVFinalizeIncludeExpMapChck.Checked)
+				if (UVITFinalizeIncludeExpMapChck.Checked)
 				{
 					FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, true);
-					expfitsimg.Header.CopyHeaderFrom(image.Header);// CopyHeader(image);
+					expfitsimg.Header.CopyHeaderFrom(image.Header);
 
 					//need to "debin" the exposure map to be same size as IMAGE
 					double[,] debinexp = new double[4800, 4800];
 					Parallel.For(0, 4800, x =>
 					{
 						for (int y = 0; y < 4800; y++)
-							debinexp[x, y] = expfitsimg.Image[x / 4, y / 4];
+							debinexp[x, y] = expfitsimg[x / 4, y / 4];
 					});
 
 					expfitsimg.SetImage(debinexp, false, true);
 
-					UVFinalizeBGWrkr.ReportProgress(0, "Writing exposure array");
+					UVITFinalizeBGWrkr.ReportProgress(0, "Writing exposure array");
 					expfitsimg.FileName = expfitsimg.FileName.Remove(expfitsimg.FileName.IndexOf("MASTER")) + "MASTER_EXPARRAY_" + new DirectoryInfo(objdir).Name + ".fits";
 					expfitsimg.FilePath = objdir;
-					expfitsimg.WriteImage(TypeCode.Double, true);
-					/*zipfiles.Add(expfitsimg.FullFileName);
-					e.Result = zipfiles;*/
+					expfitsimg.WriteImage(DiskPrecision.Double, true);
 				}
 
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 					return;
-				UVFinalizeBGWrkr.ReportProgress(0, "Writing image");
+				UVITFinalizeBGWrkr.ReportProgress(0, "Writing image");
 				string origfilename = image.FullFileName;
 				image.FileName = image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_IMAGE_" + new DirectoryInfo(objdir).Name + ".fits";
 				image.FilePath = objdir;
@@ -11505,113 +11334,129 @@ namespace CCDLAB
 				{
 					MessageBox.Show("The parent directory may not have the same name as a subdirectory.", "Error");
 				}
-				/*zipfiles.Add(image.FullFileName);
-				e.Result = zipfiles;*/
 
-				if (!UVFinalizeIncludeTablesChck.Checked)
+				if (!UVITFinalizeIncludeTablesChck.Checked)
 					continue;
 
-				//try
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+				string xyintsname = imagefiles[i].Remove(imagefiles[i].IndexOf("_IMAGE")) + ".fits";
+				xyintsname = xyintsname.Insert(xyintsname.IndexOf("deFPN_"), "XYInts_List_");
+				string xydecsname = xyintsname.Replace("XYInts_List", "XYFrac_List");
+				double[,] xyints = FITSImage.ReadImageArrayOnly(xyintsname, null, true);
+				double[,] xydecs = FITSImage.ReadImageArrayOnly(xydecsname, null, true);
+				short[] xcents = new short[xyints.GetLength(1)];
+				short[] ycents = new short[xyints.GetLength(1)];
+
+				Parallel.For(0, xyints.GetLength(1), j =>
 				{
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						return;
-					string xyintsname = imagefiles[i].Remove(imagefiles[i].IndexOf("_IMAGE")) + ".fits";
-					xyintsname = xyintsname.Insert(xyintsname.IndexOf("deFPN_"), "XYInts_List_");
-					string xydecsname = xyintsname.Replace("XYInts_List", "XYFrac_List");
-					double[,] xyints = FITSImage.ReadImageArrayOnly(xyintsname, null, true);
-					double[,] xydecs = FITSImage.ReadImageArrayOnly(xydecsname, null, true);
-					short[] xcents = new short[xyints.GetLength(1)];
-					short[] ycents = new short[xyints.GetLength(1)];
+					xcents[j] = (short)(xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
+					ycents[j] = (short)(xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
+				});
 
-					Parallel.For(0, xyints.GetLength(1), j =>
-					{
-						xcents[j] = (short)(xyints[0, j] + xydecs[0, j] + 16);//use these as the array for the bintable now
-						ycents[j] = (short)(xyints[1, j] + xydecs[1, j] + 16);//use these as the array for the bintable now
-					});
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+				UVITFinalizeBGWrkr.ReportProgress(0, "Writing centroid table");
+				string binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
+				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable("CENTROIDS");
+				bt.SetTTYPEEntries(new string[] { "XCENTROID", "YCENTROID" }, new string[] { "pix*32", "pix*32" }, new Array[] { xcents, ycents });
+				bt.AddExtraHeaderKey("COMMENT", "Centroids are at ", "1/32 pixel precision.");
+				bt.Write(binname, true);
 
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						return;
-					UVFinalizeBGWrkr.ReportProgress(0, "Writing centroid table");
-					string binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
-					/*zipfiles.Add(binname);
-					e.Result = zipfiles;*/
-					JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable();
-					bt.SetTTYPEEntries(new string[] { "XCENTROID", "YCENTROID" }, new string[] { "pix*32", "pix*32" }, new object[] { xcents, ycents });
-					bt.AddExtraHeaderKey("COMMENT", "Centroids are at ", "1/32 pixel precision.");
-					bt.Write(binname, "CENTROIDS", true);
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+				UVITFinalizeBGWrkr.ReportProgress(0, "Writing BJD table");
+				string bjdname = xyintsname.Remove(xyintsname.IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
+				double[] bjds = FITSImage.ReadImageVectorOnly(bjdname, null, true);
+				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_BJD_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
+				bt = new JPFITS.FITSBinTable("BJD");
+				bt.AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
+				bt.AddExtraHeaderKey("COMMENT", "BaryCenterJD ", "means solar system barycenter.");
+				bt.Write(binname, true);
 
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						return;
-					UVFinalizeBGWrkr.ReportProgress(0, "Writing BJD table");
-					string bjdname = xyintsname.Remove(xyintsname.IndexOf("XYInts_List")) + "BJDList" + dedrift + ".fits";
-					double[] bjds = FITSImage.ReadImageVectorOnly(bjdname, null, true);
-					binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_BJD_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
-					/*zipfiles.Add(binname);
-					e.Result = zipfiles;*/
-					bt = new JPFITS.FITSBinTable();
-					bt.AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
-					bt.AddExtraHeaderKey("COMMENT", "BaryCenterJD ", "means solar system barycenter.");
-					bt.Write(binname, "BJD", true);
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+				UVITFinalizeBGWrkr.ReportProgress(0, "Writing flat table");
+				string flatname = bjdname.Replace("BJDList", "FlatList");
+				double[] flats = FITSImage.ReadImageVectorOnly(flatname, null, true);
+				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_FLAT_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
+				bt = new JPFITS.FITSBinTable("FLAT");
+				bt.AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
+				bt.Write(binname, true);
 
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						return;
-					UVFinalizeBGWrkr.ReportProgress(0, "Writing flat table");
-					string flatname = bjdname.Replace("BJDList", "FlatList");
-					double[] flats = FITSImage.ReadImageVectorOnly(flatname, null, true);
-					binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_FLAT_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
-					/*zipfiles.Add(binname);
-					e.Result = zipfiles;*/
-					bt = new JPFITS.FITSBinTable();
-					bt.AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
-					bt.Write(binname, "FLAT", true);
-
-					if (WAITBAR.DialogResult == DialogResult.Cancel)
-						return;
-					UVFinalizeBGWrkr.ReportProgress(0, "Writing exposure table");
-					string expname = bjdname.Replace("BJDList", "ExpArrayList");
-					double[] exps = FITSImage.ReadImageVectorOnly(expname, null, true);
-					binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
-					/*zipfiles.Add(binname);
-					e.Result = zipfiles;*/
-					bt = new JPFITS.FITSBinTable();
-					bt.AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
-					bt.Write(binname, "EXPOSURE", true);
-				}
-				/*catch (Exception e)
-				{
-					MessageBox.Show(e.Data + "	" + e.InnerException + "	" + e.Message + "	" + e.Source + "	" + e.StackTrace + "	" + e.TargetSite);
-				}*/
+				if (WAITBAR.DialogResult == DialogResult.Cancel)
+					return;
+				UVITFinalizeBGWrkr.ReportProgress(0, "Writing exposure table");
+				string expname = bjdname.Replace("BJDList", "ExpArrayList");
+				double[] exps = FITSImage.ReadImageVectorOnly(expname, null, true);
+				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
+				bt = new JPFITS.FITSBinTable("EXPOSURE");
+				bt.AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
+				bt.Write(binname, true);
 			}
 
 			//chck delete intermdt
-			if (UVFinalizeDeleteIntrmdtChck.Checked)
+			if (UVITFinalizeDeleteIntrmdtChck.Checked)
 			{
-				for (int i = 0; i < allobjdirs.Count; i++)
+				if (allobjdirs.Count == 1)
 				{
-					if (Directory.Exists((string)allobjdirs[i] + "\\FUV"))
+					string[] fuvdirs = Directory.GetDirectories((string)allobjdirs[0], "FUV", SearchOption.AllDirectories);
+					for (int i = 0; i < fuvdirs.Length; i++)
 					{
-						UVFinalizeBGWrkr.ReportProgress(0, "Cleaning up FUV files in folder " + (i + 1) + " of " + allobjdirs.Count);
-						Directory.Delete((string)allobjdirs[i] + "\\FUV", true);
+						UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up FUV files in folder " + (i + 1) + " of " + fuvdirs.Length);
+						Directory.Delete(fuvdirs[i], true);
 					}
-					if (Directory.Exists((string)allobjdirs[i] + "\\NUV"))
+
+					string[] nuvdirs = Directory.GetDirectories((string)allobjdirs[0], "NUV", SearchOption.AllDirectories);
+					for (int i = 0; i < nuvdirs.Length; i++)
 					{
-						UVFinalizeBGWrkr.ReportProgress(0, "Cleaning up NUV files in folder " + (i + 1) + " of " + allobjdirs.Count);
-						Directory.Delete((string)allobjdirs[i] + "\\NUV", true);
+						UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up NUV files in folder " + (i + 1) + " of " + nuvdirs.Length);
+						Directory.Delete(nuvdirs[i], true);
 					}
-					if (Directory.Exists((string)allobjdirs[i] + "\\VIS"))
+
+					string[] visdirs = Directory.GetDirectories((string)allobjdirs[0], "VIS", SearchOption.AllDirectories);
+					for (int i = 0; i < visdirs.Length; i++)
 					{
-						UVFinalizeBGWrkr.ReportProgress(0, "Cleaning up VIS files in folder " + (i + 1) + " of " + allobjdirs.Count);
-						Directory.Delete((string)allobjdirs[i] + "\\VIS", true);
+						UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up VIS files in folder " + (i + 1) + " of " + visdirs.Length);
+						Directory.Delete(visdirs[i], true);
 					}
-					if (Directory.Exists((string)allobjdirs[i] + "\\Digested L1"))
+
+					string[] digdirs = Directory.GetDirectories((string)allobjdirs[0], "Digested L1", SearchOption.AllDirectories);
+					for (int i = 0; i < digdirs.Length; i++)
 					{
-						UVFinalizeBGWrkr.ReportProgress(0, "Cleaning up L1 files in folder " + (i + 1) + " of " + allobjdirs.Count);
-						Directory.Delete((string)allobjdirs[i] + "\\Digested L1", true);
+						UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up Digested L1 files in folder " + (i + 1) + " of " + digdirs.Length);
+						Directory.Delete(digdirs[i], true);
+					}
+				}
+				else
+				{
+					for (int i = 0; i < allobjdirs.Count; i++)
+					{
+						if (Directory.Exists((string)allobjdirs[i] + "\\FUV"))
+						{
+							UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up FUV files in folder " + (i + 1) + " of " + allobjdirs.Count);
+							Directory.Delete((string)allobjdirs[i] + "\\FUV", true);
+						}
+						if (Directory.Exists((string)allobjdirs[i] + "\\NUV"))
+						{
+							UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up NUV files in folder " + (i + 1) + " of " + allobjdirs.Count);
+							Directory.Delete((string)allobjdirs[i] + "\\NUV", true);
+						}
+						if (Directory.Exists((string)allobjdirs[i] + "\\VIS"))
+						{
+							UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up VIS files in folder " + (i + 1) + " of " + allobjdirs.Count);
+							Directory.Delete((string)allobjdirs[i] + "\\VIS", true);
+						}
+						if (Directory.Exists((string)allobjdirs[i] + "\\Digested L1"))
+						{
+							UVITFinalizeBGWrkr.ReportProgress(0, "Cleaning up L1 files in folder " + (i + 1) + " of " + allobjdirs.Count);
+							Directory.Delete((string)allobjdirs[i] + "\\Digested L1", true);
+						}
 					}
 				}
 			}
 
-			UVFinalizeBGWrkr.ReportProgress(0, "Please wait while I finish up...");
+			UVITFinalizeBGWrkr.ReportProgress(0, "Please wait while I finish up...");
 
 			if (allobjdirs.Count > 1)
 			{
@@ -11641,7 +11486,7 @@ namespace CCDLAB
 
 			string[] zipfiles = Directory.GetFiles((string)allobjdirs[0], "*.fits");
 
-			string ziplist = CCDLABPATH + "tozip.txt";
+			string ziplist = CCDLABPATH_USERAPPDATAROAMING + "tozip.txt";
 			StreamWriter sw = new StreamWriter(ziplist);
 			for (int i = 0; i < zipfiles.Length; i++)
 				sw.WriteLine((string)zipfiles[i]);
@@ -11665,7 +11510,7 @@ namespace CCDLAB
 			}
 
 			//chck move or copy
-			if (UVFinalizeMoveOrCopyZipChck.Text.Contains("Move"))
+			if (UVITFinalizeMoveOrCopyZipChck.Text.Contains("Move"))
 				for (int i = 0; i < zipfiles.Length; i++)
 					File.Delete((string)zipfiles[i]);
 
@@ -11673,23 +11518,16 @@ namespace CCDLAB
 			REG.SetReg("CCDLAB", "UVFINALDIR", (string)allobjdirs[0]);
 		}
 
-		private void UVFinalizeBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void UVITFinalizeBGWrkr_ProgressChanged(System.Object sender, System.ComponentModel.ProgressChangedEventArgs e)
 		{
 			WAITBAR.ProgressBar.Increment(1);
 			WAITBAR.TextMsg.Text = (string)e.UserState;
 			WAITBAR.Refresh();
 		}
 
-		private void UVFinalizeBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void UVITFinalizeBGWrkr_RunWorkerCompleted(System.Object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
-			if (WAITBAR.DialogResult == DialogResult.Cancel)
-			{
-				/*array<String^> zipfiles = (array<String^>^)e.Result;
-				for (int j = 0; j < zipfiles.Length; j++)
-					if (zipfiles[j] != "" && File.Exists(zipfiles[j]))
-						File.Delete(zipfiles[j]);*/
-			}
-			else
+			if (WAITBAR.DialogResult != DialogResult.Cancel)
 				if (MessageBox.Show("Open Final Products Directory?", "Open Directory?", MessageBoxButtons.YesNo) == DialogResult.Yes)
 					Process.Start("Explorer.exe", (string)REG.GetReg("CCDLAB", "UVFINALDIR"));
 		}
@@ -11702,19 +11540,19 @@ namespace CCDLAB
 
 		private void invertWCSToolStripMenuItem_Click(System.Object sender, EventArgs e)
 		{
-			double CRPIX2 = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("CRPIX2"));
-			double CD1_2 = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("CD1_2"));
-			double CD2_2 = Convert.ToDouble(IMAGESET[FILELISTINDEX].Header.GetKeyValue("CD2_2"));
+			double CRPIX2 = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CRPIX2"));
+			double CD1_2 = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CD1_2"));
+			double CD2_2 = Convert.ToDouble(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("CD2_2"));
 
 			CRPIX2 = 4800 - CRPIX2;
 			CD1_2 = -CD1_2;
 			CD2_2 = -CD2_2;
 
-			IMAGESET[FILELISTINDEX].Header.SetKey("CRPIX2", CRPIX2.ToString("F8"), "WCS coordinate reference value on axis 2 (deg)", true, -1);
-			IMAGESET[FILELISTINDEX].Header.SetKey("CD1_2", CD1_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
-			IMAGESET[FILELISTINDEX].Header.SetKey("CD2_2", CD2_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
+			IMAGESET[IMAGESETINDEX].Header.SetKey("CRPIX2", CRPIX2.ToString("F8"), "WCS coordinate reference value on axis 2 (deg)", true, -1);
+			IMAGESET[IMAGESETINDEX].Header.SetKey("CD1_2", CD1_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
+			IMAGESET[IMAGESETINDEX].Header.SetKey("CD2_2", CD2_2.ToString("0.0#######e+00"), "WCS rotation and scaling matrix", true, -1);
 
-			IMAGESET[FILELISTINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[FILELISTINDEX].Header);
+			IMAGESET[IMAGESETINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 
 			WCSCopyToLoadedImgs.PerformClick();
 
@@ -11777,7 +11615,7 @@ namespace CCDLAB
 				for (int i = 0; i < obsiddirs.Length; i++)
 					if (Directory.GetDirectories(obsiddirs[i], "Digested L1", SearchOption.TopDirectoryOnly).Length == 0)
 					{
-						MessageBox.Show("Folder selection doesn't make sense. Please select parent directory containing Observation-ID subdirectories.", "Error");
+						MessageBox.Show("Folder selection doesn't make sense - \"Digested L1\" folders not present, indicating the subfolders are not from L1 processing. Please select parent directory containing Observation-ID subdirectories with Extraction and Digestion having occured upon them.", "Error");
 						return;
 					}
 			}
@@ -11873,9 +11711,10 @@ namespace CCDLAB
 				MessageBox.Show("L1 Obs. ID's merged, with original Obs. ID's MOVED to the new parent folder.", "MOVED");
 			else
 				MessageBox.Show("L1 Obs. ID's merged, with original Obs. ID's COPIED to the new parent folder.", "COPIED");
-
 		}
 
-
 	}
+
+
 }
+

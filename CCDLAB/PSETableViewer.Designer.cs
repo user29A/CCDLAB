@@ -72,7 +72,7 @@
 			// PSETableViewerSaveBtn
 			// 
 			this.PSETableViewerSaveBtn.Name = "PSETableViewerSaveBtn";
-			this.PSETableViewerSaveBtn.Size = new System.Drawing.Size(180, 22);
+			this.PSETableViewerSaveBtn.Size = new System.Drawing.Size(103, 22);
 			this.PSETableViewerSaveBtn.Text = "Save";
 			this.PSETableViewerSaveBtn.Click += new System.EventHandler(this.PSETableViewerSaveBtn_Click);
 			// 
@@ -105,6 +105,7 @@
 			this.Controls.Add(this.button1);
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "PSETableViewer";
+			this.ShowIcon = false;
 			((System.ComponentModel.ISupportInitialize)(this.PSETable)).EndInit();
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();

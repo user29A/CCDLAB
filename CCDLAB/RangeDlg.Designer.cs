@@ -47,10 +47,9 @@
 			// CancelBtn
 			// 
 			this.CancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.CancelBtn.Location = new System.Drawing.Point(484, 83);
-			this.CancelBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.CancelBtn.Location = new System.Drawing.Point(323, 54);
 			this.CancelBtn.Name = "CancelBtn";
-			this.CancelBtn.Size = new System.Drawing.Size(112, 35);
+			this.CancelBtn.Size = new System.Drawing.Size(75, 23);
 			this.CancelBtn.TabIndex = 19;
 			this.CancelBtn.Text = "Cancel";
 			this.CancelBtn.UseVisualStyleBackColor = true;
@@ -58,10 +57,9 @@
 			// OKBtn
 			// 
 			this.OKBtn.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.OKBtn.Location = new System.Drawing.Point(484, 32);
-			this.OKBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.OKBtn.Location = new System.Drawing.Point(323, 21);
 			this.OKBtn.Name = "OKBtn";
-			this.OKBtn.Size = new System.Drawing.Size(112, 35);
+			this.OKBtn.Size = new System.Drawing.Size(75, 23);
 			this.OKBtn.TabIndex = 18;
 			this.OKBtn.Text = "OK";
 			this.OKBtn.UseVisualStyleBackColor = true;
@@ -70,106 +68,81 @@
 			// XEndLabel
 			// 
 			this.XEndLabel.AutoSize = true;
-			this.XEndLabel.Location = new System.Drawing.Point(243, 38);
-			this.XEndLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.XEndLabel.Location = new System.Drawing.Point(162, 25);
 			this.XEndLabel.Name = "XEndLabel";
-			this.XEndLabel.Size = new System.Drawing.Size(49, 20);
+			this.XEndLabel.Size = new System.Drawing.Size(33, 13);
 			this.XEndLabel.TabIndex = 17;
 			this.XEndLabel.Text = "XEnd";
 			// 
 			// YStartLabel
 			// 
 			this.YStartLabel.AutoSize = true;
-			this.YStartLabel.Location = new System.Drawing.Point(30, 86);
-			this.YStartLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.YStartLabel.Location = new System.Drawing.Point(20, 56);
 			this.YStartLabel.Name = "YStartLabel";
-			this.YStartLabel.Size = new System.Drawing.Size(55, 20);
+			this.YStartLabel.Size = new System.Drawing.Size(36, 13);
 			this.YStartLabel.TabIndex = 16;
 			this.YStartLabel.Text = "YStart";
 			// 
 			// YEndLabel
 			// 
 			this.YEndLabel.AutoSize = true;
-			this.YEndLabel.Location = new System.Drawing.Point(243, 89);
-			this.YEndLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.YEndLabel.Location = new System.Drawing.Point(162, 58);
 			this.YEndLabel.Name = "YEndLabel";
-			this.YEndLabel.Size = new System.Drawing.Size(49, 20);
+			this.YEndLabel.Size = new System.Drawing.Size(33, 13);
 			this.YEndLabel.TabIndex = 15;
 			this.YEndLabel.Text = "YEnd";
 			// 
 			// XStartLabel
 			// 
 			this.XStartLabel.AutoSize = true;
-			this.XStartLabel.Location = new System.Drawing.Point(30, 38);
-			this.XStartLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			this.XStartLabel.Location = new System.Drawing.Point(20, 25);
 			this.XStartLabel.Name = "XStartLabel";
-			this.XStartLabel.Size = new System.Drawing.Size(55, 20);
+			this.XStartLabel.Size = new System.Drawing.Size(36, 13);
 			this.XStartLabel.TabIndex = 14;
 			this.XStartLabel.Text = "XStart";
 			// 
 			// YStartUpD
 			// 
-			this.YStartUpD.Location = new System.Drawing.Point(93, 83);
-			this.YStartUpD.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.YStartUpD.Location = new System.Drawing.Point(62, 54);
 			this.YStartUpD.Maximum = new decimal(new int[] {
             -2147483648,
             0,
             0,
             0});
 			this.YStartUpD.Name = "YStartUpD";
-			this.YStartUpD.Size = new System.Drawing.Size(120, 26);
+			this.YStartUpD.Size = new System.Drawing.Size(80, 20);
 			this.YStartUpD.TabIndex = 13;
+			this.YStartUpD.ValueChanged += new System.EventHandler(this.YStartUpD_ValueChanged);
 			// 
 			// YEndUpD
 			// 
-			this.YEndUpD.Location = new System.Drawing.Point(306, 83);
-			this.YEndUpD.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.YEndUpD.Location = new System.Drawing.Point(204, 54);
 			this.YEndUpD.Maximum = new decimal(new int[] {
             -2147483648,
             0,
             0,
             0});
-			this.YEndUpD.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
 			this.YEndUpD.Name = "YEndUpD";
-			this.YEndUpD.Size = new System.Drawing.Size(118, 26);
+			this.YEndUpD.Size = new System.Drawing.Size(79, 20);
 			this.YEndUpD.TabIndex = 12;
-			this.YEndUpD.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
+			this.YEndUpD.ValueChanged += new System.EventHandler(this.YEndUpD_ValueChanged);
 			// 
 			// XEndUpD
 			// 
-			this.XEndUpD.Location = new System.Drawing.Point(304, 32);
-			this.XEndUpD.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.XEndUpD.Location = new System.Drawing.Point(203, 21);
 			this.XEndUpD.Maximum = new decimal(new int[] {
             -2147483648,
             0,
             0,
             0});
-			this.XEndUpD.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
 			this.XEndUpD.Name = "XEndUpD";
-			this.XEndUpD.Size = new System.Drawing.Size(120, 26);
+			this.XEndUpD.Size = new System.Drawing.Size(80, 20);
 			this.XEndUpD.TabIndex = 11;
-			this.XEndUpD.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
+			this.XEndUpD.ValueChanged += new System.EventHandler(this.XEndUpD_ValueChanged);
 			// 
 			// XStartUpD
 			// 
-			this.XStartUpD.Location = new System.Drawing.Point(93, 32);
-			this.XStartUpD.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.XStartUpD.Location = new System.Drawing.Point(62, 21);
 			this.XStartUpD.Maximum = new decimal(new int[] {
             -2147483648,
             0,
@@ -181,21 +154,22 @@
             0,
             -2147483648});
 			this.XStartUpD.Name = "XStartUpD";
-			this.XStartUpD.Size = new System.Drawing.Size(120, 26);
+			this.XStartUpD.Size = new System.Drawing.Size(80, 20);
 			this.XStartUpD.TabIndex = 10;
 			this.XStartUpD.Value = new decimal(new int[] {
             1,
             0,
             0,
             -2147483648});
+			this.XStartUpD.ValueChanged += new System.EventHandler(this.XStartUpD_ValueChanged);
 			// 
 			// RangeDlg
 			// 
 			this.AcceptButton = this.OKBtn;
-			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.CancelBtn;
-			this.ClientSize = new System.Drawing.Size(628, 152);
+			this.ClientSize = new System.Drawing.Size(419, 99);
 			this.Controls.Add(this.CancelBtn);
 			this.Controls.Add(this.OKBtn);
 			this.Controls.Add(this.XEndLabel);
@@ -208,7 +182,6 @@
 			this.Controls.Add(this.XStartUpD);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.HelpButton = true;
-			this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "RangeDlg";
