@@ -4765,7 +4765,7 @@ namespace CCDLAB
 						IMAGESET[inds[i]].SetImage(JPMath.Bin(IMAGESET[inds[i]].Image, xbin, ybin, true), true, true);
 
 						if (xbin == ybin)
-							if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, new string[2] { "TAN", "TAN" }))
+							if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, WorldCoordinateSolution.WCSType.TAN))
 							{
 								IMAGESET[inds[i]].WCS = new WorldCoordinateSolution(IMAGESET[inds[i]].Header);
 								IMAGESET[inds[i]].WCS.Bin(xbin, IMAGESET[inds[i]].Header);
@@ -4789,7 +4789,7 @@ namespace CCDLAB
 						IMAGESET[inds[i]].Header.AddKey("YCROPSTT", CROPPING[2].ToString(), "Cropped image y-start index (0-based)", -1);
 						IMAGESET[inds[i]].Header.AddKey("YCROPEND", CROPPING[3].ToString(), "Cropped image y-end index (0-based)", -1);
 
-						if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, new string[2] { "TAN", "TAN" }))
+						if (WorldCoordinateSolution.Exists(IMAGESET[inds[i]].Header, WorldCoordinateSolution.WCSType.TAN))
 						{
 							IMAGESET[inds[i]].WCS = new WorldCoordinateSolution(IMAGESET[inds[i]].Header);
 							IMAGESET[inds[i]].WCS.Cut((double)CROPPING[0], (double)CROPPING[2], IMAGESET[inds[i]].Header);

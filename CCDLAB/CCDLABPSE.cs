@@ -1173,7 +1173,7 @@ namespace CCDLAB
 				return;
 			}
 
-			if (PSELoadSrcDrop.SelectedIndex <= 1 && !WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (PSELoadSrcDrop.SelectedIndex <= 1 && !WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 			{
 				MessageBox.Show("CD matrix for WCS not found in current image header. Can not transform [RA, Dec] to [x, y]...", "Error...");
 				return;
@@ -1416,7 +1416,7 @@ namespace CCDLAB
 			if (PSESET.Count == 0)
 				return;
 
-			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 			{
 				if (!IMAGESET[IMAGESETINDEX].WCS.Exists())
 					IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);

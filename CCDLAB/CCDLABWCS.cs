@@ -81,7 +81,7 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 				if (!IMAGESET[IMAGESETINDEX].WCS.Exists())
 					IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 
@@ -425,7 +425,7 @@ namespace CCDLAB
 					string catlg = AstraCarta.Query(ra, dec, scale, IMAGESET[i].Width, IMAGESET[i].Height, keys);
 
 					WCSAutoBatchBGWrkr.ReportProgress(i + 1, new object[] { "WCSAutoSolver is running...", catchredocounter });
-					wcsas = new WCSAutoSolver("TAN", 75, IMAGESET[i], ROI_REGION, (double)PSESaturationUpD.Value, PSEAutoBackgroundChck.Checked, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, catlg, "GaiaDR3", "ra", "dec", WCSAutoCatalogueMagTxt.Text, Convert.ToInt32(WCSAutoRefineNPtsTxt.Text));
+					wcsas = new WCSAutoSolver(WorldCoordinateSolution.WCSType.TAN, 75, IMAGESET[i], ROI_REGION, (double)PSESaturationUpD.Value, PSEAutoBackgroundChck.Checked, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, catlg, "GaiaDR3", "ra", "dec", WCSAutoCatalogueMagTxt.Text, Convert.ToInt32(WCSAutoRefineNPtsTxt.Text));
 					wcsas.SolveAsync(scale, scalB, scalU, rotn, rotnL, rotnU, tol, stopNpts, stopPercpts, condtriars, false);
 					if (wcsas.Solved)
 					{
@@ -540,7 +540,7 @@ namespace CCDLAB
 			}
 			else//use external DLL
 			{
-				WCSAS = new JPFITS.WCSAutoSolver("TAN", Convert.ToInt32(WCSAutoNCatPtsTxt.Text), IMAGESET[IMAGESETINDEX], ROI_REGION, (double)PSESaturationUpD.Value, PSEAutoBackgroundChck.Checked, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, (string)WCSAutoCatalogueTxt.Tag, WCSAutoCatalogueExtensionTxt.Text, WCSAutoCatalogueCVAL1Txt.Text, WCSAutoCatalogueCVAL2Txt.Text, WCSAutoCatalogueMagTxt.Text, Convert.ToInt32(WCSAutoRefineNPtsTxt.Text));
+				WCSAS = new JPFITS.WCSAutoSolver(WorldCoordinateSolution.WCSType.TAN, Convert.ToInt32(WCSAutoNCatPtsTxt.Text), IMAGESET[IMAGESETINDEX], ROI_REGION, (double)PSESaturationUpD.Value, PSEAutoBackgroundChck.Checked, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, (string)WCSAutoCatalogueTxt.Tag, WCSAutoCatalogueExtensionTxt.Text, WCSAutoCatalogueCVAL1Txt.Text, WCSAutoCatalogueCVAL2Txt.Text, WCSAutoCatalogueMagTxt.Text, Convert.ToInt32(WCSAutoRefineNPtsTxt.Text));
 				WCSAS.SolveAsync(Convert.ToDouble(WCSAutoScaleInitTxt.Text), Convert.ToDouble(WCSAutoScaleInitLBTxt.Text), Convert.ToDouble(WCSAutoScaleInitUBTxt.Text), Convert.ToDouble(WCSAutoRotationInitTxt.Text), Convert.ToDouble(WCSAutoRotationInitLBTxt.Text), Convert.ToDouble(WCSAutoRotationInitUBTxt.Text), 0.25, Convert.ToInt32(WCSAutoStopNMatchesText.Text), Convert.ToInt32(WCSAutoStopPercMatchesText.Text), WCSAutoConditionArraysChck.Checked, true);
 
 				if (!WCSAS.Cancelled && WCSAS.Solved)
@@ -1944,7 +1944,7 @@ namespace CCDLAB
 		private void WCSCopyToLoadedImgs_Click(object sender, System.EventArgs e)
 		{
 			if (!IMAGESET[IMAGESETINDEX].WCS.Exists())
-				if (JPFITS.WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[] { "RA---TAN" }))
+				if (JPFITS.WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 					IMAGESET[IMAGESETINDEX].WCS = new JPFITS.WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 				else
 				{
@@ -2136,7 +2136,7 @@ namespace CCDLAB
 
 			e.SuppressKeyPress = e.Handled = true;
 
-			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 			{
 				if (!JPMath.IsNumeric(WCSEditBinningText.Text))
 					throw new Exception("Binning factor: '" + WCSEditBinningText.Text + "' is not a number.");
@@ -2164,7 +2164,7 @@ namespace CCDLAB
 
 			e.SuppressKeyPress = e.Handled = true;
 
-			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[2] { "TAN", "TAN" }))
+			if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 			{
 				string[] vals = WCSEditCutRegionText.Text.Split(new string[1] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 

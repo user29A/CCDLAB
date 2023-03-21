@@ -522,7 +522,7 @@ namespace CCDLAB
 							if (PSESET[PSESETINDEX].SourceBooleanMap != null && PSESET[PSESETINDEX].SourceBooleanMap[XPOS_CURSOR, YPOS_CURSOR])
 							{
 								if (!PSESET[PSESETINDEX].WCS_Coordinates_Generated)
-									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[] { "TAN", "TAN" }))
+									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 									{
 										IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 										PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
@@ -1550,7 +1550,7 @@ namespace CCDLAB
 							if (PSESET[PSESETINDEX].SourceBooleanMap != null && PSESET[PSESETINDEX].SourceBooleanMap[XPOS_CURSOR, YPOS_CURSOR])
 							{
 								if (!PSESET[PSESETINDEX].WCS_Coordinates_Generated)
-									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, new string[] { "TAN", "TAN" }))
+									if (WorldCoordinateSolution.Exists(IMAGESET[IMAGESETINDEX].Header, WorldCoordinateSolution.WCSType.TAN))
 									{
 										IMAGESET[IMAGESETINDEX].WCS = new WorldCoordinateSolution(IMAGESET[IMAGESETINDEX].Header);
 										PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
