@@ -1,6 +1,8 @@
 # CCDLAB
 FITS image interaction, world coordinate solving, point source extraction, photometry, etc.  See the github Wiki link below for more info. If you require CCDLAB for UVIT, please ensure you have the UVIT Calibration Database which you can find at the CCDLAB Wiki link below.
 
+https://github.com/user29A/CCDLAB/wiki
+
 
 Contact: joepostma at live dot ca
 
