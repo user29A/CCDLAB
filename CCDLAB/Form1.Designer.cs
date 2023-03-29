@@ -34,7 +34,7 @@ namespace CCDLAB
         {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
 			this.ImageWindowCntxt = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.ImageWndwShowCoordTooltipChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.ImageWndwCntxtView = new System.Windows.Forms.ToolStripMenuItem();
@@ -1941,9 +1941,9 @@ namespace CCDLAB
 			// 
 			this.ImageSizeTxt.ContextMenuStrip = this.SIZECntxtMenu;
 			this.ImageSizeTxt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.ImageSizeTxt.Location = new System.Drawing.Point(154, 125);
+			this.ImageSizeTxt.Location = new System.Drawing.Point(75, 125);
 			this.ImageSizeTxt.Name = "ImageSizeTxt";
-			this.ImageSizeTxt.Size = new System.Drawing.Size(75, 14);
+			this.ImageSizeTxt.Size = new System.Drawing.Size(154, 15);
 			this.ImageSizeTxt.TabIndex = 45;
 			this.ImageSizeTxt.Text = "0x0";
 			this.ImageSizeTxt.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -10533,10 +10533,10 @@ namespace CCDLAB
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.Chart1.BorderlineColor = System.Drawing.Color.Black;
-			chartArea1.AxisX.MajorGrid.Enabled = false;
-			chartArea1.AxisY.MajorGrid.Enabled = false;
-			chartArea1.Name = "ChartArea1";
-			this.Chart1.ChartAreas.Add(chartArea1);
+			chartArea2.AxisX.MajorGrid.Enabled = false;
+			chartArea2.AxisY.MajorGrid.Enabled = false;
+			chartArea2.Name = "ChartArea1";
+			this.Chart1.ChartAreas.Add(chartArea2);
 			this.Chart1.Location = new System.Drawing.Point(35, 41);
 			this.Chart1.Name = "Chart1";
 			this.Chart1.Size = new System.Drawing.Size(800, 800);
