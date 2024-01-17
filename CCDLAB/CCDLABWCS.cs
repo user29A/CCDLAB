@@ -668,16 +668,19 @@ namespace CCDLAB
 				{
 					niters++;
 
+					if (PSEAutoBackgroundChck.Checked)
+						pixthresh -= immed;
+
 					PSESET[PSESETINDEX] = new PointSourceExtractor();
 					PSESET[PSESETINDEX].Extract_Sources(IMAGESET[IMAGESETINDEX].Image, pix_sat, pixthresh, Double.MaxValue, 0, Double.MaxValue, false, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, PSEAutoBackgroundChck.Checked, "", ROI_REGION, false, IMAGESET[IMAGESETINDEX].Median + IMAGESET[IMAGESETINDEX].Stdv * 2.5, false, PSEBackgroundSeparationRadiusLabel.Text.Contains("Src"));
 					ImageWindow.Refresh();
-					SubImageWindow.Refresh();
-
-					if (PSESET[PSESETINDEX].N_Sources >= nCATpts)
-						break;
+					SubImageWindow.Refresh();					
 
 					div *= 2;
 					pixthresh = imamp / div + immed;
+
+					if (PSESET[PSESETINDEX].N_Sources >= nCATpts)
+						break;
 				}
 				if (PSESET[PSESETINDEX].N_Sources > nCATpts)
 				{
@@ -1060,15 +1063,18 @@ namespace CCDLAB
 				{
 					niters++;
 
+					if (PSEAutoBackgroundChck.Checked)
+						pixthresh -= immed;
+
 					PSESET[PSESETINDEX].Extract_Sources(IMAGESET[IMAGESETINDEX].Image, pix_sat, pixthresh, Double.MaxValue, 0, Double.MaxValue, false, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, PSEAutoBackgroundChck.Checked, "", ROI_REGION, false, IMAGESET[IMAGESETINDEX].Median + IMAGESET[IMAGESETINDEX].Stdv * 2.5, false, PSEBackgroundSeparationRadiusLabel.Text.Contains("Src"));
 					ImageWindow.Refresh();
 					SubImageWindow.Refresh();
 
-					if (PSESET[PSESETINDEX].N_Sources >= nCATpts)
-						break;
-
 					div *= 2;
 					pixthresh = imamp / div + immed;
+
+					if (PSESET[PSESETINDEX].N_Sources >= nCATpts)
+						break;					
 				}
 				if (PSESET[PSESETINDEX].N_Sources > nCATpts)
 				{

@@ -1170,6 +1170,7 @@ namespace CCDLAB
 				L1DegradientINTMode.Enabled = true;
 				L1CleanINTMode.Enabled = true;
 			}
+			L1GatingDispersionXAxisChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1GatingDispersionXAxisChck"));
 
 			L1FilterCorrectionChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1FilterCorrectionChck"));
 			L1TBCChck.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "L1TBCChck"));
@@ -1822,6 +1823,13 @@ namespace CCDLAB
 		private void L1DigestPCParityChck_Click(System.Object sender, EventArgs e)
 		{
 			REG.SetReg("CCDLAB", "L1DigestPCParityChck", L1DigestPCParityChck.Checked);
+			UVITMenu.ShowDropDown();
+			UVITDigestL1FITSImageMenuItem.ShowDropDown();
+		}
+
+		private void L1GatingDispersionXAxisChck_Click(object sender, EventArgs e)
+		{
+			REG.SetReg("CCDLAB", "L1GatingDispersionXAxisChck", L1GatingDispersionXAxisChck.Checked);
 			UVITMenu.ShowDropDown();
 			UVITDigestL1FITSImageMenuItem.ShowDropDown();
 		}
@@ -5330,7 +5338,8 @@ namespace CCDLAB
 			int[] YSTARTS = new int[MARKCOORDS.GetLength(1)];
 			int[] YENDS = new int[MARKCOORDS.GetLength(1)];
 
-			Parallel.For(0, ROIsTRUE.Length, i =>
+			for (int i = 0; i < ROIsTRUE.Length; i++)
+			//Parallel.For(0, ROIsTRUE.Length, i =>
 			{
 				double[,] bigbox = IMAGESET[UVDRIFTBATCHFILESINDEX].GetSubImage((int)MARKCOORDS[0, i], (int)MARKCOORDS[1, i], SUBIMAGE_HWX * 2, SUBIMAGE_HWY * 2);
 				int maxx, maxy;
@@ -5352,12 +5361,13 @@ namespace CCDLAB
 					if (xpos >= XSTARTS[i] && ypos >= YSTARTS[i] && xpos <= XENDS[i] && ypos <= YENDS[i])
 							ROIsTRUE[i].Add(j);
 				}
-			});
+			}//);
 
-			Parallel.For(0, ROIsTRUE.Length, i =>
+			for(int i = 0; i < ROIsTRUE.Length; i++)
+			//Parallel.For(0, ROIsTRUE.Length, i =>
 			{
 				ROIsTRUE[i].Sort();
-			});
+			}//);
 
 			double[][] ROItlists = new double[MARKCOORDS.GetLength(1)][];
 			double[][] ROIxcents = new double[MARKCOORDS.GetLength(1)][];
@@ -5373,7 +5383,8 @@ namespace CCDLAB
 				ROIindexes[i] = new int[ROIsTRUE[i].Count];
 			}
 
-			Parallel.For(0, ROIsTRUE.Length, i =>
+			for(int i = 0; i < ROIsTRUE.Length; i++)
+			//Parallel.For(0, ROIsTRUE.Length, i =>
 			{
 				for (int j = 0; j < ROIsTRUE[i].Count; j++)
 				{
@@ -5381,7 +5392,7 @@ namespace CCDLAB
 					ROItlists[i][j] = times[ROIindexes[i][j]];
 					ROIflats[i][j] = flat[ROIindexes[i][j]];
 				}
-			});
+			}//);
 
 			int index = -1;//only used next if needed
 			bool endanalysis = false;
@@ -5413,11 +5424,12 @@ namespace CCDLAB
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
 					return;
 
-				Parallel.For(0, ROIxcents[i].Length, jj =>
+				for(int jj = 0; jj < ROIxcents[i].Length; jj++)
+				//Parallel.For(0, ROIxcents[i].Length, jj =>
 				{
 					ROIxcents[i][jj] = ints[0, ROIindexes[i][jj]] - rx132ox32 + fracs[0, ROIindexes[i][jj]] + 16;
 					ROIycents[i][jj] = ints[1, ROIindexes[i][jj]] - ry132oy32 + fracs[1, ROIindexes[i][jj]] + 16;
-				});
+				}//);
 
 				double stackT = Convert.ToDouble(PointSrcROIStackDriftDrop.SelectedItem) * 1000;
 				bool end = false;
@@ -5461,31 +5473,34 @@ namespace CCDLAB
 				double[] smy = new double[mt.Count];
 				double[] smt = new double[mt.Count];
 
-				Parallel.For(0, mt.Count, jj =>
+				for(int jj = 0; jj < mt.Count; jj++)
+				//Parallel.For(0, mt.Count, jj =>
 				{
 					smx[jj] = (double)mx[jj];
 					smy[jj] = (double)my[jj];
 					smt[jj] = (double)mt[jj];
-				});
+				}//);
 
 				smx = JPMath.VectorSubScalar(smx, JPMath.Mean(smx, true), true);//essential
 				smy = JPMath.VectorSubScalar(smy, JPMath.Mean(smy, true), true);//essential
 				double[] xdrift = JPMath.Interpolate1d(smt, smx, times, InterpolationType.Akima, true);
 				double[] ydrift = JPMath.Interpolate1d(smt, smy, times, InterpolationType.Akima, true);
 
-				Parallel.For(0, xdrift.Length, jj =>
+				for (int jj = 0; jj < xdrift.Length; jj++)
+				//Parallel.For(0, xdrift.Length, jj =>
 				{
 					drift[1, jj] += xdrift[jj];
 					drift[2, jj] += ydrift[jj];
-				});
+				}//);
 			}
 
-			Parallel.For(0, times.Length, i =>
+			for(int i = 0; i < times.Length; i++)
+			//Parallel.For(0, times.Length, i =>
 			{
 				drift[0, i] = times[i];
 				drift[1, i] /= (double)(MARKCOORDS.GetLength(1));
 				drift[2, i] /= (double)(MARKCOORDS.GetLength(1));
-			});
+			}//);
 
 			if (PointSrcROIAutoRunChck.Checked && !final_determination)//then auto run through
 			{
@@ -5493,11 +5508,12 @@ namespace CCDLAB
 				//apply drift to each kernel and get the radial plot fit
 				for (int i = 0; i < MARKCOORDS.GetLength(1); i++)
 				{
-					Parallel.For(0, ROIxcents[i].Length, j =>
+					for(int j = 0; j < ROIxcents[i].Length; j++)
+					//Parallel.For(0, ROIxcents[i].Length, j =>
 					{
 						ROIxcents[i][j] = ((ints[0, ROIindexes[i][j]] - rx132ox32 + fracs[0, ROIindexes[i][j]] + 16 - drift[1, ROIindexes[i][j]] - (double)XSTARTS[i] / precB32) * precB32);
 						ROIycents[i][j] = ((ints[1, ROIindexes[i][j]] - ry132oy32 + fracs[1, ROIindexes[i][j]] + 16 - drift[2, ROIindexes[i][j]] - (double)YSTARTS[i] / precB32) * precB32);
-					});
+					}//);
 					double[,] kernel = new double[XENDS[i] - XSTARTS[i] + 1, YENDS[i] - YSTARTS[i] + 1];
 					for (int j = 0; j < ROIxcents[i].Length; j++)
 						if (ROIxcents[i][j] >= 0 && ROIxcents[i][j] <= kernel.GetLength(0) && ROIycents[i][j] >= 0 && ROIycents[i][j] <= kernel.GetLength(1))
@@ -10485,40 +10501,43 @@ namespace CCDLAB
 					fuvdriftlist = fuvdriftlistTEMP;
 				}
 
-				FITSHeader header = new FITSHeader(fuvxyintslistName);
-				if (header.GetKeyValue("FILTERID").Contains("Grating"))
+				if (L1GatingDispersionXAxisChck.Checked)
 				{
-					double[] transcoeff = new double[0];
-
-					if (header.GetKeyValue("DETECTOR") == "NUV")
-						transcoeff = new double[4] { Math.Cos(-33.1 * Math.PI / 180), -Math.Sin(-33.1 * Math.PI / 180), Math.Sin(-33.1 * Math.PI / 180), Math.Cos(-33.1 * Math.PI / 180) };
-
-					if (header.GetKeyValue("DETECTOR") == "FUV")
-						if (header.GetKeyValue("FILTERID").Contains("Grating1"))
-							transcoeff = new double[4] { Math.Cos(1.3 * Math.PI / 180), -Math.Sin(1.3 * Math.PI / 180), Math.Sin(1.3 * Math.PI / 180), Math.Cos(1.3 * Math.PI / 180) };
-						else if (header.GetKeyValue("FILTERID").Contains("Grating2"))
-							transcoeff = new double[4] { Math.Cos(-87.5 * Math.PI / 180), -Math.Sin(-87.5 * Math.PI / 180), Math.Sin(-87.5 * Math.PI / 180), Math.Cos(-87.5 * Math.PI / 180) };
-
-					Random r = new Random();
-					double x, y, xp, yp, center = 255 * 32;
-					int intsx, fracx, intsy, fracy;
-					for (int j = 0; j < fuvtimelistdedrift.Length; j++)
+					FITSHeader header = new FITSHeader(fuvxyintslistName);
+					if (header.GetKeyValue("FILTERID").Contains("Grating"))
 					{
-						x = (double)(fuvxyintslistdedrift[0, j] + fuvxyfraclistdedrift[0, j] + 16) + r.NextDouble();
-						y = (double)(fuvxyintslistdedrift[1, j] + fuvxyfraclistdedrift[1, j] + 16) + r.NextDouble();
+						double[] transcoeff = new double[0];
 
-						xp = (x - center) * transcoeff[0] + (y - center) * transcoeff[1] + center;
-						yp = (x - center) * transcoeff[2] + (y - center) * transcoeff[3] + center;
+						if (header.GetKeyValue("DETECTOR") == "NUV")
+							transcoeff = new double[4] { Math.Cos(-33.1 * Math.PI / 180), -Math.Sin(-33.1 * Math.PI / 180), Math.Sin(-33.1 * Math.PI / 180), Math.Cos(-33.1 * Math.PI / 180) };
 
-						//now need to split out integer and decimal parts back into their own lists...
-						intsx = Math.DivRem((int)((xp)), 32, out fracx) * 32;
-						fracx -= 16;//reset frac to be from -16
-						intsy = Math.DivRem((int)((yp)), 32, out fracy) * 32;
-						fracy -= 16;//reset frac to be from -16
-						fuvxyintslistdedrift[0, j] = intsx;
-						fuvxyintslistdedrift[1, j] = intsy;
-						fuvxyfraclistdedrift[0, j] = fracx;
-						fuvxyfraclistdedrift[1, j] = fracy;
+						if (header.GetKeyValue("DETECTOR") == "FUV")
+							if (header.GetKeyValue("FILTERID").Contains("Grating1"))
+								transcoeff = new double[4] { Math.Cos(1.3 * Math.PI / 180), -Math.Sin(1.3 * Math.PI / 180), Math.Sin(1.3 * Math.PI / 180), Math.Cos(1.3 * Math.PI / 180) };
+							else if (header.GetKeyValue("FILTERID").Contains("Grating2"))
+								transcoeff = new double[4] { Math.Cos(-87.5 * Math.PI / 180), -Math.Sin(-87.5 * Math.PI / 180), Math.Sin(-87.5 * Math.PI / 180), Math.Cos(-87.5 * Math.PI / 180) };
+
+						Random r = new Random();
+						double x, y, xp, yp, center = 255 * 32;
+						int intsx, fracx, intsy, fracy;
+						for (int j = 0; j < fuvtimelistdedrift.Length; j++)
+						{
+							x = (double)(fuvxyintslistdedrift[0, j] + fuvxyfraclistdedrift[0, j] + 16) + r.NextDouble();
+							y = (double)(fuvxyintslistdedrift[1, j] + fuvxyfraclistdedrift[1, j] + 16) + r.NextDouble();
+
+							xp = (x - center) * transcoeff[0] + (y - center) * transcoeff[1] + center;
+							yp = (x - center) * transcoeff[2] + (y - center) * transcoeff[3] + center;
+
+							//now need to split out integer and decimal parts back into their own lists...
+							intsx = Math.DivRem((int)((xp)), 32, out fracx) * 32;
+							fracx -= 16;//reset frac to be from -16
+							intsy = Math.DivRem((int)((yp)), 32, out fracy) * 32;
+							fracy -= 16;//reset frac to be from -16
+							fuvxyintslistdedrift[0, j] = intsx;
+							fuvxyintslistdedrift[1, j] = intsy;
+							fuvxyfraclistdedrift[0, j] = fracx;
+							fuvxyfraclistdedrift[1, j] = fracy;
+						}
 					}
 				}
 

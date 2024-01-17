@@ -34,7 +34,7 @@ namespace CCDLAB
         {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
 			this.ImageWindowCntxt = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.ImageWndwShowCoordTooltipChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.ImageWndwCntxtView = new System.Windows.Forms.ToolStripMenuItem();
@@ -724,6 +724,7 @@ namespace CCDLAB
 			this.L1DiscardDuplicateChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.L1TransformNUVtoFUVChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.L1DigestPCParityChck = new System.Windows.Forms.ToolStripMenuItem();
+			this.L1GatingDispersionXAxisChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.L1IgnoreFUVHotPixelChck = new System.Windows.Forms.ToolStripMenuItem();
 			this.L1IgnoreFUVHotPixelTxt = new System.Windows.Forms.ToolStripTextBox();
 			this.toolStripSeparator36 = new System.Windows.Forms.ToolStripSeparator();
@@ -8523,6 +8524,7 @@ namespace CCDLAB
             this.L1DiscardDuplicateChck,
             this.L1TransformNUVtoFUVChck,
             this.L1DigestPCParityChck,
+            this.L1GatingDispersionXAxisChck,
             this.L1IgnoreFUVHotPixelChck,
             this.toolStripSeparator36,
             this.L1SkipINTMode,
@@ -8609,6 +8611,14 @@ namespace CCDLAB
 			this.L1DigestPCParityChck.Size = new System.Drawing.Size(305, 22);
 			this.L1DigestPCParityChck.Text = "PC Mode: Discard Word Parity Errors";
 			this.L1DigestPCParityChck.Click += new System.EventHandler(this.L1DigestPCParityChck_Click);
+			// 
+			// L1GatingDispersionXAxisChck
+			// 
+			this.L1GatingDispersionXAxisChck.CheckOnClick = true;
+			this.L1GatingDispersionXAxisChck.Name = "L1GatingDispersionXAxisChck";
+			this.L1GatingDispersionXAxisChck.Size = new System.Drawing.Size(305, 22);
+			this.L1GatingDispersionXAxisChck.Text = "PC Mode: Grating Dispersion Along X-Axis";
+			this.L1GatingDispersionXAxisChck.Click += new System.EventHandler(this.L1GatingDispersionXAxisChck_Click);
 			// 
 			// L1IgnoreFUVHotPixelChck
 			// 
@@ -10533,10 +10543,10 @@ namespace CCDLAB
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.Chart1.BorderlineColor = System.Drawing.Color.Black;
-			chartArea2.AxisX.MajorGrid.Enabled = false;
-			chartArea2.AxisY.MajorGrid.Enabled = false;
-			chartArea2.Name = "ChartArea1";
-			this.Chart1.ChartAreas.Add(chartArea2);
+			chartArea1.AxisX.MajorGrid.Enabled = false;
+			chartArea1.AxisY.MajorGrid.Enabled = false;
+			chartArea1.Name = "ChartArea1";
+			this.Chart1.ChartAreas.Add(chartArea1);
 			this.Chart1.Location = new System.Drawing.Point(35, 41);
 			this.Chart1.Name = "Chart1";
 			this.Chart1.Size = new System.Drawing.Size(800, 800);
@@ -11619,6 +11629,7 @@ namespace CCDLAB
 		private ToolStripMenuItem AutoDeRotateOnWCSChck;
 		private ToolStripSeparator toolStripSeparator55;
 		private ToolStripMenuItem UVITLoadMostRecentImagesMenuBtn;
+		private ToolStripMenuItem L1GatingDispersionXAxisChck;
 	}
 }
 

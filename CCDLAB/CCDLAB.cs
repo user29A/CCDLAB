@@ -1457,7 +1457,7 @@ namespace CCDLAB
 				if (DO_UVITDRIFTFILES)
 					Nim = UVITMANREGFILELIST.Length;
 				else
-					Nim = IMAGESET.FullFileNames.Length;
+					Nim = IMAGESET.Count;
 
 				MANREGCENTROIDS = new double[NSrc, 2, Nim];
 				if (DO_UVITDRIFTFILES)
