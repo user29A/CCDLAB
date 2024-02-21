@@ -2095,9 +2095,9 @@ namespace CCDLAB
 			{
 				try
 				{
-					if (WCSToolsConvertRATxt.Text == "")
+					if (WCSToolsConvertRATxt.Text == "" || WCSToolsConvertRATxt.Text == "0")
 						WCSToolsConvertRATxt.Text = "00:00:00";
-					if (WCSToolsConvertDecTxt.Text == "")
+					if (WCSToolsConvertDecTxt.Text == "" || WCSToolsConvertDecTxt.Text == "0")
 						WCSToolsConvertDecTxt.Text = "00:00:00";
 
 					double ra, dec;
@@ -2116,7 +2116,7 @@ namespace CCDLAB
 
 		private void WCSToolsConvertRATxt_TextChanged(object sender, EventArgs e)
 		{
-			string[] onelinepaste = WCSToolsConvertRATxt.Text.Split(new string[] { ":", " " }, StringSplitOptions.RemoveEmptyEntries);
+			string[] onelinepaste = WCSToolsConvertRATxt.Text.Split(new string[] { ":", " ", "-" }, StringSplitOptions.RemoveEmptyEntries);
 
 			if (onelinepaste.Length == 6)
 			{
@@ -2198,6 +2198,11 @@ namespace CCDLAB
 		{
 			WCSMenu.ShowDropDown();
 			WCSOptionsMenu.ShowDropDown();
+
+			if (WCSOptionsVerboseChck.Checked)
+				WCSOptionsVerboseChck.Checked = false;
+			else
+				WCSOptionsVerboseChck.Checked = true;
 
 			REG.SetReg("CCDLAB", "WCSOptionsVerboseChck", WCSOptionsVerboseChck.Checked);
 		}

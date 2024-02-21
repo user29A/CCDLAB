@@ -2874,7 +2874,12 @@ namespace CCDLAB
 			if ((DialogResult)e.Result == DialogResult.Cancel)
 				return;
 
-			string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
+            string dir = (string)REG.GetReg("CCDLAB", "L2EventListPath");
+
+			string[] macosxjunk = Directory.GetDirectories(dir, "*MACOS*");
+			if (macosxjunk.Length > 0)
+				Directory.Delete(macosxjunk[0], true);
+			
 			string[] L1FITSImages = Directory.GetFiles(dir, "*level1.fits", SearchOption.AllDirectories);
 			string[] L1tctfiles = Directory.GetFiles(dir, "*level1.tct", SearchOption.AllDirectories);
 			string[] L1lbtfiles = Directory.GetFiles(dir, "*level1.lbt", SearchOption.AllDirectories);
