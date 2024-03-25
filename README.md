@@ -6,6 +6,4 @@ https://github.com/user29A/CCDLAB/wiki
 
 Contact: joepostma at live dot ca
 
-Contact: jpostma at ucalgary dot ca
-
 This package was created with funding from the Canadian Space Agency via contract support to the University of Calgary.
