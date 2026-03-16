@@ -2606,7 +2606,7 @@ namespace CCDLAB
 						ypix = PSESET[PSESETINDEX].Centroids_Y;
 						PSESET.Clear();
 						WCS_DEROT = new JPFITS.WorldCoordinateSolution();
-						WCS_DEROT.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, xpix, ypix, true, radeg, dedeg, fitsimg.Header, true);
+						WCS_DEROT.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, xpix, ypix, true, radeg, dedeg, fitsimg.Header, null, null, null, true);
 					}
 					else
 						WCS_DEROT.CopyTo(fitsimg.Header, true);
@@ -3105,8 +3105,8 @@ namespace CCDLAB
 				TCTFILELIST.Add(tctfile);
 
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(tctfile, "TCT");
-				double[] SPS_TIME_MJD = (double[])bt.GetTTYPEEntry("SPS_TIME_MJD", out _, out _);
-				double[] LOCAL_TIMEF = (double[])bt.GetTTYPEEntry("LOCAL_TIMEF", out _, out _);
+				double[] SPS_TIME_MJD = (double[])bt.GetField("SPS_TIME_MJD", out _, out _);
+				double[] LOCAL_TIMEF = (double[])bt.GetField("LOCAL_TIMEF", out _, out _);
 
 				double mjdref = SPS_TIME_MJD[0];
 				double detref = LOCAL_TIMEF[0];
@@ -3135,10 +3135,10 @@ namespace CCDLAB
 				if (dofiltercorrection)
 				{
 					JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(lbtfile, "UVIT-LBTHK");
-					lbt_times = (double[])bt.GetTTYPEEntry("Time", out _, out _);
-					lbt_FUVfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_FUV", out _, out _);
-					lbt_NUVfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_NUV", out _, out _);
-					lbt_VISfwangle = (double[])bt.GetTTYPEEntry("FilterWheelMotorAngle_VIS", out _, out _);
+					lbt_times = (double[])bt.GetField("Time", out _, out _);
+					lbt_FUVfwangle = (double[])bt.GetField("FilterWheelMotorAngle_FUV", out _, out _);
+					lbt_NUVfwangle = (double[])bt.GetField("FilterWheelMotorAngle_NUV", out _, out _);
+					lbt_VISfwangle = (double[])bt.GetField("FilterWheelMotorAngle_VIS", out _, out _);
 				}
 			}
 			else
@@ -3214,8 +3214,9 @@ namespace CCDLAB
 				else
 					sourceID = string.Join("_", L1SourceNameTxt.Text.Split(Path.GetInvalidFileNameChars()));
 
-				double yeardotyear;
-				double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out yeardotyear);
+				//MessageBox.Show(source.Header.GetKeyValue("DATE-OBS") + " " + source.Header.GetKeyValue("TIME-OBS"));
+
+				double juliandaystartobs = JPMath.DateToJD(source.Header.GetKeyValue("DATE-OBS"), source.Header.GetKeyValue("TIME-OBS"), out double yeardotyear);
 				source.Header.SetKey("YEARDATE", yeardotyear.ToString(), "year.year of DATE-OBS + TIME-OBS", true, source.Header.GetKeyIndex("DATE-OBS", false));
 				source.Header.SetKey("JDSTART", juliandaystartobs.ToString(), "Julian Day of year.year", true, source.Header.GetKeyIndex("DATE-OBS", false));
 
@@ -6986,7 +6987,7 @@ namespace CCDLAB
 				UVITMANREGFILELIST = Directory.GetFiles(curdir, "*.fits", SearchOption.TopDirectoryOnly);
 				if (UVITMANREGFILELIST.Length == 0)
 				{
-					MessageBox.Show("No files found in directory: " + curdir, "Error");
+					MessageBox.Show("No files found in directory in UVITCreateDriftFromINTMenuItem_Click: " + curdir, "Error");
 					return;
 				}
 				Array.Sort(UVITMANREGFILELIST);
@@ -7269,10 +7270,10 @@ namespace CCDLAB
 				}
 			}
 
-			int ind = filelist[0].LastIndexOf("l2");
 			string driftslistfile = filelist[0];
-			if (ind > 0)
-				driftslistfile = filelist[0].Remove(ind + 2);
+			//int ind = filelist[0].LastIndexOf("l2");
+			//if (ind > 0)
+			//	driftslistfile = filelist[0].Remove(ind + 2);
 			driftslistfile = driftslistfile.Replace(".fits", "");
 			if (byxcorr)
 				driftslistfile = driftslistfile + "_XYDrift_List_XCorr.drift";
@@ -7887,7 +7888,7 @@ namespace CCDLAB
 						exparrayimagefile += dedrift + ".fits";
 						FITSImage expfitsimg = new FITSImage(exparrayimagefile, null, true, true, false, true);
 						double[,] exparr = expfitsimg.Image;
-						exparr = JPMath.RotateShiftArray(exparr, -rotation, 597, 597, "lanc_3", 0, 0, true);
+						exparr = JPMath.RotateShiftArray(exparr, -rotation, 597, 597, JPMath.RegistrationInterpolation.Lanczos3, 0, 0, true);
 						expfitsimg.SetImage(exparr, false, true);
 						expfitsimg.WriteImage(DiskPrecision.Double, true);
 					}
@@ -8200,11 +8201,10 @@ namespace CCDLAB
 							c++;
 						}
 					Array.Resize(ref xyintsfiles, c);
-
 					Array.Sort(xyintsfiles);
 					if (xyintsfiles.Length == 0)
 					{
-						MessageBox.Show("No files found...", "Error...");
+						MessageBox.Show("No files found...(if (RegistrationXYIntsListFolderScanChck.Checked))", "Error...");
 						return;
 					}
 
@@ -8646,7 +8646,7 @@ namespace CCDLAB
 				int pad = 44 * res;
 
 				if (Math.Abs(rotation) > 0.0000001 / 180 * Math.PI || xshift != 0 || yshift != 0)
-					exparr = JPMath.RotateShiftArray(exparr, -rotation, xcenter + pad, ycenter + pad, "lanc_3", xshift, yshift, true);
+					exparr = JPMath.RotateShiftArray(exparr, -rotation, xcenter + pad, ycenter + pad, JPMath.RegistrationInterpolation.Lanczos3, xshift, yshift, true);
 				expfitsimg.SetImage(exparr, false, false);
 				expfitsimg.WriteImage(DiskPrecision.Double, false);
 
@@ -8727,7 +8727,7 @@ namespace CCDLAB
 			
 			if (recentimages.Length == 0)
 			{
-				MessageBox.Show("No files found...", "Error...");
+				MessageBox.Show("No files found...(UVITLoadMostRecentImagesMenuBtn_Click)", "Error...");
 				return;
 			}
 
@@ -8768,7 +8768,7 @@ namespace CCDLAB
 			Array.Sort(mergeimgfiles);
 			if (mergeimgfiles.Length == 0)
 			{
-				MessageBox.Show("No files found...", "Error...");
+				MessageBox.Show("No files found...(UVITRecentMerged_Click)", "Error...");
 				return;
 			}
 			int c = 0;
@@ -8936,7 +8936,7 @@ namespace CCDLAB
 					UVMERGEDIRS_INDEX = -1;
 					UVMERGEDIRS = null;
 					AUTOLOADIMAGESFILES = null;
-					MessageBox.Show("No files found...", "Error...");
+					MessageBox.Show("No files found...(if (MergeXYIntsListFolderScanChck.Checked))", "Error...");
 					UVITMergeCentroidListsMenuItem_Click(sender, e);
 					return;
 				}
@@ -11383,7 +11383,7 @@ namespace CCDLAB
 				UVITFinalizeBGWrkr.ReportProgress(0, "Writing centroid table");
 				string binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_CENTROIDS_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable("CENTROIDS");
-				bt.SetTTYPEEntries(new string[] { "XCENTROID", "YCENTROID" }, new string[] { "pix*32", "pix*32" }, new Array[] { xcents, ycents });
+				bt.SetFields(new string[] { "XCENTROID", "YCENTROID" }, new string[] { "pix*32", "pix*32" }, new Array[] { xcents, ycents });
 				bt.AddExtraHeaderKey("COMMENT", "Centroids are at ", "1/32 pixel precision.");
 				bt.Write(binname, true);
 
@@ -11394,7 +11394,7 @@ namespace CCDLAB
 				double[] bjds = FITSImage.ReadImageVectorOnly(bjdname, null, true);
 				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_BJD_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
 				bt = new JPFITS.FITSBinTable("BJD");
-				bt.AddTTYPEEntry("BaryCenterJD", true, "Day.day", bjds);
+				bt.AddField("BaryCenterJD", true, "Day.day", bjds);
 				bt.AddExtraHeaderKey("COMMENT", "BaryCenterJD ", "means solar system barycenter.");
 				bt.Write(binname, true);
 
@@ -11405,7 +11405,7 @@ namespace CCDLAB
 				double[] flats = FITSImage.ReadImageVectorOnly(flatname, null, true);
 				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_FLAT_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
 				bt = new JPFITS.FITSBinTable("FLAT");
-				bt.AddTTYPEEntry("FlatWeight", true, "unity = 1", flats);
+				bt.AddField("FlatWeight", true, "unity = 1", flats);
 				bt.Write(binname, true);
 
 				if (WAITBAR.DialogResult == DialogResult.Cancel)
@@ -11415,7 +11415,7 @@ namespace CCDLAB
 				double[] exps = FITSImage.ReadImageVectorOnly(expname, null, true);
 				binname = objdir + "\\" + image.FileName.Remove(image.FileName.IndexOf("MASTER")) + "MASTER_EXPOSURE_TABLE_" + new DirectoryInfo(objdir).Name + ".fits";
 				bt = new JPFITS.FITSBinTable("EXPOSURE");
-				bt.AddTTYPEEntry("ExposureMapWeight", true, "unity = 1", exps);
+				bt.AddField("ExposureMapWeight", true, "unity = 1", exps);
 				bt.Write(binname, true);
 			}
 

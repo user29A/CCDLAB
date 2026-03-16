@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using JPFITS;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Collections.Specialized;
 
 namespace CCDLAB
 {
@@ -132,7 +133,7 @@ namespace CCDLAB
 
 			double[] cp1 = new double[WCS_RA.Length];
 			double[] cp2 = new double[WCS_RA.Length];
-			IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(WCS_RA, WCS_DEC, "TAN", out cp1, out cp2, true);
+			IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(WCS_RA, WCS_DEC, WorldCoordinateSolution.WCSType.TAN, out cp1, out cp2, true);
 
 			MARKCOORDS = new double[2, WCS_RA.Length];
 			for (int i = 0; i < WCS_RA.Length; i++)
@@ -294,9 +295,9 @@ namespace CCDLAB
 			if (IMAGESET.Count == 0)
 				return;
 
-			IMAGESET[IMAGESETINDEX].WCS.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, PSESET[PSESETINDEX].Centroids_X, PSESET[PSESETINDEX].Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[IMAGESETINDEX].Header, WCSOptionsVerboseChck.Checked/*, WCS_INIT*/);
+			IMAGESET[IMAGESETINDEX].WCS.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, PSESET[PSESETINDEX].Centroids_X, PSESET[PSESETINDEX].Centroids_Y, true, WCS_RA, WCS_DEC, IMAGESET[IMAGESETINDEX].Header, null, null, null, WCSOptionsVerboseChck.Checked);
 			FileTxtsUpD();
-			IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(WCS_RA, WCS_DEC, "TAN", out double[] x, out double[] y, true);
+			IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(WCS_RA, WCS_DEC, WorldCoordinateSolution.WCSType.TAN, out double[] x, out double[] y, true);
 
 			MARKCOORDS = new double[2, x.Length];
 			for (int i = 0; i < x.Length; i++)
@@ -327,11 +328,11 @@ namespace CCDLAB
 		private void WCSAutoBatchBGWrkr_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			WCSAutoSolver wcsas;
-			ArrayList keys = new ArrayList();
+			NameValueCollection keys = new NameValueCollection();
 
 			if (IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(WCSAstraCartaCVAL1Txt.Text, false) == -1 || IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(WCSAstraCartaCVAL2Txt.Text, false) == -1)
 			{
-				MessageBox.Show(string.Format("The CVAL1 '{0}' or CVAL2 '{1}' terms don't exist in the header.", WCSAstraCartaCVAL1Txt.Text, WCSAstraCartaCVAL2Txt.Text), "Error");
+				MessageBox.Show(string.Format("The CVAL1 '{0}' or CVAL2 '{1}' terms don't exist in the header when finding their value.", WCSAstraCartaCVAL1Txt.Text, WCSAstraCartaCVAL2Txt.Text), "Error");
 				return;
 			}
 
@@ -349,16 +350,14 @@ namespace CCDLAB
 			}
 			if (WCSAstraCartaSquareRegionChck.Text.Contains("Circular"))
 			{
-				keys.Add("-shape");
-				keys.Add("circle");
+                keys.Add("shape", "circle");
 			}
 			double buffer = 0;
 			if (WCSAstraCartaBufferTxt.Text != "")
 				buffer = Convert.ToDouble(WCSAstraCartaBufferTxt.Text);
 			if (buffer != 0)
 			{
-				keys.Add("-buffer");
-				keys.Add(buffer);
+				keys.Add("buffer", Convert.ToString(buffer));
 			}
 			double pmepoch = 0;
 			if (WCSAstraCartaPMEpochTxt.Text != "")
@@ -373,8 +372,7 @@ namespace CCDLAB
 			}
 			if (pmepoch != 0)
 			{
-				keys.Add("-pmepoch");
-				keys.Add(pmepoch);
+				keys.Add("pmepoch", pmepoch.ToString());
 
 				if (!JPMath.IsNumeric(WCSAstraCartaPMEpochTxt.Text))
 					REG.SetReg("CCDLAB", "WCSAstraCartaPMEpochTxt", WCSAstraCartaPMEpochTxt.Text);
@@ -383,16 +381,13 @@ namespace CCDLAB
 			}
 			else
 				REG.SetReg("CCDLAB", "WCSAstraCartaPMEpochTxt", "");
-			keys.Add("-nquery");
-			keys.Add(Convert.ToInt32(WCSAstraCartaLimitLLengthDrop.SelectedItem.ToString()));
+			keys.Add("nquery", WCSAstraCartaLimitLLengthDrop.SelectedItem.ToString());
 			string catalogue = WCSAstraCartaCatalogueNameDrop.SelectedItem.ToString();
-			keys.Add("-catalogue");
-			keys.Add(catalogue.Trim());
+			keys.Add("catalogue", catalogue.Trim());
 			string filter = WCSAstraCartaFilterDrop.SelectedItem.ToString();
-			keys.Add("-filter");
-			keys.Add(filter);
-			keys.Add("-fitsout");
-			keys.Add("-overwrite");
+			keys.Add("filter", filter);
+			keys.Add("fitsout", "true");
+			keys.Add("overwrite", "true");
 
 			double scale = Convert.ToDouble(WCSAutoScaleInitTxt.Text);
 			double scalB = Convert.ToDouble(WCSAutoScaleInitLBTxt.Text);
@@ -589,9 +584,9 @@ namespace CCDLAB
 				}
 
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(catfilename, catExtension);
-				double[] ra = (double[])bt.GetTTYPEEntry(catCVAL1, out _, out _);
-				double[] dec = (double[])bt.GetTTYPEEntry(catCVAL2, out _, out _);
-				double[] mag = (double[])bt.GetTTYPEEntry(catMag, out _, out _, FITSBinTable.TTYPEReturn.AsDouble);
+				double[] ra = (double[])bt.GetField(catCVAL1, out _, out _);
+				double[] dec = (double[])bt.GetField(catCVAL2, out _, out _);
+				double[] mag = (double[])bt.GetField(catMag, out _, out _, FITSBinTable.TTYPEReturn.AsDouble);
 
 				//need to check mag for NaN's and re-form ra dec mag
 				int catcnt = 0;
@@ -832,6 +827,8 @@ namespace CCDLAB
 								continue;
 							if (Math.Abs(PSEtriangles[i].GetVertexAngle(1) - CATtriangles_intrmdt[j].GetVertexAngle(1)) > vertextol)
 								continue;
+							//if (Math.Abs(PSEtriangles[i].GetVertexAngle(2) - CATtriangles_intrmdt[j].GetVertexAngle(2)) > vertextol)
+							//	continue;
 							if (CATtriangles_intrmdt[j].GetSideLength(2) < minlength2 || CATtriangles_intrmdt[j].GetSideLength(2) > maxlength2)
 								continue;
 
@@ -1405,7 +1402,7 @@ namespace CCDLAB
 
 			if (IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(WCSAstraCartaCVAL1Txt.Text, false) == -1 || IMAGESET[IMAGESETINDEX].Header.GetKeyIndex(WCSAstraCartaCVAL2Txt.Text, false) == -1)
 			{
-				MessageBox.Show(string.Format("The CVAL1 '{0}' or CVAL2 '{1}' terms don't exist in the header.", WCSAstraCartaCVAL1Txt.Text, WCSAstraCartaCVAL2Txt.Text), "Error");
+				MessageBox.Show(string.Format("The CVAL1 '{0}' or CVAL2 '{1}' terms don't exist in the header.", WCSAstraCartaCVAL1Txt.Text, WCSAstraCartaCVAL2Txt.Text), "Error: WCSAstraCartaBtn_DoubleClick");
 				return;
 			}
 
@@ -1422,11 +1419,10 @@ namespace CCDLAB
 				WorldCoordinateSolution.SexagesimalElementsToDegreeElements(cval1, cval2, "", out ra, out dec);
 			}
 
-			ArrayList keys = new ArrayList();
+			NameValueCollection keys = new NameValueCollection();
 			if (WCSAstraCartaSquareRegionChck.Text.Contains("Circular"))
 			{
-				keys.Add("-shape");
-				keys.Add("circle");
+				keys.Add("shape", "circle");
 			}
 
 			double buffer = 0;
@@ -1434,8 +1430,7 @@ namespace CCDLAB
 				buffer = Convert.ToDouble(WCSAstraCartaBufferTxt.Text);
 			if (buffer != 0)
 			{
-				keys.Add("-buffer");
-				keys.Add(buffer);
+				keys.Add("buffer", buffer.ToString());
 			}
 
 			double pmepoch = 0;
@@ -1451,8 +1446,7 @@ namespace CCDLAB
 			}
 			if (pmepoch != 0)
 			{
-				keys.Add("-pmepoch");
-				keys.Add(pmepoch);
+				keys.Add("pmepoch", pmepoch.ToString());
 
 				if (!JPMath.IsNumeric(WCSAstraCartaPMEpochTxt.Text))
 					REG.SetReg("CCDLAB", "WCSAstraCartaPMEpochTxt", WCSAstraCartaPMEpochTxt.Text);
@@ -1475,34 +1469,29 @@ namespace CCDLAB
 						return;
 					outpath = fbd.SelectedPath;
 				}
-			keys.Add("-outdir");
-			keys.Add(outpath);
+			keys.Add("outdir", outpath);
 
-			keys.Add("-nquery");
-			keys.Add(Convert.ToInt32(WCSAstraCartaLimitLLengthDrop.SelectedItem.ToString()));
+			keys.Add("nquery", WCSAstraCartaLimitLLengthDrop.SelectedItem.ToString());
 
 			string catalogue = WCSAstraCartaCatalogueNameDrop.SelectedItem.ToString();
-			keys.Add("-catalogue");
-			keys.Add(catalogue.Trim());
+			keys.Add("catalogue", catalogue.Trim());
 
 			string filter = WCSAstraCartaFilterDrop.SelectedItem.ToString();
-			keys.Add("-filter");
-			keys.Add(filter);
+			keys.Add("filter", filter);
 
 			if (WCSAstraCartaImageShowChck.Checked)
-				keys.Add("-imageshow");
+				keys.Add("imageshow", "true");
 
 			if (WCSAstraCartaForceNew.Checked)
-				keys.Add("-forcenew");
+				keys.Add("forcenew", "true");
 
-			keys.Add("-fitsout");
+			keys.Add("fitsout", "true");
 
-			keys.Add("-overwrite");
+			keys.Add("overwrite", "true");
 
 			if (IMAGESET[IMAGESETINDEX].Header.GetKeyValue("OBJECT") != "")
 			{
-				keys.Add("-outname");
-				keys.Add(IMAGESET[IMAGESETINDEX].Header.GetKeyValue("OBJECT"));
+				keys.Add("outname", IMAGESET[IMAGESETINDEX].Header.GetKeyValue("OBJECT"));
 			}
 
 			JPFITS.AstraCarta ac = new AstraCarta(ra, dec, Convert.ToDouble(WCSAutoScaleInitTxt.Text), IMAGESET[IMAGESETINDEX].Width, IMAGESET[IMAGESETINDEX].Height, keys);
@@ -1705,7 +1694,7 @@ namespace CCDLAB
 			objarray[4] = new double[1] { Convert.ToDouble(WCSAutoRotationInitLBTxt.Text) };
 			objarray[5] = new double[1] { Convert.ToDouble(WCSAutoRotationInitUBTxt.Text) };
 			FITSBinTable bt = new FITSBinTable(extname);
-			bt.SetTTYPEEntries(entrylabels, units, objarray);
+			bt.SetFields(entrylabels, units, objarray);
 			bt.Write(wcsparamsfile, true);
 
 			AutoWCSScaleMenuBtn.HideDropDown();
@@ -1730,12 +1719,12 @@ namespace CCDLAB
 			try
 			{
 				JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(wcsparamsfile, ((ToolStripItem)sender).Text);
-				WCSAutoScaleInitTxt.Text = ((double[])bt.GetTTYPEEntry("WCSScaleInit", out _, out _))[0].ToString();
-				WCSAutoScaleInitLBTxt.Text = ((double[])bt.GetTTYPEEntry("WCSScaleInitLB", out _, out _))[0].ToString();
-				WCSAutoScaleInitUBTxt.Text = ((double[])bt.GetTTYPEEntry("WCSScaleInitUB", out _, out _))[0].ToString();
-				WCSAutoRotationInitTxt.Text = ((double[])bt.GetTTYPEEntry("WCSRotationInit", out _, out _))[0].ToString();
-				WCSAutoRotationInitLBTxt.Text = ((double[])bt.GetTTYPEEntry("WCSRotationInitLB", out _, out _))[0].ToString();
-				WCSAutoRotationInitUBTxt.Text = ((double[])bt.GetTTYPEEntry("WCSRotationInitUB", out _, out _))[0].ToString();
+				WCSAutoScaleInitTxt.Text = ((double[])bt.GetField("WCSScaleInit", out _, out _))[0].ToString();
+				WCSAutoScaleInitLBTxt.Text = ((double[])bt.GetField("WCSScaleInitLB", out _, out _))[0].ToString();
+				WCSAutoScaleInitUBTxt.Text = ((double[])bt.GetField("WCSScaleInitUB", out _, out _))[0].ToString();
+				WCSAutoRotationInitTxt.Text = ((double[])bt.GetField("WCSRotationInit", out _, out _))[0].ToString();
+				WCSAutoRotationInitLBTxt.Text = ((double[])bt.GetField("WCSRotationInitLB", out _, out _))[0].ToString();
+				WCSAutoRotationInitUBTxt.Text = ((double[])bt.GetField("WCSRotationInitUB", out _, out _))[0].ToString();
 			}
 			catch
 			{
@@ -1783,9 +1772,9 @@ namespace CCDLAB
 		private void GET_CATALOGUE_NPTS(string filename, string catExtension, string catCVAL1, string catCVAL2, string catMag, int N_bright)
 		{
 			JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(filename, catExtension);
-			WCS_RA = (double[])bt.GetTTYPEEntry(catCVAL1, out _, out _);
-			WCS_DEC = (double[])bt.GetTTYPEEntry(catCVAL2, out _, out _);
-			double[] mag = (double[])bt.GetTTYPEEntry(catMag, out _, out _, FITSBinTable.TTYPEReturn.AsDouble);
+			WCS_RA = (double[])bt.GetField(catCVAL1, out _, out _);
+			WCS_DEC = (double[])bt.GetField(catCVAL2, out _, out _);
+			double[] mag = (double[])bt.GetField(catMag, out _, out _, FITSBinTable.TTYPEReturn.AsDouble);
 
 			//need to check mag for NaN's and re-form ra dec mag
 			ArrayList ralist = new ArrayList(WCS_RA.Length);
@@ -1917,7 +1906,7 @@ namespace CCDLAB
 				x = PSESET[PSESETINDEX].Centroids_X;
 				y = PSESET[PSESETINDEX].Centroids_Y;
 
-				IMAGESET[IMAGESETINDEX].WCS.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, x, y, true, WCS_RA, WCS_DEC, IMAGESET[IMAGESETINDEX].Header);
+				IMAGESET[IMAGESETINDEX].WCS.Solve_WCS(WorldCoordinateSolution.WCSType.TAN, x, y, true, WCS_RA, WCS_DEC, IMAGESET[IMAGESETINDEX].Header, null, null, null, true);
 				SHOW_WCSCOORDS = true;
 				WCSRADecShowChck.Checked = true;
 
@@ -1930,7 +1919,7 @@ namespace CCDLAB
 					double xpix, ypix;
 					for (int i = 0; i < WCS_RA.Length; i++)
 					{
-						IMAGESET[IMAGESETINDEX].WCS.Get_Pixel(WCS_RA[i], WCS_DEC[i], "TAN", out xpix, out ypix, true);
+						IMAGESET[IMAGESETINDEX].WCS.Get_Pixel(WCS_RA[i], WCS_DEC[i], WorldCoordinateSolution.WCSType.TAN, out xpix, out ypix, true);
 						MARKCOORDRECTS[i] = new Rectangle((int)(((float)(xpix) + 0.5) * xsc - 3), (int)(((float)(ypix) + 0.5) * ysc - 3), 7, 7);
 						MARKCOORDS[0, i] = xpix;
 						MARKCOORDS[1, i] = ypix;

@@ -1119,17 +1119,17 @@ namespace CCDLAB
             RotateBtnCntxtLanczos5.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos5"));
             RotateBtnCntxtNearest.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtNearest"));
 
-			string interp = "";
+			JPMath.RegistrationInterpolation interp = JPMath.RegistrationInterpolation.Nearest;
             if (RotateBtnCntxtNearest.Checked)
-                interp = "nearest";
-            if (RotateBtnCntxtBiLinear.Checked)
-                interp = "bilinear";
+                interp = JPMath.RegistrationInterpolation.Nearest;
+			if (RotateBtnCntxtBiLinear.Checked)
+				interp = JPMath.RegistrationInterpolation.Bilinear;
             if (RotateBtnCntxtLanczos3.Checked)
-                interp = "lanc_3";
+                interp = JPMath.RegistrationInterpolation.Lanczos3;
             if (RotateBtnCntxtLanczos4.Checked)
-                interp = "lanc_4";
+                interp = JPMath.RegistrationInterpolation.Lanczos4;
             if (RotateBtnCntxtLanczos5.Checked)
-                interp = "lanc_5";
+                interp = JPMath.RegistrationInterpolation.Lanczos5;
 
             int refim = 0;//(int)(RegRefIndex.Value-1);//reference image
 			bool dostats = true;//possibly false if auto-batch
@@ -1421,17 +1421,17 @@ namespace CCDLAB
             RotateBtnCntxtLanczos4.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos4"));
             RotateBtnCntxtLanczos5.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtLanczos5"));
             RotateBtnCntxtNearest.Checked = Convert.ToBoolean(REG.GetReg("CCDLAB", "RotateBtnCntxtNearest"));
-            string interp = "";
-            if (RotateBtnCntxtNearest.Checked)
-                interp = "nearest";
+            JPMath.RegistrationInterpolation interp = JPMath.RegistrationInterpolation.Nearest;
+			if (RotateBtnCntxtNearest.Checked)
+				interp = JPMath.RegistrationInterpolation.Nearest;
             if (RotateBtnCntxtBiLinear.Checked)
-                interp = "bilinear";
+                interp = JPMath.RegistrationInterpolation.Bilinear;
             if (RotateBtnCntxtLanczos3.Checked)
-                interp = "lanc_3";
+                interp = JPMath.RegistrationInterpolation.Lanczos3;
             if (RotateBtnCntxtLanczos4.Checked)
-                interp = "lanc_4";
+                interp = JPMath.RegistrationInterpolation.Lanczos4;
             if (RotateBtnCntxtLanczos5.Checked)
-                interp = "lanc_5";
+                interp = JPMath.RegistrationInterpolation.Lanczos5;
 
             float xsc = ((float)(ImageWindow.Size.Width) / (float)IMAGESET[IMAGESETINDEX].Width);
 			float ysc = ((float)(ImageWindow.Size.Height) / (float)IMAGESET[IMAGESETINDEX].Height);
@@ -3169,7 +3169,7 @@ namespace CCDLAB
 				double cval1, cval2;
 				string sx1;
 				string sx2;
-				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2, out sx1, out sx2);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, WorldCoordinateSolution.WCSType.TAN, out cval1, out cval2, out sx1, out sx2);
 				sx1 = sx1.Replace(" ", "");
 				sx2 = sx2.Replace(" ", "");
 				if (sx1.Contains("."))
@@ -4046,7 +4046,7 @@ namespace CCDLAB
 						double ra, dec;
 						string r;
 						string d;
-						IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(FNDCOORDS_X[i], FNDCOORDS_Y[i], true, "TAN", out ra, out dec, out r, out d);
+						IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(FNDCOORDS_X[i], FNDCOORDS_Y[i], true, WorldCoordinateSolution.WCSType.TAN, out ra, out dec, out r, out d);
 						radeg[i] = ra;
 						decdeg[i] = dec;
 					}
@@ -5087,16 +5087,19 @@ namespace CCDLAB
 								return;
 							ImageOpsWrkr.ReportProgress(i + 1);
 
-							if (RotateBtnCntxtNearest.Checked)
-								IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, "nearest", 0, 0, true), true, true);
-							if (RotateBtnCntxtBiLinear.Checked)
-								IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, "bilinear", 0, 0, true), true, true);
-							if (RotateBtnCntxtLanczos3.Checked)
-								IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, "lanc3", 0, 0, true), true, true);
-							if (RotateBtnCntxtLanczos4.Checked)
-								IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, "lanc4", 0, 0, true), true, true);
-							if (RotateBtnCntxtLanczos5.Checked)
-								IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, "lanc5", 0, 0, true), true, true);
+                            JPMath.RegistrationInterpolation interp = JPMath.RegistrationInterpolation.Nearest;
+                            if (RotateBtnCntxtNearest.Checked)
+                                interp = JPMath.RegistrationInterpolation.Nearest;
+                            if (RotateBtnCntxtBiLinear.Checked)
+                                interp = JPMath.RegistrationInterpolation.Bilinear;
+                            if (RotateBtnCntxtLanczos3.Checked)
+                                interp = JPMath.RegistrationInterpolation.Lanczos3;
+                            if (RotateBtnCntxtLanczos4.Checked)
+                                interp = JPMath.RegistrationInterpolation.Lanczos4;
+                            if (RotateBtnCntxtLanczos5.Checked)
+                                interp = JPMath.RegistrationInterpolation.Lanczos5;
+
+							IMAGESET[inds[i]].SetImage(JPMath.RotateShiftArray(IMAGESET[inds[i]].Image, (double)RotateAngleUpD.Value * Math.PI / 180, Double.MaxValue, Double.MaxValue, interp, 0, 0, true), true, true);
 						}
 					}
 					catch (Exception ee)
@@ -5675,7 +5678,7 @@ namespace CCDLAB
 			if (e.Button == MouseButtons.Right)
 			{
 				double cval1, cval2;
-				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, "TAN", out cval1, out cval2);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XSUBRANGE[SUBIMAGE_HWX], (double)YSUBRANGE[SUBIMAGE_HWY], true, WorldCoordinateSolution.WCSType.TAN, out cval1, out cval2);
 
 				string str = cval1 + " " + cval2;
 				Clipboard.SetText(str);
@@ -6193,8 +6196,7 @@ namespace CCDLAB
 			}
 			REG.SetReg("CCDLAB", "ImageFingerSortKeyTxt", key);
 
-			if (IMAGESET.Sort(key) == -1)
-				return;
+			IMAGESET.Sort(key);
 
 			string[] files = new string[IMAGESET.Count];
 			for (int i = 0; i < IMAGESET.Count; i++)

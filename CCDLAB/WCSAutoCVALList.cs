@@ -17,7 +17,7 @@ namespace CCDLAB
 			EXTENSIONNAME = ExtensionName;
 
 			JPFITS.FITSBinTable bt = new JPFITS.FITSBinTable(CatalogueFileName, ExtensionName);
-			string[] ttypes = bt.TableDataLabelTTYPEs;
+			string[] ttypes = bt.FieldLabels;
 
 			WCDrop.Items.AddRange(ttypes);
 			ITEMLIST = ttypes;

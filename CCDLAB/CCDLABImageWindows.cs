@@ -499,7 +499,7 @@ namespace CCDLAB
 							double a, d;
 							String asx;
 							String dsx;
-							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
+							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, WorldCoordinateSolution.WCSType.TAN, out a, out d, out asx, out dsx);
 							XPOS_CURSOR_RADEG = a;
 							YPOS_CURSOR_DECDEG = d;
 							XPOS_CURSOR_RAHMS = asx;
@@ -1527,7 +1527,7 @@ namespace CCDLAB
 							double a, d;
 							String asx;
 							String dsx;
-							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, "TAN", out a, out d, out asx, out dsx);
+							IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate((double)XPOS_CURSOR, (double)YPOS_CURSOR, true, WorldCoordinateSolution.WCSType.TAN, out a, out d, out asx, out dsx);
 							XPOS_CURSOR_RADEG = a;
 							YPOS_CURSOR_DECDEG = d;
 							XPOS_CURSOR_RAHMS = asx;
@@ -2405,7 +2405,7 @@ namespace CCDLAB
 				double a, d;
 				String asx;
 				String dsx;
-				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(xcent, ycent, true, "TAN", out a, out d, out asx, out dsx);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Coordinate(xcent, ycent, true, WorldCoordinateSolution.WCSType.TAN, out a, out d, out asx, out dsx);
 				XPOS_CURSOR_RADEG = a;
 				YPOS_CURSOR_DECDEG = d;
 				XPOS_CURSOR_RAHMS = asx;
@@ -2544,7 +2544,7 @@ namespace CCDLAB
 				}
 
 				double xpix, ypix;
-				IMAGESET[IMAGESETINDEX].WCS.Get_Pixel(RA, Dec, "TAN", out xpix, out ypix, true);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Pixel(RA, Dec, WorldCoordinateSolution.WCSType.TAN, out xpix, out ypix, true);
 
 				SubImageSlideX.Value = (int)xpix + 1;
 				SubImageSlideY.Value = (int)ypix + 1;

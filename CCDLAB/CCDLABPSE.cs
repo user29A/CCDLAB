@@ -305,7 +305,12 @@ namespace CCDLAB
 						ROI_PATH_COORDS[1, i / 4] = r * Math.Sin((double)i * Math.PI / 180) + ROIY0;
 					}
 
-					MAKEROIPATHPOINTS();
+                    JPFITS.REG.SetReg("CCDLAB", "ROIX0", ROIX0);
+                    JPFITS.REG.SetReg("CCDLAB", "ROIY0", ROIY0);
+                    JPFITS.REG.SetReg("CCDLAB", "ROIXRad", ROIXRad);
+                    JPFITS.REG.SetReg("CCDLAB", "ROIYRad", ROIYRad);
+
+                    MAKEROIPATHPOINTS();
 					ROI_PATH_FILLREGION();
 					SubImageStatsUpD();
 					SubImageUpD();
@@ -1256,7 +1261,7 @@ namespace CCDLAB
 						PSESETINDEX = PSESET.Count - 1;
 						double[] Xcoords = new double[Nsrc];
 						double[] Ycoords = new double[Nsrc];
-						IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(c1, c2, "TAN", out Xcoords, out Ycoords, true);
+						IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(c1, c2, WorldCoordinateSolution.WCSType.TAN, out Xcoords, out Ycoords, true);
 						PSESET[PSESETINDEX] = new PointSourceExtractor(IMAGESET[IMAGESETINDEX].Image, Xcoords, Ycoords, (double)PSESaturationUpD.Value, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, PSEAutoBackgroundChck.Checked, "", IMAGESET[IMAGESETINDEX].Median + IMAGESET[IMAGESETINDEX].Stdv * 2.5);
 						PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
 					}
@@ -1313,7 +1318,7 @@ namespace CCDLAB
 
 					double[] Xcoords = new double[c1.Length];
 					double[] Ycoords = new double[c1.Length];
-					IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(c1, c2, "TAN", out Xcoords, out Ycoords, true);
+					IMAGESET[IMAGESETINDEX].WCS.Get_Pixels(c1, c2, WorldCoordinateSolution.WCSType.TAN, out Xcoords, out Ycoords, true);
 					PSESET[PSESETINDEX] = new JPFITS.PointSourceExtractor(IMAGESET[IMAGESETINDEX].Image, Xcoords, Ycoords, (double)PSESaturationUpD.Value, (int)PSEKernelRadUpD.Value, (int)PSEBackgroundRadUpD.Value, PSEAutoBackgroundChck.Checked, "", IMAGESET[IMAGESETINDEX].Median + IMAGESET[IMAGESETINDEX].Stdv * 2.5);
 					PSESET[PSESETINDEX].Generate_Source_RADec_Coords(IMAGESET[IMAGESETINDEX].WCS);
 					
@@ -1384,7 +1389,7 @@ namespace CCDLAB
 			double x, y;
 			for (int i = 0; i < ras.Count; i++)
 			{
-				IMAGESET[IMAGESETINDEX].WCS.Get_Pixel((double)ras[i], (double)dec[i], "TAN", out x, out y, true);
+				IMAGESET[IMAGESETINDEX].WCS.Get_Pixel((double)ras[i], (double)dec[i], WorldCoordinateSolution.WCSType.TAN, out x, out y, true);
 				DISPREGIONCOORD_X[i] = x;
 				DISPREGIONCOORD_Y[i] = y;
 				DISPREGIONCOORD_R[i] = rad[i] / IMAGESET[IMAGESETINDEX].WCS.GetCDELTn(1);
